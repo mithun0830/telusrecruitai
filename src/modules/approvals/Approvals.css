@@ -63,3 +63,60 @@
   background-color: #f8d7da !important;
   color: #721c24;
 }
+
+.card-body {
+  padding: 0;
+}
+
+.table-container {
+  height: calc(100vh - 250px); /* Adjusted for header, search bar, and padding */
+  margin: 0;
+  border-radius: 0.25rem;
+  background: white;
+}
+
+.table-responsive {
+  height: 100%;
+  overflow: auto;
+}
+
+.table {
+  margin-bottom: 0;
+  background: white;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 1;
+  border-top: none;
+}
+
+/* Add padding to the search and filter section */
+.row.mb-4 {
+  padding: 1.25rem 1.25rem 0 1.25rem;
+}
+
+/* Add padding to the table */
+.table td, .table th {
+  padding: 1rem 1.25rem;
+}
+
+/* Style scrollbar */
+.table-responsive::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

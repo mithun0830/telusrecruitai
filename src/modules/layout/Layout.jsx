@@ -5,25 +5,28 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UserAvatar from '../../components/UserAvatar';
 import { 
   faBars, faTachometerAlt, faFileAlt,
-  faUserFriends, faCalendarAlt, faChartBar, faBell,
-  faSignOutAlt, faCaretDown, faCog
+  faUserFriends, faCalendarAlt, faBell,
+  faSignOutAlt, faCaretDown, faCog, faUsers,
+  faUsersCog, faClipboardList, faListAlt, faBriefcase
 } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/variables.css';
 import '../../styles/Layout.css';
 
-const menuItems = {
-  RMG: [
-    { path: '/rmg_dashboard', icon: faTachometerAlt, label: 'Dashboard' },
-    { path: '/approvals', icon: faFileAlt, label: 'Approvals' },
-    { path: '/candidates', icon: faUserFriends, label: 'Job Openings' },
-    { path: '/interviews', icon: faCalendarAlt, label: 'Interviews' },
-    { path: '/reports', icon: faChartBar, label: 'Reports' },
-    { path: '/notifications', icon: faBell, label: 'Notifications' },
-  ],
-  Manager: [
-    { path: '/mng_dashboard', icon: faTachometerAlt, label: 'Dashboard' },
-  ],
-};
+const menuItems = [
+  { path: '/rmg_dashboard', icon: faTachometerAlt, label: 'Dashboard', permission: 'rmg_dashboard', role: 'RMG' },
+  { path: '/approvals', icon: faFileAlt, label: 'Approvals', permission: 'rmg_approval', role: 'RMG' },
+  { path: '/user-management', icon: faUsersCog, label: 'User Management', permission: 'rmg_user_mng', role: 'RMG' },
+  { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'rmg_notif', role: 'RMG' },
+  { path: '/interviews', icon: faCalendarAlt, label: 'Interview Management', permission: 'rmg_interview_mng', role: 'RMG' },
+  { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'rmg_pref', role: 'RMG' },
+  { path: '/candidate-pool', icon: faUsers, label: 'Candidate Pool', permission: 'rmg_candidate_pool', role: 'RMG' },
+  { path: '/track-status', icon: faClipboardList, label: 'Track Status', permission: 'rmg_track_status', role: 'RMG' },
+  { path: '/mng_dashboard', icon: faTachometerAlt, label: 'Dashboard', permission: 'mng_dashboard', role: 'Manager' },
+  { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'mng_notif', role: 'Manager' },
+  { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'mng_pref', role: 'Manager' },
+  { path: '/application-status', icon: faListAlt, label: 'Application Status', permission: 'mng_app_status', role: 'Manager' },
+  { path: '/job-openings', icon: faBriefcase, label: 'Job Openings', permission: 'mng_jb', role: 'Manager' },
+];
 
 const Layout = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -98,7 +101,9 @@ const Layout = ({ children }) => {
       <div className="d-flex flex-grow-1">
         <aside className={`bg-light ${isMenuOpen ? 'col-md-3 col-lg-2' : 'col-auto'}`}>
           <nav className="nav flex-column">
-            {menuItems[user?.role || 'RMG'].map((item) => (
+            {menuItems.filter(item => 
+              item.role === user?.role && user?.permissionNames?.includes(item.permission)
+            ).map((item) => (
               <Link
                 key={item.path}
                 to={item.path}

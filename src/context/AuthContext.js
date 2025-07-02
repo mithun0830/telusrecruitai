@@ -24,7 +24,8 @@ export const AuthProvider = ({ children }) => {
     if (result.success) {
       const userData = {
         ...result.data.user,
-        role: result.data.user.role // Role is already included in the API response
+        role: result.data.user.role,
+        permissionNames: result.data.user.permissionNames || [] // Include permissionNames from API response
       };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));

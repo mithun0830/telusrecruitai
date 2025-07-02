@@ -1,16 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes, faUserPlus, faSearch, faFilter, faExclamationTriangle, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Alert, Dropdown } from 'react-bootstrap';
+import { userService } from '../../services/api';
 import './Approvals.css';
 
 const Approvals = () => {
-  const [approvals, setApprovals] = useState([
-    { id: 'USR_1001', name: 'John Doe', position: 'Manager', status: 'Pending', date: '2025-06-30', email: 'john.doe@telus.com' },
-    { id: 'USR_1002', name: 'Jane Smith', position: 'Manager', status: 'Pending', date: '2025-06-30', email: 'jane.smith@telus.com' },
-    { id: 'USR_1003', name: 'Mike Johnson', position: 'Manager', status: 'Pending', date: '2025-06-29', email: 'mike.johnson@telus.com' },
-    { id: 'USR_1004', name: 'Emily Brown', position: 'Manager', status: 'Pending', date: '2025-06-29', email: 'emily.brown@telus.com' },
-  ]);
+  const [approvals, setApprovals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchPendingApprovals();
+  }, []);
+
+  const fetchPendingApprovals = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching pending approvals with fetch...');
+      const fetchResponse = await userService.getPendingApprovals();
+      console.log('Fetch response:', fetchResponse);
+
+      console.log('Fetching pending approvals with axios...');
+      const axiosResponse = await userService.getPendingApprovalsAxios();
+      console.log('Axios response:', axiosResponse);
+
+      if (fetchResponse.success) {
+        setApprovals(fetchResponse.data.map(user => ({
+          id: user.id,
+          name: `${user.firstName} ${user.lastName}`,
+          position: 'Manager', // Assuming all are managers, adjust if needed
+          status: 'Pending',
+          date: user.createdAt,
+          email: user.email
+        })));
+      } else {
+        setError('Failed to fetch pending approvals');
+      }
+    } catch (err) {
+      console.error('Error in fetchPendingApprovals:', err);
+      setError('An error occurred while fetching pending approvals');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -19,12 +52,22 @@ const Approvals = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [showRejectError, setShowRejectError] = useState(false);
 
-  const handleApprove = (id) => {
+  const handleApprove = async (id) => {
     if (window.confirm('Are you sure you want to approve this request?')) {
-      setApprovals(approvals.map(approval => 
-        approval.id === id ? {...approval, status: 'Approved'} : approval
-      ));
-      console.log(`Approved user with id: ${id}`);
+      try {
+        const response = await userService.approveUser(id);
+        if (response.success) {
+          setApprovals(approvals.map(approval => 
+            approval.id === id ? {...approval, status: 'Approved'} : approval
+          ));
+          alert('User approved successfully');
+        } else {
+          alert(`Failed to approve user: ${response.error}`);
+        }
+      } catch (error) {
+        console.error('Error approving user:', error);
+        alert('An error occurred while approving the user');
+      }
     }
   };
 
@@ -35,15 +78,25 @@ const Approvals = () => {
     setRejectReason('');
   };
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (!rejectReason.trim()) {
       setShowRejectError(true);
       return;
     }
-    setApprovals(approvals.map(approval => 
-      approval.id === selectedUserId ? {...approval, status: 'Rejected', rejectReason} : approval
-    ));
-    console.log(`Rejected user with id: ${selectedUserId}. Reason: ${rejectReason}`);
+    try {
+      const response = await userService.rejectUser(selectedUserId, rejectReason);
+      if (response.success) {
+        setApprovals(approvals.map(approval => 
+          approval.id === selectedUserId ? {...approval, status: 'Rejected', rejectReason} : approval
+        ));
+        alert('User rejected successfully');
+      } else {
+        alert(`Failed to reject user: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      alert('An error occurred while rejecting the user');
+    }
     setShowRejectModal(false);
     setRejectReason('');
     setSelectedUserId(null);
@@ -72,15 +125,15 @@ const Approvals = () => {
       <section className="mb-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="mb-0">Approvals</h2>
-          <button className="btn btn-primary">
-            <FontAwesomeIcon icon={faUserPlus} className="me-2" />
-            CREATE NEW APPROVAL
-          </button>
         </div>
 
         <div className="card shadow">
           <div className="card-body">
-            <div className="row mb-4">
+            {loading && <p>Loading approvals...</p>}
+            {error && <Alert variant="danger">{error}</Alert>}
+            {!loading && !error && (
+            <>
+              <div className="row mb-4">
               <div className="col-md-6">
                 <div className="input-group">
                   <span className="input-group-text bg-light">
@@ -114,7 +167,8 @@ const Approvals = () => {
               </div>
             </div>
 
-            <div className="table-responsive">
+            <div className="table-container">
+              <div className="table-responsive">
               <table className="table table-hover align-middle">
                 <thead>
                   <tr>
@@ -173,7 +227,10 @@ const Approvals = () => {
                   No approval requests found
                 </div>
               )}
+              </div>
             </div>
+            </>
+            )}
           </div>
         </div>
       </section>

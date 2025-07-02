@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import '../../styles/variables.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('rmg_test@example.com');
+  const [password, setPassword] = useState('test123');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,8 +21,25 @@ const Login = () => {
       const result = await login(email, password);
       console.log('Login result:', result); // Debug log
       if (result.success) {
-        const from = location.state?.from?.pathname || 
-          (result.data.user.role === 'Manager' ? '/mng_dashboard' : '/rmg_dashboard');
+        const user = result.data.user;
+        const role = user.role;
+        const permissionNames = user.permissionNames || [];
+        console.log('User role:', role); // Debug log
+        console.log('User permissions:', permissionNames); // Debug log
+
+        let from = location.state?.from?.pathname;
+        if (!from) {
+          if (role === 'Manager') {
+            from = '/mng_dashboard';
+          } else if (role === 'RMG') {
+            from = '/rmg_dashboard';
+          } else {
+            // Handle unexpected role
+            console.error('Unexpected role:', role); // Debug log
+            setError('Invalid user role');
+            return;
+          }
+        }
         navigate(from, { replace: true });
       } else {
         setError(result.message || 'Invalid email or password');

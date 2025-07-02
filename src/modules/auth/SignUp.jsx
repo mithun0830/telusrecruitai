@@ -3,13 +3,22 @@ import { Link } from 'react-router-dom';
 import { authService } from '../../services/api';
 import '../../styles/variables.css';
 
+const managerPermissions = {
+  mng_dashboard: 'Dashboard',
+  mng_notif: 'Notification',
+  mng_pref: 'Preferences',
+  mng_app_status: 'Application Status',
+  mng_jb: 'Job Openings'
+};
+
 const SignUp = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
-    role: 'Manager' // default role
+    role: 'Manager', // default role
+    permissionNames: [] // array to store selected permissions
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -27,16 +36,28 @@ const SignUp = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({
+        ...prev,
+        permissionNames: checked 
+          ? [...prev.permissionNames, name]
+          : prev.permissionNames.filter(p => p !== name)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        // Reset permissions when role changes
+        permissionNames: name === 'role' ? [] : prev.permissionNames
+      }));
+    }
     setError('');
     setSuccess('');
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
     const validationError = validateForm();
@@ -50,7 +71,12 @@ const SignUp = () => {
     setSuccess('');
 
     try {
-      const result = await authService.register(formData);
+      const registrationData = {
+        ...formData,
+        roleName: formData.role,
+        permissionNames: formData.role === 'Manager' ? formData.permissionNames : []
+      };
+      const result = await authService.register(registrationData);
       
       if (result.success) {
         setSuccess('Sign up successful..!! Account is pending for verification');
@@ -59,7 +85,8 @@ const SignUp = () => {
           lastName: '',
           email: '',
           password: '',
-          role: 'Manager'
+          role: 'Manager',
+          permissionNames: []
         });
       } else {
         setError(result.error);
@@ -155,7 +182,7 @@ const SignUp = () => {
                 />
               </div>
 
-              <div className="mb-4">
+              <div className="mb-3">
                 <label htmlFor="role" className="form-label">Role</label>
                 <select
                   className="form-select"
@@ -168,6 +195,29 @@ const SignUp = () => {
                   <option value="Manager">Manager</option>
                 </select>
               </div>
+
+              {formData.role === 'Manager' && (
+                <div className="mb-4">
+                  <label className="form-label">Permissions</label>
+                  <div className="d-flex flex-wrap gap-3">
+                    {Object.entries(managerPermissions).map(([permission, label]) => (
+                      <div className="form-check" key={permission}>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id={permission}
+                          name={permission}
+                          checked={formData.permissionNames.includes(permission)}
+                          onChange={handleChange}
+                        />
+                        <label className="form-check-label" htmlFor={permission}>
+                          {label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"

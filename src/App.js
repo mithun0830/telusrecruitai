@@ -6,6 +6,7 @@ import RmgDashboard from './modules/dashboard/RmgDashboard';
 import MngDashboard from './modules/dashboard/MngDashboard';
 import Approvals from './modules/approvals/Approvals';
 import RecruitPool from './modules/recruits/RecruitPool';
+import ManagerCandidates from './modules/candidates/ManagerCandidates';
 import Layout from './modules/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -34,9 +35,9 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/candidates" element={
-          <ProtectedRoute allowedRoles={['RMG']}>
-            <Layout><RecruitPool /></Layout>
-          </ProtectedRoute>
+          <Layout>
+            <ManagerCandidates />
+          </Layout>
         } />
         <Route path="/" element={
           <ProtectedRoute>

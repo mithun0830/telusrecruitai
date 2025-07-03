@@ -20,7 +20,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const result = await authService.login(email, password);
+    // const result = await authService.login(email, password);
+    const result ={
+      success: true, 
+      data: { 
+        user: { 
+          id: 1, 
+          name: 'John Doe', 
+          role: 'Manager' 
+        }, 
+        token: 'abc123', 
+        refreshToken: 'xyz456' 
+      }  // Example response structure  
+    }
     if (result.success) {
       const userData = {
         ...result.data.user,

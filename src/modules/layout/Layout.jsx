@@ -22,6 +22,7 @@ const menuItems = {
   ],
   Manager: [
     { path: '/mng_dashboard', icon: faTachometerAlt, label: 'Dashboard' },
+    { path: '/candidates', icon: faUserFriends, label: 'Candidates' },
   ],
 };
 

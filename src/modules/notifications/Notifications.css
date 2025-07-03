@@ -1,0 +1,53 @@
+.notification-list {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-content p {
+  color: #333;
+  margin-bottom: 0.25rem;
+  flex: 1;
+  padding-right: 10px;
+}
+
+.notification-content small {
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+.notification-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Custom scrollbar for notification list */
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

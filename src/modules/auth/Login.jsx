@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/variables.css';
+import './Login.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('rmg_test@example.com');
-  const [password, setPassword] = useState('test123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,13 +23,9 @@ const Login = () => {
 
     try {
       const result = await login(email, password);
-      console.log('Login result:', result); // Debug log
       if (result.success) {
         const user = result.data.user;
         const role = user.role;
-        const permissionNames = user.permissionNames || [];
-        console.log('User role:', role); // Debug log
-        console.log('User permissions:', permissionNames); // Debug log
 
         let from = location.state?.from?.pathname;
         if (!from) {
@@ -34,8 +34,7 @@ const Login = () => {
           } else if (role === 'RMG') {
             from = '/rmg_dashboard';
           } else {
-            // Handle unexpected role
-            console.error('Unexpected role:', role); // Debug log
+            console.error('Unexpected role:', role);
             setError('Invalid user role');
             return;
           }
@@ -45,7 +44,7 @@ const Login = () => {
         setError(result.message || 'Invalid email or password');
       }
     } catch (err) {
-      console.error('Login error:', err); // Debug log
+      console.error('Login error:', err);
       setError(err.message || 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -53,66 +52,97 @@ const Login = () => {
   };
 
   return (
-    <div className="min-vh-100 d-flex flex-column" style={{ background: 'var(--hover-bg)' }}>
-      <div className="p-3" style={{ background: 'var(--header-bg)', color: 'var(--text-light)' }}>
-        <h4 className="m-0">TelusRecruitAI</h4>
-      </div>
-      <div className="flex-grow-1 d-flex justify-content-center align-items-center p-3">
-        <div className="card shadow-sm" style={{ width: '100%', maxWidth: '450px' }}>
-          <div className="card-body p-4">
-            <h3 className="text-center mb-2" style={{ color: 'var(--header-bg)' }}>Welcome Back</h3>
-            <p className="text-center text-muted mb-4">Sign in to access TelusRecruitAI</p>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email Address</label>
-                <input 
-                  type="email" 
-                  className="form-control" 
-                  id="email" 
-                  placeholder="your.email@company.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input 
-                  type="password" 
-                  className="form-control" 
-                  id="password" 
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-3 d-flex justify-content-between align-items-center">
-                <div className="form-check">
-                  <input type="checkbox" className="form-check-input" id="rememberMe" />
-                  <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
+    <div className="login-page">
+      <Container>
+        <Row className="justify-content-center align-items-center min-vh-100">
+          <Col md={6} lg={5}>
+            <Card className="shadow">
+              <Card.Body>
+                <div className="text-center mb-4">
+                  <h2>TelusRecruitAI</h2>
+                  <h4>Sign In</h4>
+                  <p className="text-muted">Welcome back! Please login to your account.</p>
                 </div>
-                <Link to="/forgot-password" className="text-decoration-none" style={{ color: 'var(--primary-color)' }}>Forgot password?</Link>
-              </div>
-              <button 
-                type="submit" 
-                className="btn btn-primary w-100 mb-3" 
-                style={{ background: 'var(--primary-color)', border: 'none' }}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Signing In...' : 'SIGN IN'}
-              </button>
-            </form>
-            <div className="text-center mt-3">
-              <span className="text-muted">Don't have an account? </span>
-              <Link to="/signup" className="text-decoration-none" style={{ color: 'var(--primary-color)' }}>Sign up</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+                
+                {error && (
+                  <Alert variant="danger" className="mb-4">
+                    {error}
+                  </Alert>
+                )}
+
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group className="mb-4">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faUser} />
+                      </span>
+                      <Form.Control
+                        type="email"
+                        placeholder="Work Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="py-2"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-4">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faLock} />
+                      </span>
+                      <Form.Control
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="py-2"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <Row className="mb-4">
+                    <Col>
+                      <Form.Check
+                        type="checkbox"
+                        label="Remember me"
+                        className="text-muted"
+                      />
+                    </Col>
+                    <Col className="text-end">
+                      <Link to="/forgot-password" className="text-decoration-none">
+                        Forgot Password?
+                      </Link>
+                    </Col>
+                  </Row>
+
+                  <div className="d-grid mb-4">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={isLoading}
+                      className="py-2"
+                    >
+                      {isLoading ? 'Signing In...' : 'SIGN IN'}
+                    </Button>
+                  </div>
+
+                  <div className="text-center">
+                    <p className="mb-0 text-muted">
+                      Don't have an account?{' '}
+                      <Link to="/signup" className="text-decoration-none fw-bold">
+                        Sign Up
+                      </Link>
+                    </p>
+                  </div>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };

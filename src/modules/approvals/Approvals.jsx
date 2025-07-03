@@ -17,16 +17,12 @@ const Approvals = () => {
   const fetchPendingApprovals = async () => {
     try {
       setLoading(true);
-      console.log('Fetching pending approvals with fetch...');
-      const fetchResponse = await userService.getPendingApprovals();
-      console.log('Fetch response:', fetchResponse);
+      console.log('Fetching pending approvals...');
+      const response = await userService.getPendingApprovals();
+      console.log('Response:', response);
 
-      console.log('Fetching pending approvals with axios...');
-      const axiosResponse = await userService.getPendingApprovalsAxios();
-      console.log('Axios response:', axiosResponse);
-
-      if (fetchResponse.success) {
-        setApprovals(fetchResponse.data.map(user => ({
+      if (response.success) {
+        setApprovals(response.data.map(user => ({
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
           position: 'Manager', // Assuming all are managers, adjust if needed

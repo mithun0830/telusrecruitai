@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { authService } from '../../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faEnvelope, faLock, faUserTag } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/variables.css';
-
-const managerPermissions = {
-  mng_dashboard: 'Dashboard',
-  mng_notif: 'Notification',
-  mng_pref: 'Preferences',
-  mng_app_status: 'Application Status',
-  mng_jb: 'Job Openings'
-};
+import './Login.css';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -17,225 +13,305 @@ const SignUp = () => {
     lastName: '',
     email: '',
     password: '',
-    role: 'Manager', // default role
-    permissionNames: [] // array to store selected permissions
+    roleName: '',
+    permissionNames: []
   });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  const validateForm = () => {
-    if (!formData.firstName.trim()) return 'First name is required';
-    if (!formData.lastName.trim()) return 'Last name is required';
-    if (!formData.email.trim()) return 'Email is required';
-    if (!formData.email.includes('@')) return 'Invalid email format';
-    if (!formData.email.toLowerCase().endsWith('.com')) return 'Please use your work email';
-    if (!formData.password) return 'Password is required';
-    if (formData.password.length < 8) return 'Password must be at least 8 characters';
-    return null;
-  };
+  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    
-    if (type === 'checkbox') {
-      setFormData(prev => ({
-        ...prev,
-        permissionNames: checked 
-          ? [...prev.permissionNames, name]
-          : prev.permissionNames.filter(p => p !== name)
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-        // Reset permissions when role changes
-        permissionNames: name === 'role' ? [] : prev.permissionNames
-      }));
-    }
-    setError('');
-    setSuccess('');
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+  const handlePermissionChange = (permission) => {
+    setFormData(prevState => {
+      const permissions = prevState.permissionNames || [];
+      if (permissions.includes(permission)) {
+        return {
+          ...prevState,
+          permissionNames: permissions.filter(p => p !== permission)
+        };
+      } else {
+        return {
+          ...prevState,
+          permissionNames: [...permissions, permission]
+        };
+      }
+    });
+  };
 
-    setIsLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError('');
-    setSuccess('');
+    setIsLoading(true);
 
     try {
-      const registrationData = {
-        ...formData,
-        roleName: formData.role,
-        permissionNames: formData.role === 'Manager' ? formData.permissionNames : []
-      };
-      const result = await authService.register(registrationData);
-      
+      const result = await register(formData);
       if (result.success) {
-        setSuccess('Sign up successful..!! Account is pending for verification');
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: '',
-          role: 'Manager',
-          permissionNames: []
-        });
+        navigate('/login', { state: { message: 'Registration successful. Please log in.' } });
       } else {
-        setError(result.error);
+        setError(result.message || 'Registration failed. Please try again.');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      console.error('Registration error:', err);
+      setError(err.message || 'An error occurred during registration. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const renderPermissions = () => {
+    if (formData.roleName === 'Manager') {
+      return (
+        <>
+          <Form.Check
+            type="checkbox"
+            label="Dashboard"
+            onChange={() => handlePermissionChange('mng_dashboard')}
+            checked={formData.permissionNames?.includes('mng_dashboard')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Notification"
+            onChange={() => handlePermissionChange('mng_notif')}
+            checked={formData.permissionNames?.includes('mng_notif')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Preferences"
+            onChange={() => handlePermissionChange('mng_pref')}
+            checked={formData.permissionNames?.includes('mng_pref')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Application Status"
+            onChange={() => handlePermissionChange('mng_app_status')}
+            checked={formData.permissionNames?.includes('mng_app_status')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Job Openings"
+            onChange={() => handlePermissionChange('mng_jb')}
+            checked={formData.permissionNames?.includes('mng_jb')}
+            className="mb-2"
+          />
+        </>
+      );
+    } else if (formData.roleName === 'RMG') {
+      return (
+        <>
+          <Form.Check
+            type="checkbox"
+            label="Dashboard"
+            onChange={() => handlePermissionChange('rmg_dashboard')}
+            checked={formData.permissionNames?.includes('rmg_dashboard')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Approvals"
+            onChange={() => handlePermissionChange('rmg_approval')}
+            checked={formData.permissionNames?.includes('rmg_approval')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="User Management"
+            onChange={() => handlePermissionChange('rmg_user_mng')}
+            checked={formData.permissionNames?.includes('rmg_user_mng')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Notification"
+            onChange={() => handlePermissionChange('rmg_notif')}
+            checked={formData.permissionNames?.includes('rmg_notif')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Interview Management"
+            onChange={() => handlePermissionChange('rmg_interview_mng')}
+            checked={formData.permissionNames?.includes('rmg_interview_mng')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Preferences"
+            onChange={() => handlePermissionChange('rmg_pref')}
+            checked={formData.permissionNames?.includes('rmg_pref')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Candidate Pool"
+            onChange={() => handlePermissionChange('rmg_candidate_pool')}
+            checked={formData.permissionNames?.includes('rmg_candidate_pool')}
+            className="mb-2"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Track Status"
+            onChange={() => handlePermissionChange('rmg_track_status')}
+            checked={formData.permissionNames?.includes('rmg_track_status')}
+          />
+        </>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="min-vh-100 d-flex flex-column" style={{ background: 'var(--hover-bg)' }}>
-      <div className="p-3" style={{ background: 'var(--header-bg)', color: 'var(--text-light)' }}>
-        <h4 className="m-0">TelusRecruitAI</h4>
-      </div>
-      <div className="flex-grow-1 d-flex justify-content-center align-items-center p-3">
-        <div className="card shadow-sm" style={{ width: '100%', maxWidth: '450px' }}>
-          <div className="card-body p-4">
-            <h3 className="text-center mb-2" style={{ color: 'var(--header-bg)' }}>Sign Up</h3>
-            <p className="text-center text-muted mb-4">Create your TelusRecruitAI account</p>
-            
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
-              </div>
-            )}
-            
-            {success && (
-              <div className="alert alert-success" role="alert">
-                {success}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="firstName" className="form-label">First Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  placeholder="John"
-                  autoComplete="given-name"
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="lastName" className="form-label">Last Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Doe"
-                  autoComplete="family-name"
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Work Email</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="your.email@company.com"
-                  autoComplete="email"
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="role" className="form-label">Role</label>
-                <select
-                  className="form-select"
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="Manager">Manager</option>
-                </select>
-              </div>
-
-              {formData.role === 'Manager' && (
-                <div className="mb-4">
-                  <label className="form-label">Permissions</label>
-                  <div className="d-flex flex-wrap gap-3">
-                    {Object.entries(managerPermissions).map(([permission, label]) => (
-                      <div className="form-check" key={permission}>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id={permission}
-                          name={permission}
-                          checked={formData.permissionNames.includes(permission)}
-                          onChange={handleChange}
-                        />
-                        <label className="form-check-label" htmlFor={permission}>
-                          {label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+    <div className="login-page">
+      <Container>
+        <Row className="justify-content-center align-items-center min-vh-100">
+          <Col md={6} lg={5}>
+            <Card className="shadow">
+              <Card.Body>
+                <div className="text-center mb-4">
+                  <h2>TelusRecruitAI</h2>
+                  <h4>Sign Up</h4>
+                  <p className="text-muted">Create your account to get started.</p>
                 </div>
-              )}
+                
+                {error && (
+                  <Alert variant="danger" className="mb-4">
+                    {error}
+                  </Alert>
+                )}
 
-              <button
-                type="submit"
-                className="btn btn-primary w-100 mb-3"
-                disabled={isLoading}
-                style={{ background: 'var(--primary-color)', border: 'none' }}
-              >
-                {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
-              </button>
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group className="mb-3">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faUser} />
+                      </span>
+                      <Form.Control
+                        type="text"
+                        name="firstName"
+                        placeholder="First Name"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="py-2"
+                      />
+                    </div>
+                  </Form.Group>
 
-              <div className="text-center mt-3">
-                <span className="text-muted">Already have an account? </span>
-                <Link to="/login" className="text-decoration-none" style={{ color: 'var(--primary-color)' }}>Login</Link>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+                  <Form.Group className="mb-3">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faUser} />
+                      </span>
+                      <Form.Control
+                        type="text"
+                        name="lastName"
+                        placeholder="Last Name"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        required
+                        className="py-2"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faEnvelope} />
+                      </span>
+                      <Form.Control
+                        type="email"
+                        name="email"
+                        placeholder="Work Email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className="py-2"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faLock} />
+                      </span>
+                      <Form.Control
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="py-2"
+                      />
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-4">
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FontAwesomeIcon icon={faUserTag} />
+                      </span>
+                      <Form.Select
+                        name="roleName"
+                        value={formData.roleName}
+                        onChange={handleChange}
+                        required
+                        className="py-2"
+                      >
+                        <option value="">Select Role</option>
+                        <option value="Manager">Manager</option>
+                        <option value="RMG">RMG</option>
+                      </Form.Select>
+                    </div>
+                  </Form.Group>
+
+                  {formData.roleName && (
+                    <Form.Group className="mb-4">
+                      <Form.Label>Permissions</Form.Label>
+                      <div className="permissions-container">
+                        {renderPermissions()}
+                      </div>
+                    </Form.Group>
+                  )}
+
+                  <div className="d-grid mb-4">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={isLoading}
+                      className="py-2"
+                    >
+                      {isLoading ? 'Signing Up...' : 'SIGN UP'}
+                    </Button>
+                  </div>
+
+                  <div className="text-center">
+                    <p className="mb-0 text-muted">
+                      Already have an account?{' '}
+                      <Link to="/login" className="text-decoration-none fw-bold">
+                        Sign In
+                      </Link>
+                    </p>
+                  </div>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };

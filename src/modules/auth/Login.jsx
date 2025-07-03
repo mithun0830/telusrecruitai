@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import telusLogo from '../../assets/telus_logo.svg';
+import leavesImage from '../../assets/leaves.png';
 import '../../styles/variables.css';
 import './Login.css';
 
@@ -12,6 +14,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -53,96 +56,72 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <Container>
-        <Row className="justify-content-center align-items-center min-vh-100">
-          <Col md={6} lg={5}>
-            <Card className="shadow">
-              <Card.Body>
-                <div className="text-center mb-4">
-                  <h2>TelusRecruitAI</h2>
-                  <h4>Sign In</h4>
-                  <p className="text-muted">Welcome back! Please login to your account.</p>
-                </div>
-                
-                {error && (
-                  <Alert variant="danger" className="mb-4">
-                    {error}
-                  </Alert>
-                )}
+      <header className="login-header">
+        <img src={telusLogo} alt="TELUS logo" className="telus-logo" />
+      </header>
+      <div className="login-container">
+        <div className="login-card card-base">
+        <h1>Log in to TelusRecruitAI</h1>
+        
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group className="mb-4">
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <FontAwesomeIcon icon={faUser} />
-                      </span>
-                      <Form.Control
-                        type="email"
-                        placeholder="Work Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="py-2"
-                      />
-                    </div>
-                  </Form.Group>
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Label>Email ID</Form.Label>
+            <Form.Control
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </Form.Group>
 
-                  <Form.Group className="mb-4">
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <FontAwesomeIcon icon={faLock} />
-                      </span>
-                      <Form.Control
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="py-2"
-                      />
-                    </div>
-                  </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Password</Form.Label>
+            <div className="password-input">
+              <Form.Control
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button 
+                variant="link"
+                onClick={() => setShowPassword(!showPassword)}
+                className="password-toggle"
+              >
+                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+              </Button>
+            </div>
+          </Form.Group>
 
-                  <Row className="mb-4">
-                    <Col>
-                      <Form.Check
-                        type="checkbox"
-                        label="Remember me"
-                        className="text-muted"
-                      />
-                    </Col>
-                    <Col className="text-end">
-                      <Link to="/forgot-password" className="text-decoration-none">
-                        Forgot Password?
-                      </Link>
-                    </Col>
-                  </Row>
+          <Form.Group className="mb-3">
+            <Form.Text className="forgot-link">
+              <Link to="/forgot-password">Forgot your password?</Link>
+            </Form.Text>
+          </Form.Group>
 
-                  <div className="d-grid mb-4">
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      disabled={isLoading}
-                      className="py-2"
-                    >
-                      {isLoading ? 'Signing In...' : 'SIGN IN'}
-                    </Button>
-                  </div>
+          <Button
+            variant="success"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Logging in...' : 'Log in'}
+          </Button>
 
-                  <div className="text-center">
-                    <p className="mb-0 text-muted">
-                      Don't have an account?{' '}
-                      <Link to="/signup" className="text-decoration-none fw-bold">
-                        Sign Up
-                      </Link>
-                    </p>
-                  </div>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+          <div className="footer-links">
+            <p>New to TelusRecruitAI? <Link to="/signup">Register now</Link></p>
+          </div>
+        </Form>
+        </div>
+        <div className="leaves-image">
+          <img src={leavesImage} alt="Leaves" />
+        </div>
+      </div>
     </div>
   );
 };

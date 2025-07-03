@@ -34,7 +34,7 @@ function App() {
             <Layout><Approvals /></Layout>
           </ProtectedRoute>
         } />
-        <Route path="/candidates" element={
+        <Route path="/job-openings" element={
           <Layout>
             <ManagerCandidates />
           </Layout>

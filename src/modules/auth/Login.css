@@ -1,72 +1,298 @@
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--header-bg) 0%, #1a374d 100%);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.card {
-  border: none;
-  border-radius: 10px;
+.login-header {
+  width: 100%;
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #D8D8D8;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
-.card-body {
-  padding: 2.5rem !important;
+.telus-logo {
+  height: 32px;
+  width: auto;
 }
 
-h2 {
-  color: var(--header-bg);
-  font-weight: 600;
+.login-container {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: calc(100vh - 80px); /* Adjust based on header height */
+  position: relative;
 }
 
-h4 {
-  color: #495057;
+/* Base card styles */
+.card-base {
+  background: #fff;
+  z-index: 2;
+  border: 1px solid #D8D8D8;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Login card specific styles */
+.login-card {
+  composes: card-base;
+  width: 40%;
+  padding: 1.5rem 2rem;
+  margin: 4rem 4rem 4rem 4rem;
+  justify-content: center;
+}
+
+/* Signup card specific styles */
+.signup-card {
+  composes: card-base;
+  width: 40%;
+  padding: 2rem;
+  margin: 2rem 1rem 2rem 4rem;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  justify-content: flex-start;
+}
+
+/* Container adjustments */
+.login-page:not(.signup) .login-container {
+  justify-content: flex-start;
+}
+
+.login-page.signup .login-container {
+  justify-content: flex-start;
+}
+
+.login-card-inner {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.permissions-container {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 1rem;
+}
+
+.permissions-container .form-check {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.permissions-container .form-check:last-child {
+  margin-bottom: 0;
+}
+
+.permissions-container .form-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #C4BFD6;
+  border-radius: 4px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  margin: 0;
+  margin-right: 10px;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.permissions-container .form-check input[type="checkbox"]:checked {
+  background-color: #2B8000;
+  border-color: #2B8000;
+}
+
+.permissions-container .form-check input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.permissions-container .form-check label {
+  font-size: 14px;
+  color: #2A2C2E;
+  cursor: pointer;
+}
+
+.leaves-image {
+  width: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.leaves-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.divider {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background-color: #D8D8D8;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 1rem;
+  color: #2A2C2E;
+}
+
+h1 {
+  color: #4B286D;
+  font-size: 2rem;
   font-weight: 500;
+  margin-bottom: 1.5rem;
 }
 
-.input-group-text {
-  background-color: var(--header-bg);
-  border: none;
-  color: white;
+/* Adjust heading margin and alignment for login and signup cards */
+.login-card h1,
+.signup-card h1 {
+  margin-top: 0;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #2A2C2E;
 }
 
 .form-control {
-  border: 1px solid #ced4da;
+  border: 1px solid #D8D8D8;
   padding: 0.75rem;
+  border-radius: 4px;
+  width: 100%;
 }
 
 .form-control:focus {
-  border-color: var(--header-bg);
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #4B286D;
+  box-shadow: 0 0 0 0.2rem rgba(75, 40, 109, 0.25);
 }
 
-.btn-primary {
-  background-color: var(--header-bg);
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
   border: none;
+  color: #2B8000;
+  padding: 0.5rem;
+}
+
+.password-toggle:hover {
+  color: #1F5C00;
+}
+
+.forgot-link {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.forgot-link a {
+  color: #2B8000;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.forgot-link a:hover {
+  color: #1F5C00;
+  text-decoration: underline;
+}
+
+.btn-success {
+  background-color: #2B8000;
+  border-color: #2B8000;
   padding: 0.75rem;
   font-weight: 500;
-  letter-spacing: 1px;
+  width: 100%;
+  margin: 0;
 }
 
-.btn-primary:hover {
-  background-color: #1a374d;
+.btn-success:hover {
+  background-color: #1F5C00;
+  border-color: #1F5C00;
 }
 
-.btn-primary:disabled {
-  background-color: #6c757d;
+.btn-outline-success {
+  color: #2B8000;
+  border-color: #2B8000;
+  padding: 0.75rem;
+  font-weight: 500;
 }
 
-a {
-  color: var(--header-bg);
+.btn-outline-success:hover {
+  background-color: #2B8000;
+  color: #fff;
 }
 
-a:hover {
-  color: #1a374d;
+/* Add more top margin to sign-up button */
+.signup-card .btn-success {
+  margin-top: 1rem;
 }
 
-hr {
-  margin: 1.5rem 0;
+.footer-links {
+  text-align: center;
+  margin-top: 1.5rem;
 }
 
-.form-check-input:checked {
-  background-color: var(--header-bg);
-  border-color: var(--header-bg);
+.footer-links p {
+  margin: 0.5rem 0;
+  color: #2A2C2E;
+}
+
+.footer-links a {
+  color: #2B8000;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #1F5C00;
+  text-decoration: underline;
 }

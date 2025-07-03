@@ -49,25 +49,37 @@ const SignUp = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setIsLoading(true);
 
-    try {
-      const result = await register(formData);
-      if (result.success) {
-        navigate('/login', { state: { message: 'Registration successful. Please log in.' } });
-      } else {
-        setError(result.message || 'Registration failed. Please try again.');
-      }
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'An error occurred during registration. Please try again.');
-    } finally {
-      setIsLoading(false);
+  console.log('Submitting form data:', formData);
+
+  try {
+    console.log('Calling register function');
+    const result = await register(formData);
+    console.log('Register function result:', result);
+
+    if (result.success) {
+      console.log('Registration successful, navigating to login');
+      navigate('/login', { state: { message: 'Registration successful. Please log in.' } });
+    } else {
+      console.log('Registration failed:', result.message);
+      setError(result.message || 'Registration failed. Please try again.');
     }
-  };
+  } catch (err) {
+    console.error('Registration error:', err);
+    if (err.response && err.response.data) {
+      console.log('Error response data:', err.response.data);
+      setError(err.response.data.message || 'An error occurred during registration. Please try again.');
+    } else {
+      setError('An error occurred during registration. Please try again.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const renderPermissions = () => {
     if (formData.roleName === 'Manager') {

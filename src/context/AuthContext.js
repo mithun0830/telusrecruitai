@@ -19,33 +19,33 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (email, password) => {
-    // const result = await authService.login(email, password);
-    const result ={
-      success: true, 
-      data: { 
-        user: { 
-          id: 1, 
-          name: 'John Doe', 
-          role: 'Manager' 
-        }, 
-        token: 'abc123', 
-        refreshToken: 'xyz456' 
-      }  // Example response structure  
-    }
-    if (result.success) {
-      const userData = {
-        ...result.data.user,
-        role: result.data.user.role,
-        permissionNames: result.data.user.permissionNames || [] // Include permissionNames from API response
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', result.data.token);
-      localStorage.setItem('refreshToken', result.data.refreshToken);
-    }
+const login = async (email, password) => {
+  const result = await authService.login(email, password);
+  if (result.success) {
+    const userData = {
+      ...result.data.user,
+      role: result.data.user.role,
+      permissionNames: result.data.user.permissionNames || [] // Include permissionNames from API response
+    };
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', result.data.token);
+    localStorage.setItem('refreshToken', result.data.refreshToken);
+  }
+  return result;
+};
+
+const register = async (formData) => {
+  console.log('AuthContext: Registering user with data:', formData);
+  try {
+    const result = await authService.register(formData);
+    console.log('AuthContext: Registration result:', result);
     return result;
-  };
+  } catch (error) {
+    console.error('AuthContext: Registration error:', error);
+    throw error;
+  }
+};
 
   const logout = () => {
     authService.logout();
@@ -55,12 +55,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('refreshToken');
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-    loading
-  };
+const value = {
+  user,
+  login,
+  logout,
+  register,
+  loading
+};
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

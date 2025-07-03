@@ -162,8 +162,9 @@ export const userService = {
 // Auth service
 export const authService = {
   register: async (userData) => {
+    console.log('authService: Starting registration with data:', userData);
     try {
-      const response = await api.post('/auth/register', {
+      const requestData = {
         username: `${userData.firstName} ${userData.lastName}`,
         email: userData.email,
         password: userData.password,
@@ -171,21 +172,31 @@ export const authService = {
         firstName: userData.firstName,
         lastName: userData.lastName,
         permissionNames: userData.permissionNames
-      });
+      };
+      console.log('authService: Sending registration request with:', requestData);
+      
+      const response = await api.post('/auth/register', requestData);
+      console.log('authService: Received registration response:', response);
+      
       const responseData = response.data;
+      console.log('authService: Parsed response data:', responseData);
+      
       if (responseData.success) {
+        console.log('authService: Registration successful');
         return {
           success: true,
           data: responseData.data
         };
       } else {
+        console.log('authService: Registration failed with message:', responseData.message);
         return {
           success: false,
           message: responseData.errors?.[0] || responseData.message || 'Registration failed'
         };
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('authService: Registration error:', error);
+      console.log('authService: Error response:', error.response);
       const errorResponse = error.response?.data;
       return {
         success: false,

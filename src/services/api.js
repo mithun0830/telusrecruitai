@@ -292,10 +292,11 @@ export const candidateService = {
         params: { jd: searchString }
       });
       const responseData = response.data;
-      if (responseData.success) {
+      console.log('Candidate search response data:', responseData);
+      if (responseData) {
         return {
           success: true,
-          data: responseData.data
+          data: responseData
         };
       } else {
         return {

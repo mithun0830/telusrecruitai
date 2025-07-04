@@ -1,10 +1,38 @@
 import React, { useState } from 'react';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
-import dummyData from './DummyList';
 import { candidateService } from '../../services/api';
 
+const loaderStyle = {
+  width: '50px',
+  height: '50px',
+  border: '3px solid #4B286D',
+  borderTopColor: 'transparent',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+};
+
+const loaderContainerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '300px',
+  flexDirection: 'column',
+  gap: '20px',
+};
+
+const loaderTextStyle = {
+  color: '#4B286D',
+  fontSize: '18px',
+};
+
 const ManagerCandidates = () => {
+  const spinKeyframes = `
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  `;
   const {
     filters,
     selectedCandidates,
@@ -24,6 +52,7 @@ const ManagerCandidates = () => {
   } = useManagerCandidates();
 
   const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [selectedJobTitle, setSelectedJobTitle] = React.useState("");
   const [selectedHardSkills, setSelectedHardSkills] = React.useState([]);
@@ -48,6 +77,7 @@ const ManagerCandidates = () => {
   };
 
   const handleSearchClick = async () => {
+    setIsLoading(true);
     const searchString = `${filters.aiSearch || ''}, Job Title: ${selectedJobTitle || ''}, Hard Skills: ${selectedHardSkills.join(', ')}, Years of Experience: ${sliderValues.experience} and Score: ${sliderValues.score}`;
     try {
       const response = await candidateService.searchCandidates(searchString);
@@ -60,11 +90,14 @@ const ManagerCandidates = () => {
     } catch (error) {
       console.error('Error during search:', error);
       // You might want to show an error message to the user here
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="candidates-page">
+      <style>{spinKeyframes}</style>
       <div className="candidates-header">
         <h1>Manager Candidates</h1>
       </div>
@@ -168,6 +201,7 @@ const ManagerCandidates = () => {
             <button 
               className="btn-action secondary"
               onClick={handleSearchClick}
+              disabled={isLoading}
               style={{ 
                 width: '100%',
                 transition: 'transform 0.1s ease',
@@ -185,7 +219,7 @@ const ManagerCandidates = () => {
         </div>
         <div className="candidates-list">
           <div className="candidates-list-header">
-            <h2>Candidates <span className="candidate-count">{searchResults.length || dummyData.length}</span></h2>
+            <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
             <div className="header-actions">
               <input 
                 type="text" 
@@ -196,47 +230,75 @@ const ManagerCandidates = () => {
             </div>
           </div>
           <div className="candidates-table-container">
-            <table className="candidates-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Skill Set</th>
-                <th>Exp.</th>
-                <th>Score</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {(searchResults.length > 0 ? searchResults : dummyData).map((candidate) => (
-              <tr key={candidate.resume.id}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedCandidates.includes(candidate.resume.id)}
-                    onChange={() => handleSelectCandidate(candidate.resume.id)}
-                  />
-                </td>
-                <td>
-                  <div className="candidate-name">
-                    <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
-                    <span>{candidate.resume.name}</span>
-                  </div>
-                </td>
-                <td><div className="candidate-name"><span>{candidate.resume.phoneNumber}</span></div></td>
-                <td><div className="candidate-name"><span>{candidate.analysis.keyStrengths[0].strength}</span></div></td>
-                <td style={{textAlign: 'center'}}><div className="candidate-name"><span>{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</span></div></td>
-                <td style={{textAlign: 'center'}}>
-                  <span className="score-cell">{candidate.score}</span>
-                </td>
-                <td style={{textAlign: 'center'}}>
-                  <button className="btn-more" title="More options">⋮</button>
-                </td>
-              </tr>
-              ))}
-            </tbody>
-            </table>
+            {isLoading ? (
+              <div style={loaderContainerStyle}>
+                <div style={loaderStyle}></div>
+                <span style={loaderTextStyle}>Searching for candidates...</span>
+              </div>
+            ) : (
+              <table className="candidates-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Skill Set</th>
+                    <th>Exp.</th>
+                    <th>Score</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {searchResults.length > 0 ? (
+                    searchResults.map((candidate) => (
+                  <tr key={candidate.resume.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedCandidates.includes(candidate.resume.id)}
+                        onChange={() => handleSelectCandidate(candidate.resume.id)}
+                      />
+                    </td>
+                    <td>
+                      <div className="candidate-name">
+                        <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
+                        <span>{candidate.resume.name}</span>
+                      </div>
+                    </td>
+                    <td><div className="candidate-name"><span>{candidate.resume.phoneNumber}</span></div></td>
+                    <td><div className="candidate-name"><span>{candidate.analysis.keyStrengths[0].strength}</span></div></td>
+                    <td style={{textAlign: 'center'}}><div className="candidate-name"><span>{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</span></div></td>
+                    <td style={{textAlign: 'center'}}>
+                      <span className="score-cell">{candidate.score}</span>
+                    </td>
+                    <td style={{textAlign: 'center'}}>
+                      <button className="btn-more" title="More options">⋮</button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      gap: '10px',
+                      color: '#4B286D'
+                    }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#4B286D" strokeWidth="2"/>
+                        <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#4B286D" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M19 4L23 8M23 4L19 8" stroke="#4B286D" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      No Candidate found matching your search criteria.
+                    </div>
+                  </td>
+                </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
           <div className="candidates-footer">
             <div className="selection-info">

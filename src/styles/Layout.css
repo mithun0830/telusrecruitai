@@ -1,27 +1,80 @@
 @import './variables.css';
 
+/* Custom styles for header */
+.navbar {
+  padding: 0.75rem 0.5rem;
+  background-color: #4B286D !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 70px;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #ffffff !important;
+  margin-left: 0.25rem;
+  padding: 0;
+}
+
+.btn-link {
+  color: #ffffff !important;
+  font-size: 1.3rem;
+  padding: 0.4rem;
+  line-height: 1;
+}
+
+.btn-link:hover {
+  opacity: 0.8;
+}
+
 /* Custom styles for nav links */
 .nav-link {
-  color: var(--text-muted);
-  padding: 0.75rem 1.5rem;
-  border-left: 3px solid transparent;
+  color: white !important;
+  padding: 0.75rem 1.25rem;
   transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+}
+
+.nav-link > div {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.nav-link .me-2 {
+  width: 20px;
+  margin-right: 1rem !important;
+  text-align: center;
+}
+
+.nav-link span {
+  flex: 1;
 }
 
 .nav-link:hover {
-  color: var(--primary-color);
-  background-color: var(--hover-bg);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .nav-link.active {
-  color: var(--text-light);
-  background-color: var(--primary-color);
-  border-left-color: var(--header-bg);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link .chevron-icon {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.nav-link:hover .chevron-icon {
+  opacity: 1;
 }
 
 /* Custom styles for collapsed sidebar */
 .col-auto .nav-link {
-  padding: 0.75rem;
+  padding: 0.75rem 0.5rem;
   text-align: center;
 }
 
@@ -32,6 +85,12 @@
 /* Custom transition for sidebar */
 aside {
   transition: width 0.3s ease;
+  background-color: #4B286D;
+  width: 220px !important;
+}
+
+aside.col-auto {
+  width: 60px !important;
 }
 
 /* Custom styles for dropdown */
@@ -41,13 +100,41 @@ aside {
 
 /* Custom styles for user profile dropdown */
 .user-profile-dropdown {
-  padding: 8px;
-  border-radius: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
   transition: background-color 0.2s ease;
+  height: 54px;
 }
 
 .user-profile-dropdown:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-profile-dropdown .text-light {
+  color: #ffffff !important;
+}
+
+.user-profile-dropdown .text-light-50 {
+  color: #ffffff !important;
+  opacity: 0.8;
+}
+
+.bell-icon-container {
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-right: 1rem !important;
+  transition: background-color 0.2s ease;
+  height: 54px;
+  display: flex;
+  align-items: center;
+}
+
+.bell-icon-container:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bell-icon-container .text-light {
+  color: #ffffff !important;
 }
 
 .dropdown-menu {
@@ -93,6 +180,18 @@ aside {
 .dropdown-item .fa-icon {
   width: 1.25rem;
   text-align: center;
+  color: white;
+}
+
+/* Custom styles for user profile dropdown */
+.user-profile-dropdown {
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.user-profile-dropdown:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Right Panel Styles */

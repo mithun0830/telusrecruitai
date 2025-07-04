@@ -2,10 +2,19 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'http://localhost:8084/api';
+const AI_SEARCH_BASE_URL = 'https://treko-480868035316.asia-south1.run.app/api/'
+
 
 // Create axios instances with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const ai_api = axios.create({
+  baseURL: AI_SEARCH_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,6 +26,8 @@ const notificationApi = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+
 
 // Token management
 const getAccessToken = () => {
@@ -128,7 +139,7 @@ export const userService = {
     try {
       const token = getAccessToken();
       const config = {
-        method: 'post',
+        method: 'put',
         url: `${API_BASE_URL}/users/${userId}/reject`,
         headers: {
           'Accept': '*/*',
@@ -165,13 +176,22 @@ export const authService = {
     console.log('authService: Starting registration with data:', userData);
     try {
       const requestData = {
-        username: `${userData.firstName} ${userData.lastName}`,
+        username:userData.fullName,
+        fullName: userData.fullName,
+        employeeId:userData.employeeId,
         email: userData.email,
+        phoneNumber: userData.phoneNumber,
+        department: userData.department,
+        designation: userData.designation,
+        region: userData.region,
+        costCenter: userData.costCenter,
+        businessUnit: userData.businessUnit,
+        reportingManagerEmail: userData.reportingManagerEmail,
+        roleName: userData.role,
         password: userData.password,
-        roleName: userData.roleName,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        permissionNames: userData.permissionNames
+        confirmPassword: userData.confirmPassword,
+        permissionNames: userData.managerPermissions,
+        profilePicture: userData.profilePicture,
       };
       console.log('authService: Sending registration request with:', requestData);
       
@@ -259,6 +279,36 @@ export const authService = {
       return {
         success: false,
         message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during token refresh'
+      };
+    }
+  }
+};
+
+// Candidate service
+export const candidateService = {
+  searchCandidates: async (searchString) => {
+    try {
+      const response = await ai_api.post(`/resumes/match-new`, null, {
+        params: { jd: searchString }
+      });
+      const responseData = response.data;
+      if (responseData.success) {
+        return {
+          success: true,
+          data: responseData.data
+        };
+      } else {
+        return {
+          success: false,
+          message: responseData.errors?.[0] || responseData.message || 'Search failed'
+        };
+      }
+    } catch (error) {
+      console.error('Candidate search error:', error);
+      const errorResponse = error.response?.data;
+      return {
+        success: false,
+        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during candidate search'
       };
     }
   }

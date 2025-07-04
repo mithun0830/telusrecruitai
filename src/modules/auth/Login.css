@@ -53,84 +53,9 @@
   justify-content: center;
 }
 
-/* Signup card specific styles */
-.signup-card {
-  composes: card-base;
-  width: 40%;
-  padding: 2rem;
-  margin: 2rem 1rem 2rem 4rem;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-  justify-content: flex-start;
-}
-
-/* Container adjustments */
-.login-page:not(.signup) .login-container {
-  justify-content: flex-start;
-}
-
-.login-page.signup .login-container {
-  justify-content: flex-start;
-}
-
 .login-card-inner {
   max-width: 400px;
   margin: 0 auto;
-}
-
-.permissions-container {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-  margin-bottom: 1rem;
-}
-
-.permissions-container .form-check {
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.permissions-container .form-check:last-child {
-  margin-bottom: 0;
-}
-
-.permissions-container .form-check input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #C4BFD6;
-  border-radius: 4px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  position: relative;
-  margin: 0;
-  margin-right: 10px;
-  padding: 0;
-  transition: all 0.3s ease;
-}
-
-.permissions-container .form-check input[type="checkbox"]:checked {
-  background-color: #2B8000;
-  border-color: #2B8000;
-}
-
-.permissions-container .form-check input[type="checkbox"]:checked::after {
-  content: "✓";
-  position: absolute;
-  color: #FFFFFF;
-  font-size: 14px;
-  font-weight: bold;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.permissions-container .form-check label {
-  font-size: 14px;
-  color: #2A2C2E;
-  cursor: pointer;
 }
 
 .leaves-image {
@@ -148,48 +73,11 @@
   object-fit: cover;
 }
 
-.divider {
-  text-align: center;
-  margin: 1.5rem 0;
-  position: relative;
-}
-
-.divider::before,
-.divider::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 45%;
-  height: 1px;
-  background-color: #D8D8D8;
-}
-
-.divider::before {
-  left: 0;
-}
-
-.divider::after {
-  right: 0;
-}
-
-.divider span {
-  background: #fff;
-  padding: 0 1rem;
-  color: #2A2C2E;
-}
-
-h1 {
+.login-title {
   color: #4B286D;
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 1.5rem;
-}
-
-/* Adjust heading margin and alignment for login and signup cards */
-.login-card h1,
-.signup-card h1 {
-  margin-top: 0;
-  margin-bottom: 2rem;
   text-align: center;
 }
 
@@ -202,7 +90,7 @@ h1 {
 .form-control {
   border: 1px solid #D8D8D8;
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: 8px;
   width: 100%;
 }
 
@@ -222,12 +110,12 @@ h1 {
   right: 10px;
   background: none;
   border: none;
-  color: #2B8000;
+  color: #4B286D;
   padding: 0.5rem;
 }
 
 .password-toggle:hover {
-  color: #1F5C00;
+  color: #371F52;
 }
 
 .forgot-link {
@@ -236,19 +124,19 @@ h1 {
 }
 
 .forgot-link a {
-  color: #2B8000;
+  color: #4B286D;
   text-decoration: none;
   font-size: 0.875rem;
 }
 
 .forgot-link a:hover {
-  color: #1F5C00;
+  color: #371F52;
   text-decoration: underline;
 }
 
 .btn-success {
-  background-color: #2B8000;
-  border-color: #2B8000;
+  background-color: #4B286D;
+  border-color: #4B286D;
   padding: 0.75rem;
   font-weight: 500;
   width: 100%;
@@ -256,25 +144,8 @@ h1 {
 }
 
 .btn-success:hover {
-  background-color: #1F5C00;
-  border-color: #1F5C00;
-}
-
-.btn-outline-success {
-  color: #2B8000;
-  border-color: #2B8000;
-  padding: 0.75rem;
-  font-weight: 500;
-}
-
-.btn-outline-success:hover {
-  background-color: #2B8000;
-  color: #fff;
-}
-
-/* Add more top margin to sign-up button */
-.signup-card .btn-success {
-  margin-top: 1rem;
+  background-color: #371F52;
+  border-color: #371F52;
 }
 
 .footer-links {
@@ -288,11 +159,11 @@ h1 {
 }
 
 .footer-links a {
-  color: #2B8000;
+  color: #4B286D;
   text-decoration: none;
 }
 
 .footer-links a:hover {
-  color: #1F5C00;
+  color: #371F52;
   text-decoration: underline;
 }

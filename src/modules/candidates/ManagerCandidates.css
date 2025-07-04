@@ -613,6 +613,11 @@
   background-color: #5f3e7c;
 }
 
+.btn-action.secondary:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 4px rgba(75, 40, 109, 0.3);
+}
+
 .btn-action.tertiary {
   background-color: transparent;
   border: 2px solid var(--telus-purple);

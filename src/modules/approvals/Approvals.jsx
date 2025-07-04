@@ -24,7 +24,7 @@ const Approvals = () => {
       if (response.success) {
         setApprovals(response.data.map(user => ({
           id: user.id,
-          name: `${user.firstName} ${user.lastName}`,
+          name: user.fullName,
           position: 'Manager', // Assuming all are managers, adjust if needed
           status: 'Pending',
           date: user.createdAt,

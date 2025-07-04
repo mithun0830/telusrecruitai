@@ -1,0 +1,95 @@
+.dashboard-page {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard-header h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.summary-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  border: 1px solid #C4BFD6;
+}
+
+.summary-icon {
+  font-size: 24px;
+  margin-right: 16px;
+  margin-left: 8px;
+  color: #8a63d2;
+}
+
+.summary-details {
+  flex: 1;
+  text-align: left;
+}
+
+.summary-details h3 {
+  font-size: 16px;
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  color: #8a63d2;
+}
+
+.team-performance {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border: 1px solid #C4BFD6;
+  text-align: center;
+}
+
+.team-performance h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.performance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.performance-table th,
+.performance-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.performance-table th {
+  font-weight: bold;
+  color: #666;
+}
+
+.performance-indicator {
+  height: 8px;
+  background-color: #8a63d2;
+  border-radius: 4px;
+}

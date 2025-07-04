@@ -7,67 +7,47 @@ import {
   faChartLine 
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
+import './MngDashboard.css';
 
 const RmgDashboard = () => {
   const { user } = useAuth();
   return (
-    <div className="container-fluid">
-      <h2 className="mb-4">Hello {user?.username}</h2>
-      <section className="mb-4">
-        <div className="row">
-          <div className="col-md-4 mb-3">
-            <div className="card">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <FontAwesomeIcon icon={faUsers} className="text-primary me-3" size="2x" />
-                  <div>
-                    <h5 className="card-title">Active Candidates</h5>
-                    <p className="card-text display-4">25</p>
-                  </div>
-                </div>
-              </div>
+    <div className="dashboard-page">
+      <div className="dashboard-header">
+        <h1>Hello {user?.username}</h1>
+      </div>
+      <div className="dashboard-content">
+        <div className="dashboard-summary">
+          <div className="summary-card">
+            <FontAwesomeIcon icon={faUsers} className="summary-icon" />
+            <div className="summary-details">
+              <h3>Active Candidates</h3>
+              <p className="summary-value">25</p>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <FontAwesomeIcon icon={faBriefcase} className="text-success me-3" size="2x" />
-                  <div>
-                    <h5 className="card-title">Filled Positions</h5>
-                    <p className="card-text display-4">8</p>
-                  </div>
-                </div>
-              </div>
+          <div className="summary-card">
+            <FontAwesomeIcon icon={faBriefcase} className="summary-icon" />
+            <div className="summary-details">
+              <h3>Filled Positions</h3>
+              <p className="summary-value">8</p>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card">
-              <div className="card-body">
-                <div className="d-flex align-items-center">
-                  <FontAwesomeIcon icon={faClipboardCheck} className="text-warning me-3" size="2x" />
-                  <div>
-                    <h5 className="card-title">Interviews Scheduled</h5>
-                    <p className="card-text display-4">12</p>
-                  </div>
-                </div>
-              </div>
+          <div className="summary-card">
+            <FontAwesomeIcon icon={faClipboardCheck} className="summary-icon" />
+            <div className="summary-details">
+              <h3>Interviews Scheduled</h3>
+              <p className="summary-value">12</p>
             </div>
           </div>
         </div>
-      </section>
-
-      <section>
-        <div className="card">
-          <div className="card-body">
-            <div className="d-flex align-items-center mb-3">
-              <FontAwesomeIcon icon={faChartLine} className="text-info me-3" size="2x" />
-              <h5 className="card-title mb-0">Recruitment Progress</h5>
-            </div>
-            <p className="text-muted">Recruitment metrics and progress chart will be displayed here</p>
+        <div className="team-performance">
+          <div className="d-flex align-items-center mb-3">
+            <FontAwesomeIcon icon={faChartLine} className="summary-icon" />
+            <h2>Recruitment Progress</h2>
           </div>
+          <p className="text-muted">Recruitment metrics and progress chart will be displayed here</p>
         </div>
-      </section>
+      </div>
     </div>
   );
 };

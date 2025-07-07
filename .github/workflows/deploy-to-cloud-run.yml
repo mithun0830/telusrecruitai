@@ -23,16 +23,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Google Auth
-      id: auth
-      uses: 'google-github-actions/auth@v1'
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-
     - name: Setup Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
+      uses: 'google-github-actions/setup-gcloud@v0'
       with:
-        install_components: 'beta'
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ env.PROJECT_ID }}
+        export_default_credentials: true
 
     - name: Authorize Docker push
       run: |

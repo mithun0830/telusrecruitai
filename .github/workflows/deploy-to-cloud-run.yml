@@ -31,7 +31,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: 'google-github-actions/auth@v1'
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        workload_identity_provider: 'projects/480868035316/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+        service_account: 'cloud-run-deployer@telus-koodo.iam.gserviceaccount.com'
 
     - name: Authorize Docker push
       run: |

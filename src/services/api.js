@@ -4,6 +4,10 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const NOTIFICATION_BASE_URL = process.env.REACT_APP_NOTIFICATION_BASE_URL;
 const AI_SEARCH_BASE_URL = process.env.REACT_APP_AI_SEARCH_BASE_URL;
 
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('NOTIFICATION_BASE_URL:', NOTIFICATION_BASE_URL);
+console.log('AI_SEARCH_BASE_URL:', AI_SEARCH_BASE_URL);
+
 if (!API_BASE_URL || !NOTIFICATION_BASE_URL || !AI_SEARCH_BASE_URL) {
   throw new Error('Missing required environment variables. Please check your .env file.');
 }

@@ -4,6 +4,16 @@ FROM node:14
 # Set the working directory in the container
 WORKDIR /app
 
+# Define build arguments
+ARG REACT_APP_API_BASE_URL
+ARG REACT_APP_NOTIFICATION_BASE_URL
+ARG REACT_APP_AI_SEARCH_BASE_URL
+
+# Set environment variables
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
+ENV REACT_APP_NOTIFICATION_BASE_URL=$REACT_APP_NOTIFICATION_BASE_URL
+ENV REACT_APP_AI_SEARCH_BASE_URL=$REACT_APP_AI_SEARCH_BASE_URL
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 

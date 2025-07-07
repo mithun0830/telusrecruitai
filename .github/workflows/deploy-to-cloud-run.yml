@@ -39,7 +39,11 @@ jobs:
 
     - name: Build and Push Container
       run: |
-        docker build -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+        docker build \
+          --build-arg REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }} \
+          --build-arg REACT_APP_NOTIFICATION_BASE_URL=${{ secrets.REACT_APP_NOTIFICATION_BASE_URL }} \
+          --build-arg REACT_APP_AI_SEARCH_BASE_URL=${{ secrets.REACT_APP_AI_SEARCH_BASE_URL }} \
+          -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
         docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
     - name: Deploy to Cloud Run

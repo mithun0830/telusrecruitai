@@ -29,13 +29,19 @@ jobs:
         service_account_key: '${{ secrets.GCP_SA_KEY }}'
         export_default_credentials: true
 
+    - name: Configure Docker
+      run: gcloud auth configure-docker
+
     - name: Build Container
       run: |
         docker build \
-          --build-arg REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }} \
-          --build-arg REACT_APP_NOTIFICATION_BASE_URL=${{ secrets.REACT_APP_NOTIFICATION_BASE_URL }} \
-          --build-arg REACT_APP_AI_SEARCH_BASE_URL=${{ secrets.REACT_APP_AI_SEARCH_BASE_URL }} \
+          --build-arg REACT_APP_API_BASE_URL=https://recruitai-authentication-480868035316.us-central1.run.app/api \
+          --build-arg REACT_APP_NOTIFICATION_BASE_URL=http://localhost:8084/api \
+          --build-arg REACT_APP_AI_SEARCH_BASE_URL=https://treko-480868035316.asia-south1.run.app/api \
           -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+
+    - name: Push Container
+      run: docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       run: |
@@ -45,4 +51,4 @@ jobs:
           --region ${{ env.REGION }} \
           --port 3001 \
           --allow-unauthenticated \
-          --set-env-vars="REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }},REACT_APP_NOTIFICATION_BASE_URL=${{ secrets.REACT_APP_NOTIFICATION_BASE_URL }},REACT_APP_AI_SEARCH_BASE_URL=${{ secrets.REACT_APP_AI_SEARCH_BASE_URL }}"
+          --set-env-vars="REACT_APP_API_BASE_URL=https://recruitai-authentication-480868035316.us-central1.run.app/api,REACT_APP_NOTIFICATION_BASE_URL=http://localhost:8084/api,REACT_APP_AI_SEARCH_BASE_URL=https://treko-480868035316.asia-south1.run.app/api"

@@ -9,31 +9,44 @@ env:
   PROJECT_ID: telus-koodo
   SERVICE_NAME: telusrecruitai
   REGION: asia-south1
+  REGISTRY: asia-south1-docker.pkg.dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Google Auth
+      id: auth
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
     - name: Setup Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0.2.1
+      uses: google-github-actions/setup-gcloud@v1
       with:
-        project_id: ${{ env.PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        install_components: 'beta'
 
-    - name: Authenticate Docker
-      run: gcloud auth configure-docker
+    - name: Authorize Docker push
+      run: |
+        gcloud auth configure-docker ${{ env.REGISTRY }}
 
-    - name: Build Docker image
-      run: docker build -t ${{ env.SERVICE_NAME }}:${{ github.sha }} .
+    - name: Build and Push Container
+      run: |
+        docker build -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+        docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy ${{ env.SERVICE_NAME }} \
-          --image ${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
           --platform managed \
           --region ${{ env.REGION }} \
           --port 3001 \

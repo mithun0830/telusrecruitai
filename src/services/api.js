@@ -70,7 +70,15 @@ export const notificationService = {
       return response.data;
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      return { success: false, data: { count: 0, notifications: [] } };
+      return {
+        success: false,
+        data: { count: 0, notifications: [] },
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred while fetching notifications. Please try again later.'
+        },
+        timestamp: Date.now()
+      };
     }
   },
   markAsRead: async (notificationId) => {
@@ -79,7 +87,15 @@ export const notificationService = {
       return response.data;
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      return { success: false };
+      return {
+        success: false,
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred while marking notification as read. Please try again later.'
+        },
+        timestamp: Date.now()
+      };
     }
   }
 };
@@ -91,87 +107,59 @@ export const userService = {
       const token = getAccessToken();
       console.log('Access Token:', token);
 
-      const config = {
-        method: 'GET',
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        }
-      };
+      const response = await api.get('/users/pending-approvals');
+      const responseData = response.data;
 
-      const response = await fetch(`${API_BASE_URL}/users/pending-approvals`, config);
-      const data = await response.json();
-
-      if (data.success && Array.isArray(data.data)) {
-        return {
-          success: true,
-          data: data.data
-        };
+      if (responseData.success && Array.isArray(responseData.data)) {
+        return responseData;
       }
-      return {
-        success: false,
-        error: 'Invalid response format'
-      };
+      return responseData;
     } catch (error) {
       console.error('Error fetching pending approvals:', error);
-      const errorResponse = error.response?.data;
       return {
         success: false,
-        error: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred while fetching pending approvals'
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred while fetching approvals. Please try again later.'
+        },
+        timestamp: Date.now()
       };
     }
   },
 
   approveUser: async (userId) => {
     try {
-      const token = getAccessToken();
-      const config = {
-        method: 'put',
-        url: `${API_BASE_URL}/users/${userId}/approve`,
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      
-      const response = await axios(config);
+      const response = await api.put(`/users/${userId}/approve`);
       return response.data;
     } catch (error) {
       console.error('Error approving user:', error);
-      throw error;
+      return {
+        success: false,
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred while approving user. Please try again later.'
+        },
+        timestamp: Date.now()
+      };
     }
   },
 
   rejectUser: async (userId, reason) => {
     try {
-      const token = getAccessToken();
-      const config = {
-        method: 'put',
-        url: `${API_BASE_URL}/users/${userId}/reject`,
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        },
-        data: { reason }
-      };
-      
-      const response = await axios(config);
-      const responseData = response.data;
-      
-      if (responseData.success) {
-        return responseData;
-      } else {
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Rejection failed'
-        };
-      }
+      const response = await api.put(`/users/${userId}/reject`, { reason });
+      return response.data;
     } catch (error) {
       console.error('Error rejecting user:', error);
-      const errorResponse = error.response?.data;
       return {
         success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred while rejecting user'
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred while rejecting user. Please try again later.'
+        },
+        timestamp: Date.now()
       };
     }
   }
@@ -210,24 +198,22 @@ export const authService = {
       
       if (responseData.success) {
         console.log('authService: Registration successful');
-        return {
-          success: true,
-          data: responseData.data
-        };
+        return responseData;
       } else {
-        console.log('authService: Registration failed with message:', responseData.message);
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Registration failed'
-        };
+        console.log('authService: Registration failed with message:', responseData.errors?.message);
+        return responseData;
       }
     } catch (error) {
       console.error('authService: Registration error:', error);
       console.log('authService: Error response:', error.response);
-      const errorResponse = error.response?.data;
       return {
         success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during registration'
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred during registration. Please try again later.'
+        },
+        timestamp: Date.now()
       };
     }
   },
@@ -242,17 +228,18 @@ export const authService = {
         setRefreshToken(responseData.data.refreshToken);
         return responseData;
       } else {
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Login failed'
-        };
+        return responseData;
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorResponse = error.response?.data;
       return {
         success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during login'
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred during login. Please try again later.'
+        },
+        timestamp: Date.now()
       };
     }
   },
@@ -268,24 +255,22 @@ export const authService = {
       const responseData = response.data;
       if (responseData.success) {
         setAccessToken(responseData.data.token);
-        return {
-          success: true,
-          data: responseData.data
-        };
+        return responseData;
       } else {
         removeTokens();
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Token refresh failed'
-        };
+        return responseData;
       }
     } catch (error) {
       console.error('Token refresh error:', error);
-      const errorResponse = error.response?.data;
       removeTokens();
       return {
         success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during token refresh'
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred during token refresh. Please try again later.'
+        },
+        timestamp: Date.now()
       };
     }
   }
@@ -300,23 +285,17 @@ export const candidateService = {
       });
       const responseData = response.data;
       console.log('Candidate search response data:', responseData);
-      if (responseData) {
-        return {
-          success: true,
-          data: responseData
-        };
-      } else {
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Search failed'
-        };
-      }
+      return responseData;
     } catch (error) {
       console.error('Candidate search error:', error);
-      const errorResponse = error.response?.data;
       return {
         success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during candidate search'
+        data: null,
+        statusCode: error.response?.status || 500,
+        errors: {
+          message: error.response?.data?.errors?.message || 'An unexpected error occurred during candidate search. Please try again later.'
+        },
+        timestamp: Date.now()
       };
     }
   }

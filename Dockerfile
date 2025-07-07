@@ -1,5 +1,5 @@
 # Use an official Node runtime as the parent image
-# Trigger new build - 2025-07-07 - Testing workload identity federation
+# Trigger new build - 2025-07-07 - Testing updated permissions
 FROM node:14
 
 # Set the working directory in the container

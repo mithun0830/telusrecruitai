@@ -61,7 +61,10 @@ const Login = () => {
       </header>
       <div className="login-container">
         <div className="login-card card-base">
-        <h1 className="login-title">Log in to TELUS RecruitAI</h1>
+        <div className="login-header-image">
+          <img src={telusLogo} alt="TELUS" className="header-logo" />
+          <span className="digital-text">Recurit AI</span>
+        </div>
         
         {error && (
           <Alert variant="danger" className="mb-4">

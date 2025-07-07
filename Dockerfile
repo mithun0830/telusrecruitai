@@ -1,5 +1,5 @@
 # Use an official Node runtime as the parent image
-# Trigger new build - 2025-07-07 - Testing comprehensive permissions
+# Trigger new build - 2025-07-07 - Testing explicit repository permissions
 FROM node:14
 
 # Set the working directory in the container

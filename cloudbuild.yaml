@@ -1,0 +1,18 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '--build-arg', 'REACT_APP_API_BASE_URL=https://recruitai-authentication-480868035316.us-central1.run.app/api',
+      '--build-arg', 'REACT_APP_NOTIFICATION_BASE_URL=http://localhost:8084/api',
+      '--build-arg', 'REACT_APP_AI_SEARCH_BASE_URL=https://treko-480868035316.asia-south1.run.app/api',
+      '-t', 'asia-south1-docker.pkg.dev/telus-koodo/telusrecruitai/frontend:latest',
+      '.'
+    ]
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'asia-south1-docker.pkg.dev/telus-koodo/telusrecruitai/frontend:latest']
+
+images:
+  - 'asia-south1-docker.pkg.dev/telus-koodo/telusrecruitai/frontend:latest'

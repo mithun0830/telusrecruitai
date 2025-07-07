@@ -24,19 +24,18 @@ jobs:
         project_id: ${{ env.PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Configure Docker
+    - name: Authenticate Docker
       run: gcloud auth configure-docker
 
-    - name: Build and push Docker image
-      run: |
-        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
-        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+    - name: Build Docker image
+      run: docker build -t ${{ env.SERVICE_NAME }}:${{ github.sha }} .
 
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy ${{ env.SERVICE_NAME }} \
-          --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          --image ${{ env.SERVICE_NAME }}:${{ github.sha }} \
           --platform managed \
           --region ${{ env.REGION }} \
           --port 3001 \
-          --allow-unauthenticated
+          --allow-unauthenticated \
+          --set-env-vars="REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }},REACT_APP_NOTIFICATION_BASE_URL=${{ secrets.REACT_APP_NOTIFICATION_BASE_URL }},REACT_APP_AI_SEARCH_BASE_URL=${{ secrets.REACT_APP_AI_SEARCH_BASE_URL }}"

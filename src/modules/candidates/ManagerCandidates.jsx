@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
 import { candidateService } from '../../services/api';
+
+const isFilterSelected = (filters) => {
+  return Boolean(
+    filters.aiSearch.trim() || 
+    filters.jobTitle || 
+    (filters.hardSkills.length > 0 && filters.hardSkills[0]) || 
+    (filters.yearsOfExperience.length > 0 && filters.yearsOfExperience[0]) || 
+    filters.score.trim()
+  );
+};
 
 const loaderStyle = {
   width: '50px',
@@ -33,63 +43,185 @@ const ManagerCandidates = () => {
       to { transform: rotate(360deg); }
     }
   `;
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [expandedCandidate, setExpandedCandidate] = useState(null);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
+  const [isResumeExpanded, setIsResumeExpanded] = useState(false);
+  const filtersRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filtersRef.current && !filtersRef.current.contains(event.target)) {
+        setIsFiltersExpanded(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleAISearchClick = () => {
+    setIsFiltersExpanded(true);
+    setErrorMessage('');
+  };
   const {
     filters,
     selectedCandidates,
-    openFilter,
-    jobOptions,
-    filteredCandidates,
-    toggleFilter,
-    handleFilterChange,
-    handleSelectAll,
+    handleFilterChange: originalHandleFilterChange,
     handleSelectCandidate,
-    handleSearchChange,
-    handleAIToggle,
-    handleFilterCollapse,
-    handleLocationTagClick,
-    collapsedFilters,
-    aiEnabled,
   } = useManagerCandidates();
 
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [selectedJobTitle, setSelectedJobTitle] = React.useState("");
-  const [selectedHardSkills, setSelectedHardSkills] = React.useState([]);
-  const [sliderValues, setSliderValues] = React.useState({
-    experience: "4",
-    score: "50"
-  });
-
-  const handleStaticRangeChange = (type) => (event) => {
-    setSliderValues(prev => ({
-      ...prev,
-      [type]: event.target.value
-    }));
+  const handleFilterChange = (filterName, value) => {
+    setErrorMessage('');
+    originalHandleFilterChange(filterName, value);
   };
 
-  const handleSkillClick = (skill) => {
-    setSelectedHardSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
+  const handleMoreOptionsClick = (candidateId) => {
+    setActiveDropdown(activeDropdown === candidateId ? null : candidateId);
+  };
+
+  const handleViewClick = (candidate) => {
+    setExpandedCandidate(expandedCandidate?.resume.id === candidate.resume.id ? null : candidate);
+    setActiveDropdown(null);
+  };
+
+  const renderExpandedView = (candidate) => {
+    if (!candidate) return null;
+
+    const toggleResumeExpand = () => {
+      setIsResumeExpanded(!isResumeExpanded);
+    };
+
+    return (
+      <div className="expanded-view">
+        <div className="expanded-content">
+          <div className="content-section">
+            <h4>Executive Summary</h4>
+            <p>{candidate.analysis?.executiveSummary || 'No executive summary available.'}</p>
+          </div>
+
+          {candidate.analysis?.keyStrengths?.length > 0 && (
+            <div className="content-section">
+              <h4>Key Strengths</h4>
+              <div className="strengths-grid">
+                {candidate.analysis.keyStrengths.map((strength, index) => (
+                  <div key={index} className="strength-card">
+                    <h5>{strength.strength}</h5>
+                    <p>{strength.evidence}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {candidate.analysis?.improvementAreas?.length > 0 && (
+            <div className="content-section">
+              <h4>Areas for Improvement</h4>
+              <div className="improvement-grid">
+                {candidate.analysis.improvementAreas.map((area, index) => (
+                  <div key={index} className="improvement-card">
+                    <h5>{area.gap}</h5>
+                    <p>{area.suggestion}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {candidate.analysis?.categoryScores && Object.keys(candidate.analysis.categoryScores).length > 0 && (
+            <div className="content-section">
+              <h4>Category Scores</h4>
+              <div className="scores-grid">
+                {Object.entries(candidate.analysis.categoryScores).map(([category, score]) => (
+                  <div key={category} className="score-card">
+                    <div className="score-label">{category.replace(/([A-Z])/g, ' $1').trim()}</div>
+                    <div className="score-bar">
+                      <div className="score-fill" style={{ width: `${score}%` }}></div>
+                    </div>
+                    <div className="score-number">{score}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {candidate.analysis?.recommendation && (
+            <div className="content-section">
+              <h4>Recommendation</h4>
+              <div className="recommendation-card">
+                <div className="recommendation-type">
+                  <span className={`recommendation-sign ${candidate.analysis.recommendation.type.toLowerCase().replace(/\s+/g, '-')}`}></span>
+                  {candidate.analysis.recommendation.type}
+                </div>
+                <p>{candidate.analysis.recommendation.reason}</p>
+              </div>
+            </div>
+          )}
+
+          {candidate.resume?.fullText && (
+            <div className="content-section resume-full-text">
+              <div className="resume-header" onClick={toggleResumeExpand}>
+                <h4>Resume</h4>
+                <span className={`arrow ${isResumeExpanded ? 'expanded' : ''}`}>▼</span>
+              </div>
+              {isResumeExpanded && (
+                <div className="resume-text-card">
+                  <div className="resume-body">
+                    {candidate.resume.fullText.split('\n\n').map((section, index) => {
+                      const lines = section.split('\n').map(line => line.trim()).filter(line => line !== '');
+                      const title = lines[0];
+                      const content = lines.slice(1);
+                      return (
+                        <div key={index} className="resume-section">
+                          <h3>{title}</h3>
+                          {content.map((line, lineIndex) => (
+                            <p key={lineIndex}>{line}</p>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     );
   };
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSearchClick = async () => {
+  const handleSearchClick = async (e) => {
+    // Prevent any event bubbling
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (!isFilterSelected(filters)) {
+      setErrorMessage('Please select at least one filter before searching.');
+      return;
+    }
+
+    setErrorMessage('');
     setIsLoading(true);
-    const searchString = `${filters.aiSearch || ''}, Job Title: ${selectedJobTitle || ''}, Hard Skills: ${selectedHardSkills.join(', ')}, Years of Experience: ${sliderValues.experience} and Score: ${sliderValues.score}`;
+    const searchString = `${filters.aiSearch || ''}, Job Title: ${filters.jobTitle || ''}, Hard Skill: ${filters.hardSkills || ''}, Years of Experience: ${filters.yearsOfExperience} and Score: ${filters.score}`;
+    console.log("searchString", searchString)
     try {
       const response = await candidateService.searchCandidates(searchString);
       if (response.success) {
         setSearchResults(response.data);
       } else {
         console.error('Search failed:', response.message);
-        // You might want to show an error message to the user here
+        setErrorMessage('Search failed. Please try again.');
       }
     } catch (error) {
       console.error('Error during search:', error);
-      // You might want to show an error message to the user here
+      setErrorMessage('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -102,131 +234,107 @@ const ManagerCandidates = () => {
         <h1>Manager Candidates</h1>
       </div>
       <div className="candidates-content">
-        <div className="filters-section">
-          <div className="filters-header">
-            <h2>Filters</h2>
-            <div className="filters-actions">
-              <button className="filter-action-btn" title="Add Filter">+</button>
-              <button className="filter-action-btn" title="Reset Filters">⟳</button>
+        <div className="filters-section horizontal" ref={filtersRef}>
+          <div className={`filters-container ${isFiltersExpanded ? 'expanded' : ''}`}>
+            <div className="ai-search-container">
+              <input
+                type="text"
+                placeholder="Search Candidate: E.g., Data Engineers with 4+ years..."
+                className="ai-search-input"
+                value={filters.aiSearch}
+                onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
+                onFocus={() => {
+                  handleAISearchClick();
+                  setErrorMessage('');
+                }}
+                onClick={handleAISearchClick}
+              />
             </div>
-          </div>
-          <div className={`filter-group ${collapsedFilters.includes('ai') ? 'collapsed' : ''}`}>
-            <h3 onClick={() => handleFilterCollapse('ai')}>AI Search</h3>
-            <div className="filter-group-content">
-              <div className="ai-search-container">
-                <input
-                  type="text"
-                  placeholder="E.g., Data Engineers with 4+ years..."
-                  className="ai-search-input"
-                  value={filters.aiSearch}
-                  onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-          <div className={`filter-group ${collapsedFilters.includes('jobTitle') ? 'collapsed' : ''}`}>
-            <h3 onClick={() => handleFilterCollapse('jobTitle')}>Job Title</h3>
-            <div className="filter-group-content">
-              <select 
-                className="filter-select"
-                value={selectedJobTitle}
-                onChange={(e) => setSelectedJobTitle(e.target.value)}
+            <div className="filter-divider"></div>
+            {isFiltersExpanded && (
+              <>
+                <div className="filter-group">
+                  <div className="filter-group-content">
+                    <select
+                      className="filter-select"
+                      value={filters.jobTitle}
+                      onChange={(e) => handleFilterChange('jobTitle', e.target.value)}
+                      onFocus={() => setErrorMessage('')}
+                    >
+                      <option value="">Select Job Title</option>
+                      {['React Developer', 'DevOps Engineer', 'Mobile App Developer', 'HR Manager', 'SQL Developer', 'Data Engineer', 'GenAI Engineer'].map((job) => (
+                        <option key={job} value={job}>{job}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="filter-divider"></div>
+                <div className="filter-group">
+                  <div className="filter-group-content">
+                    <select
+                      className="filter-select"
+                      value={filters.hardSkills[0] || ''}
+                      onChange={(e) => handleFilterChange('hardSkills', [e.target.value])}
+                      onFocus={() => setErrorMessage('')}
+                    >
+                      <option value="">Select Hard Skill</option>
+                      {['GitHub', 'AWS', 'Rust', 'Flutter', 'SQL', 'Hadoop', 'GenAI', 'RedShift'].map((skill) => (
+                        <option key={skill} value={skill}>{skill}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="filter-divider"></div>
+                <div className="filter-group">
+                  <div className="filter-group-content">
+                    <select
+                      className="filter-select"
+                      value={filters.yearsOfExperience[0] || ''}
+                      onChange={(e) => handleFilterChange('yearsOfExperience', [e.target.value])}
+                      onFocus={() => setErrorMessage('')}
+                    >
+                      <option value="">Select Experience</option>
+                      {['0-2 years', '2-4 years', '4-6 years', '6-8 years', '8-10 years', '10-12 years', '12-14 years', '14-16 years', '16-18 years', '18-20 years'].map((skill) => (
+                        <option key={skill} value={skill}>{skill}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="filter-divider"></div>
+                <div className="filter-group">
+                  <div className="filter-group-content">
+                    <input
+                      type="text"
+                      placeholder="Enter Score"
+                      className="filter-input"
+                      value={filters.score}
+                      onChange={(e) => handleFilterChange('score', e.target.value)}
+                      onFocus={() => setErrorMessage('')}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            <div className="filter-group search-button-container">
+              <button
+                className="search-button"
+                onClick={handleSearchClick}
+                aria-label="Search candidates"
               >
-                <option value="">Select Job Title</option>
-                <option value="software-engineer">Software Engineer</option>
-                <option value="data-scientist">Data Scientist</option>
-                <option value="product-manager">Product Manager</option>
-                <option value="ux-designer">UX Designer</option>
-              </select>
+                <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
             </div>
           </div>
-          <div className={`filter-group ${collapsedFilters.includes('hardSkills') ? 'collapsed' : ''}`}>
-            <h3 onClick={() => handleFilterCollapse('hardSkills')}>Hard Skills</h3>
-            <div className="filter-group-content">
-              <div className="skills-tags">
-                {['GitHub', 'AWS', 'Rust', 'Flutter', 'SQL', 'Hadoop', 'GenAI', 'RedShift'].map((skill) => (
-                  <span 
-                    key={skill} 
-                    className={`skill-tag ${selectedHardSkills.includes(skill) ? 'active' : ''}`}
-                    onClick={() => handleSkillClick(skill)}
-                    style={{ 
-                      cursor: 'pointer',
-                      backgroundColor: selectedHardSkills.includes(skill) ? '#4B286D' : undefined,
-                      color: selectedHardSkills.includes(skill) ? 'white' : undefined
-                    }}
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className={`filter-group ${collapsedFilters.includes('experience') ? 'collapsed' : ''}`}>
-            <h3 onClick={() => handleFilterCollapse('experience')}>Years of Experience</h3>
-            <div className="filter-group-content">
-              <div className="range-values">
-                <span>{sliderValues.experience} yr.</span>
-                <span>20 yrs.</span>
-              </div>
-              <input 
-                type="range" 
-                className="range-slider" 
-                min="0" 
-                max="20" 
-                defaultValue="4"
-                onChange={handleStaticRangeChange('experience')}
-                value={sliderValues.experience}
-              />
-            </div>
-          </div>
-          <div className={`filter-group ${collapsedFilters.includes('score') ? 'collapsed' : ''}`}>
-            <h3 onClick={() => handleFilterCollapse('score')}>Score</h3>
-            <div className="filter-group-content">
-              <div className="range-values">
-                <span>{sliderValues.score}</span>
-                <span>100</span>
-              </div>
-              <input 
-                type="range" 
-                className="range-slider" 
-                min="0" 
-                max="100" 
-                defaultValue="50"
-                onChange={handleStaticRangeChange('score')}
-                value={sliderValues.score}
-              />
-            </div>
-          </div>
-          <div className="filter-search-button">
-            <button 
-              className="btn-action secondary"
-              onClick={handleSearchClick}
-              disabled={isLoading}
-              style={{ 
-                width: '100%',
-                transition: 'transform 0.1s ease',
-                ':active': {
-                  transform: 'scale(0.95)'
-                }
-              }}
-              onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
-              onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              Search Candidates
-            </button>
-          </div>
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
         <div className="candidates-list">
           <div className="candidates-list-header">
             <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
             <div className="header-actions">
-              <input 
-                type="text" 
-                placeholder="Search candidates" 
-                className="search-input" 
-                onChange={handleSearchChange}
-              />
             </div>
           </div>
           <div className="candidates-table-container">
@@ -235,7 +343,7 @@ const ManagerCandidates = () => {
                 <div style={loaderStyle}></div>
                 <span style={loaderTextStyle}>Searching for candidates...</span>
               </div>
-            ) : (
+            ) : searchResults.length > 0 ? (
               <table className="candidates-table">
                 <thead>
                   <tr>
@@ -249,55 +357,73 @@ const ManagerCandidates = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {searchResults.length > 0 ? (
-                    searchResults.map((candidate) => (
-                  <tr key={candidate.resume.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedCandidates.includes(candidate.resume.id)}
-                        onChange={() => handleSelectCandidate(candidate.resume.id)}
-                      />
-                    </td>
-                    <td>
-                      <div className="candidate-name">
-                        <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
-                        <span>{candidate.resume.name}</span>
-                      </div>
-                    </td>
-                    <td><div className="candidate-name"><span>{candidate.resume.phoneNumber}</span></div></td>
-                    <td><div className="candidate-name"><span>{candidate.analysis.keyStrengths[0].strength}</span></div></td>
-                    <td style={{textAlign: 'center'}}><div className="candidate-name"><span>{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</span></div></td>
-                    <td style={{textAlign: 'center'}}>
-                      <span className="score-cell">{candidate.score}</span>
-                    </td>
-                    <td style={{textAlign: 'center'}}>
-                      <button className="btn-more" title="More options">⋮</button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '40px 20px' }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      gap: '10px',
-                      color: '#4B286D'
-                    }}>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#4B286D" strokeWidth="2"/>
-                        <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#4B286D" strokeWidth="2" strokeLinecap="round"/>
-                        <path d="M19 4L23 8M23 4L19 8" stroke="#4B286D" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                      No Candidate found matching your search criteria.
-                    </div>
-                  </td>
-                </tr>
-                  )}
+                  {searchResults.map((candidate) => (
+                    <React.Fragment key={candidate.resume.id}>
+                      <tr className={expandedCandidate?.resume.id === candidate.resume.id ? 'expanded' : ''}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedCandidates.includes(candidate.resume.id)}
+                            onChange={() => handleSelectCandidate(candidate.resume.id)}
+                          />
+                        </td>
+                        <td>
+                          <div className="candidate-name">
+                            <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
+                            <span>{candidate.resume.name}</span>
+                          </div>
+                        </td>
+                        <td><div className="candidate-name"><span>{candidate.resume.phoneNumber}</span></div></td>
+                        <td>
+                          <div className="candidate-name">
+                            <span>
+                              {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}
+                            </span>
+                          </div>
+                        </td>
+                        <td>{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="score-cell">{candidate.score}</span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div className="dropdown">
+                            <button
+                              className="btn-more"
+                              title="More options"
+                              onClick={() => handleMoreOptionsClick(candidate.resume.id)}
+                            >
+                              ⋮
+                            </button>
+                            {activeDropdown === candidate.resume.id && (
+                              <div className="dropdown-content">
+                                <button onClick={() => handleViewClick(candidate)}>Detailed View</button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedCandidate?.resume.id === candidate.resume.id && (
+                        <tr className="expanded-row">
+                          <td colSpan="7">
+                            {renderExpandedView(expandedCandidate)}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
                 </tbody>
               </table>
+            ) : (
+              <div className="no-candidates-message">
+                <div>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#4B286D" strokeWidth="2" />
+                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#4B286D" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M19 4L23 8M23 4L19 8" stroke="#4B286D" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <div>No Candidate found matching your search criteria.</div>
+                </div>
+              </div>
             )}
           </div>
           <div className="candidates-footer">
@@ -305,10 +431,8 @@ const ManagerCandidates = () => {
               Selected: <span className="selected-count">{selectedCandidates.length}</span>
             </div>
             <div className="footer-actions">
-              <button className="btn-action primary">Contact Selected</button>
-              <button className="btn-action secondary">Move To Project</button>
-              <button className="btn-action secondary">Compare</button>
-              <button className="btn-action tertiary">Export CSV</button>
+              <button className="btn-action secondary">Shortlist</button>
+              <button className="btn-action tertiary">Compare</button>
             </div>
           </div>
         </div>

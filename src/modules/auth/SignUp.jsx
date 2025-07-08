@@ -225,7 +225,10 @@ const handleSubmit = async (e) => {
       </header>
       <div className="signup-container">
         <div className="signup-card">
-          <h1>TELUS RecruitAI Registration</h1>
+          <div className="signup-header-image">
+            <img src={telusLogo} alt="TELUS" className="header-logo" />
+            <span className="recruit-ai-text">Recruit AI</span>
+          </div>
           
           {error && (
             <Alert variant="danger" className="mb-4">

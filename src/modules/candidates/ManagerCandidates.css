@@ -59,6 +59,7 @@
   margin-bottom: 16px;
   max-height: none;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .search-button {
@@ -102,7 +103,7 @@
 }
 
 .filters-container {
- display: flex;
+  display: flex;
   align-items: center;
   gap: 4px;
   padding: 12px;
@@ -111,6 +112,8 @@
   border: 1px solid var(--telus-light-purple);
   box-shadow: 0 2px 8px rgba(75, 40, 109, 0.1);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .filters-container:hover {
@@ -120,15 +123,19 @@
 .filter-group {
   flex: 1;
   min-width: 0;
-  display: none;
+  display: flex;
   align-items: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transform: translateX(-20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
 }
 
 .filter-group.search-button-container {
   opacity: 1;
-  display: flex;
+  transform: translateX(0);
+  pointer-events: all;
+  margin-left: auto;
 }
 
 .ai-search-container {
@@ -189,40 +196,59 @@
   opacity: 0;
   align-self: center;
   margin: 0 2px;
-  display: none;
-  transition: opacity 0.3s ease;
+  display: block;
+  transform: scaleY(0);
+  transition: all 0.3s ease;
 }
 
-.filters-container.expanded .filter-group,
-.filters-container.expanded .filter-divider {
-  display: flex;
+.filters-container.expanded .filter-group {
   opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+.filters-container.expanded .filter-divider {
+  opacity: 0.6;
+  transform: scaleY(1);
+}
+
+.filters-container.expanded {
+  padding: 16px;
+  border-color: var(--telus-purple);
+}
+
+.ai-search-input:focus {
+  outline: none;
+  background-color: var(--telus-white);
+}
+
+.filters-container:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(75, 40, 109, 0.15);
 }
 
 .filters-container.expanded {
   padding: 16px;
 }
 
-.filters-section.horizontal {
-  height: auto;
-  overflow: visible;
+.error-message {
+  color: #FF4D4D;
+  font-size: 14px;
+  margin: 0;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
-@media screen and (max-width: 1200px) {
-  .filters-container {
-    flex-wrap: wrap;
-  }
+.error-message::before {
+  content: "⚠";
+  font-size: 16px;
+}
 
-  .filter-group,
-  .filter-group.main-search {
-    flex: 1 0 calc(50% - 8px);
-  }
-
-  .filter-group.search-button-container,
-  .filter-group.toggle-filters-container {
-    flex: 0 0 auto;
-    margin-top: 8px;
-  }
+.filters-section {
+  margin-bottom: 0;
 }
 
 @media screen and (max-width: 768px) {
@@ -265,10 +291,13 @@
 }
 
 .ai-search-input::placeholder,
-.filter-select::placeholder,
 .filter-input::placeholder {
   color: var(--telus-dark-gray);
-  opacity: 0.7;
+  opacity: 1;
+}
+
+.filter-select {
+  color: var(--telus-dark-gray);
 }
 
 .ai-search-input:focus,
@@ -794,12 +823,36 @@
   padding: 15px;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
 .recommendation-type {
   font-weight: bold;
   color: var(--telus-purple);
   margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.recommendation-sign {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.recommendation-sign.match {
+  background-color: var(--telus-green);
+}
+
+.recommendation-sign.potential {
+  background-color: #FFB800;
+}
+
+.recommendation-sign.not-recommended {
+  background-color: #FF4D4D;
 }
 
 .resume-full-text {
@@ -817,9 +870,36 @@
 }
 
 .resume-header {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--telus-purple);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resume-header:hover {
+  opacity: 0.8;
+}
+
+.resume-header h4 {
+  margin: 0;
+}
+
+.arrow {
+  color: var(--telus-purple);
+  font-size: 12px;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.resume-text-card {
+  margin-top: 15px;
+  transition: all 0.3s ease;
 }
 
 .resume-header h2 {

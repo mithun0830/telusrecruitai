@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
 import { candidateService } from '../../services/api';
+
+const isFilterSelected = (filters) => {
+  return Boolean(
+    filters.aiSearch.trim() || 
+    filters.jobTitle || 
+    (filters.hardSkills.length > 0 && filters.hardSkills[0]) || 
+    (filters.yearsOfExperience.length > 0 && filters.yearsOfExperience[0]) || 
+    filters.score.trim()
+  );
+};
 
 const loaderStyle = {
   width: '50px',
@@ -35,12 +45,38 @@ const ManagerCandidates = () => {
   `;
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
+  const [isResumeExpanded, setIsResumeExpanded] = useState(false);
+  const filtersRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filtersRef.current && !filtersRef.current.contains(event.target)) {
+        setIsFiltersExpanded(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleAISearchClick = () => {
+    setIsFiltersExpanded(true);
+    setErrorMessage('');
+  };
   const {
     filters,
     selectedCandidates,
-    handleFilterChange,
+    handleFilterChange: originalHandleFilterChange,
     handleSelectCandidate,
   } = useManagerCandidates();
+
+  const handleFilterChange = (filterName, value) => {
+    setErrorMessage('');
+    originalHandleFilterChange(filterName, value);
+  };
 
   const handleMoreOptionsClick = (candidateId) => {
     setActiveDropdown(activeDropdown === candidateId ? null : candidateId);
@@ -54,88 +90,110 @@ const ManagerCandidates = () => {
   const renderExpandedView = (candidate) => {
     if (!candidate) return null;
 
+    const toggleResumeExpand = () => {
+      setIsResumeExpanded(!isResumeExpanded);
+    };
+
     return (
       <div className="expanded-view">
         <div className="expanded-content">
           <div className="content-section">
             <h4>Executive Summary</h4>
-            <p>{candidate.analysis.executiveSummary}</p>
+            <p>{candidate.analysis?.executiveSummary || 'No executive summary available.'}</p>
           </div>
 
-          <div className="content-section">
-            <h4>Key Strengths</h4>
-            <div className="strengths-grid">
-              {candidate.analysis.keyStrengths.map((strength, index) => (
-                <div key={index} className="strength-card">
-                  <h5>{strength.strength}</h5>
-                  <p>{strength.evidence}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="content-section">
-            <h4>Areas for Improvement</h4>
-            <div className="improvement-grid">
-              {candidate.analysis.improvementAreas.map((area, index) => (
-                <div key={index} className="improvement-card">
-                  <h5>{area.gap}</h5>
-                  <p>{area.suggestion}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="content-section">
-            <h4>Category Scores</h4>
-            <div className="scores-grid">
-              {Object.entries(candidate.analysis.categoryScores).map(([category, score]) => (
-                <div key={category} className="score-card">
-                  <div className="score-label">{category.replace(/([A-Z])/g, ' $1').trim()}</div>
-                  <div className="score-bar">
-                    <div className="score-fill" style={{ width: `${score}%` }}></div>
+          {candidate.analysis?.keyStrengths?.length > 0 && (
+            <div className="content-section">
+              <h4>Key Strengths</h4>
+              <div className="strengths-grid">
+                {candidate.analysis.keyStrengths.map((strength, index) => (
+                  <div key={index} className="strength-card">
+                    <h5>{strength.strength}</h5>
+                    <p>{strength.evidence}</p>
                   </div>
-                  <div className="score-number">{score}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="content-section">
-            <h4>Recommendation</h4>
-            <div className="recommendation-card">
-              <div className="recommendation-type">{candidate.analysis.recommendation.type}</div>
-              <p>{candidate.analysis.recommendation.reason}</p>
-            </div>
-          </div>
-
-          <div className="content-section resume-full-text">
-            <h4>Resume</h4>
-            <div className="resume-text-card">
-              <div className="resume-body">
-                {candidate.resume.fullText.split('\n\n').map((section, index) => {
-                  const lines = section.split('\n').map(line => line.trim()).filter(line => line !== '');
-                  const title = lines[0];
-                  const content = lines.slice(1);
-                  return (
-                    <div key={index} className="resume-section">
-                      <h3>{title}</h3>
-                      {content.map((line, lineIndex) => (
-                        <p key={lineIndex}>{line}</p>
-                      ))}
-                    </div>
-                  );
-                })}
+                ))}
               </div>
             </div>
-          </div>
+          )}
+
+          {candidate.analysis?.improvementAreas?.length > 0 && (
+            <div className="content-section">
+              <h4>Areas for Improvement</h4>
+              <div className="improvement-grid">
+                {candidate.analysis.improvementAreas.map((area, index) => (
+                  <div key={index} className="improvement-card">
+                    <h5>{area.gap}</h5>
+                    <p>{area.suggestion}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {candidate.analysis?.categoryScores && Object.keys(candidate.analysis.categoryScores).length > 0 && (
+            <div className="content-section">
+              <h4>Category Scores</h4>
+              <div className="scores-grid">
+                {Object.entries(candidate.analysis.categoryScores).map(([category, score]) => (
+                  <div key={category} className="score-card">
+                    <div className="score-label">{category.replace(/([A-Z])/g, ' $1').trim()}</div>
+                    <div className="score-bar">
+                      <div className="score-fill" style={{ width: `${score}%` }}></div>
+                    </div>
+                    <div className="score-number">{score}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {candidate.analysis?.recommendation && (
+            <div className="content-section">
+              <h4>Recommendation</h4>
+              <div className="recommendation-card">
+                <div className="recommendation-type">
+                  <span className={`recommendation-sign ${candidate.analysis.recommendation.type.toLowerCase().replace(/\s+/g, '-')}`}></span>
+                  {candidate.analysis.recommendation.type}
+                </div>
+                <p>{candidate.analysis.recommendation.reason}</p>
+              </div>
+            </div>
+          )}
+
+          {candidate.resume?.fullText && (
+            <div className="content-section resume-full-text">
+              <div className="resume-header" onClick={toggleResumeExpand}>
+                <h4>Resume</h4>
+                <span className={`arrow ${isResumeExpanded ? 'expanded' : ''}`}>▼</span>
+              </div>
+              {isResumeExpanded && (
+                <div className="resume-text-card">
+                  <div className="resume-body">
+                    {candidate.resume.fullText.split('\n\n').map((section, index) => {
+                      const lines = section.split('\n').map(line => line.trim()).filter(line => line !== '');
+                      const title = lines[0];
+                      const content = lines.slice(1);
+                      return (
+                        <div key={index} className="resume-section">
+                          <h3>{title}</h3>
+                          {content.map((line, lineIndex) => (
+                            <p key={lineIndex}>{line}</p>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
   };
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchError, setSearchError] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSearchClick = async (e) => {
     // Prevent any event bubbling
@@ -144,22 +202,12 @@ const ManagerCandidates = () => {
       e.stopPropagation();
     }
 
-    // Clear any previous error
-    setSearchError("");
-
-    // Check if any filter is selected
-    const isAnyFilterSelected =
-      filters.aiSearch ||
-      filters.jobTitle ||
-      filters.hardSkills ||
-      filters.yearsOfExperience !== "" ||
-      filters.score !== "";
-
-    if (!isAnyFilterSelected) {
-      setSearchError("Please select at least one filter criteria before searching.");
+    if (!isFilterSelected(filters)) {
+      setErrorMessage('Please select at least one filter before searching.');
       return;
     }
 
+    setErrorMessage('');
     setIsLoading(true);
     const searchString = `${filters.aiSearch || ''}, Job Title: ${filters.jobTitle || ''}, Hard Skill: ${filters.hardSkills || ''}, Years of Experience: ${filters.yearsOfExperience} and Score: ${filters.score}`;
     console.log("searchString", searchString)
@@ -169,9 +217,11 @@ const ManagerCandidates = () => {
         setSearchResults(response.data);
       } else {
         console.error('Search failed:', response.message);
+        setErrorMessage('Search failed. Please try again.');
       }
     } catch (error) {
       console.error('Error during search:', error);
+      setErrorMessage('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -184,8 +234,8 @@ const ManagerCandidates = () => {
         <h1>Manager Candidates</h1>
       </div>
       <div className="candidates-content">
-        <div className="filters-section horizontal">
-          <div className="filters-container" onClick={(e) => e.currentTarget.classList.add('expanded')}>
+        <div className="filters-section horizontal" ref={filtersRef}>
+          <div className={`filters-container ${isFiltersExpanded ? 'expanded' : ''}`}>
             <div className="ai-search-container">
               <input
                 type="text"
@@ -193,11 +243,15 @@ const ManagerCandidates = () => {
                 className="ai-search-input"
                 value={filters.aiSearch}
                 onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
-                onFocus={(e) => e.currentTarget.closest('.filters-container').classList.add('expanded')}
+                onFocus={() => {
+                  handleAISearchClick();
+                  setErrorMessage('');
+                }}
+                onClick={handleAISearchClick}
               />
             </div>
             <div className="filter-divider"></div>
-            {(
+            {isFiltersExpanded && (
               <>
                 <div className="filter-group">
                   <div className="filter-group-content">
@@ -205,6 +259,7 @@ const ManagerCandidates = () => {
                       className="filter-select"
                       value={filters.jobTitle}
                       onChange={(e) => handleFilterChange('jobTitle', e.target.value)}
+                      onFocus={() => setErrorMessage('')}
                     >
                       <option value="">Select Job Title</option>
                       {['React Developer', 'DevOps Engineer', 'Mobile App Developer', 'HR Manager', 'SQL Developer', 'Data Engineer', 'GenAI Engineer'].map((job) => (
@@ -220,6 +275,7 @@ const ManagerCandidates = () => {
                       className="filter-select"
                       value={filters.hardSkills[0] || ''}
                       onChange={(e) => handleFilterChange('hardSkills', [e.target.value])}
+                      onFocus={() => setErrorMessage('')}
                     >
                       <option value="">Select Hard Skill</option>
                       {['GitHub', 'AWS', 'Rust', 'Flutter', 'SQL', 'Hadoop', 'GenAI', 'RedShift'].map((skill) => (
@@ -235,6 +291,7 @@ const ManagerCandidates = () => {
                       className="filter-select"
                       value={filters.yearsOfExperience[0] || ''}
                       onChange={(e) => handleFilterChange('yearsOfExperience', [e.target.value])}
+                      onFocus={() => setErrorMessage('')}
                     >
                       <option value="">Select Experience</option>
                       {['0-2 years', '2-4 years', '4-6 years', '6-8 years', '8-10 years', '10-12 years', '12-14 years', '14-16 years', '16-18 years', '18-20 years'].map((skill) => (
@@ -248,10 +305,11 @@ const ManagerCandidates = () => {
                   <div className="filter-group-content">
                     <input
                       type="text"
-                      placeholder="Enter score"
+                      placeholder="Enter Score"
                       className="filter-input"
                       value={filters.score}
                       onChange={(e) => handleFilterChange('score', e.target.value)}
+                      onFocus={() => setErrorMessage('')}
                     />
                   </div>
                 </div>
@@ -271,6 +329,7 @@ const ManagerCandidates = () => {
               </button>
             </div>
           </div>
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
         <div className="candidates-list">
           <div className="candidates-list-header">
@@ -278,11 +337,6 @@ const ManagerCandidates = () => {
             <div className="header-actions">
             </div>
           </div>
-          {searchError && (
-            <div className="error-message" style={{ color: '#dc3545', padding: '10px', marginBottom: '10px', textAlign: 'center' }}>
-              {searchError}
-            </div>
-          )}
           <div className="candidates-table-container">
             {isLoading ? (
               <div style={loaderContainerStyle}>
@@ -320,7 +374,13 @@ const ManagerCandidates = () => {
                           </div>
                         </td>
                         <td><div className="candidate-name"><span>{candidate.resume.phoneNumber}</span></div></td>
-                        <td><div className="candidate-name"><span>{candidate.analysis.keyStrengths[0].strength}</span></div></td>
+                        <td>
+                          <div className="candidate-name">
+                            <span>
+                              {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}
+                            </span>
+                          </div>
+                        </td>
                         <td>{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</td>
                         <td style={{ textAlign: 'center' }}>
                           <span className="score-cell">{candidate.score}</span>

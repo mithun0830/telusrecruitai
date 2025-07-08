@@ -20,8 +20,8 @@ const notificationBadgeStyle = {
   position: 'absolute',
   top: '-5px',
   right: '-5px',
-  backgroundColor: '#ffffff',
-  color: '#4B286D',
+  backgroundColor: '#ff0000',
+  color: '#ffffff',
   borderRadius: '50%',
   padding: '0.2rem 0.4rem',
   fontSize: '0.6rem',
@@ -75,8 +75,10 @@ const Layout = ({ children }) => {
       try {
         const result = await notificationService.getUnreadNotifications(user?.id);
         if (result.success) {
-          setNotifications(result.data.notifications.slice(0, 5));
-          setNotificationCount(result.data.count);
+          const notifications = result.data?.notifications || [];
+          const count = result.data?.count || 0;
+          setNotifications(notifications.slice(0, 5));
+          setNotificationCount(count);
           return;
         }
       } catch (error) {

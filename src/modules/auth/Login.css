@@ -2,193 +2,144 @@
   min-height: 100vh;
   background: #fff;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-header {
-  width: 100%;
-  background: #fff;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #D8D8D8;
-  display: flex;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-}
-
-.telus-logo {
-  height: 32px;
-  width: auto;
+  justify-content: center;
 }
 
 .login-container {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
   width: 100%;
-  min-height: calc(100vh - 80px); /* Adjust based on header height */
+  height: 100vh;
+  align-items: stretch;
+}
+
+.login-image {
+  width: 50%;
+  background: #FFE8D2;
   position: relative;
   overflow: hidden;
 }
 
-/* Base card styles */
-.card-base {
-  background: #fff;
-  z-index: 2;
-  border: 1px solid #D8D8D8;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-/* Login card specific styles */
-.login-card {
-  composes: card-base;
-  min-width: 450px;
-  max-width: 600px;
-  width: 90%;
-  padding: 4rem;
-  margin: 2rem 0 2rem 4rem;
-  justify-content: center;
-  position: relative;
-  z-index: 2;
-}
-
-.login-card-inner {
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.leaves-image {
-  width: 55%;
+.login-image::before {
+  content: '';
   position: absolute;
   top: 0;
-  right: -5%;
+  left: 0;
+  right: 0;
   bottom: 0;
-  overflow: hidden;
-  z-index: 1;
+  background-image: url('../../assets/login.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
 }
 
-.leaves-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: left center;
-  transform: scale(1.1);
+.login-form {
+  width: 50%;
+  padding: 6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: none;
 }
 
-.login-header-image {
+.login-header {
+  margin-bottom: 3.5rem;
+  text-align: center;
+  flex-direction: column;
   display: flex;
   align-items: center;
+}
+
+.telus-logo {
+  display: flex;
   justify-content: center;
   margin-bottom: 2rem;
-  gap: 1rem;
-}
-
-.header-logo {
-  height: 45px;
-  width: auto;
-}
-
-.digital-text {
-  color: #4B286D;
-  font-size: 2.25rem;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1;
-  padding-bottom: 7px;
-  align-self: flex-end;
-}
-
-.form-label {
+  font-size: 1.5rem;
   font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #2A2C2E;
+  color: #15372C;
+}
+
+.telus-logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+.login-title {
+  font-size: 3.5rem;
+  color: #1F2937;
+  margin-bottom: 3rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-family: 'Untitled Serif', serif;
+  font-weight: 400;
+  text-align: center;
 }
 
 .form-control {
-  border: 1px solid #D8D8D8;
-  padding: 0.75rem;
-  border-radius: 8px;
-  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  height: auto;
 }
 
 .form-control:focus {
-  border-color: #4B286D;
-  box-shadow: 0 0 0 0.2rem rgba(75, 40, 109, 0.25);
+  border-color: #73c2b0;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
 }
 
-.password-input {
-  position: relative;
+.form-control::placeholder {
+  color: #9CA3AF;
+}
+
+.login-form .btn-primary {
+  background-color: #059669 !important;
+  border-color: #059669 !important;
+  padding: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  height: 48px;
+  margin-top: 0.5rem;
+  color: white;
+  text-align: center;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
-.password-toggle {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #4B286D;
-  padding: 0.5rem;
+.login-form .btn-primary:hover {
+  background-color: #047857 !important;
+  border-color: #047857 !important;
 }
 
-.password-toggle:hover {
-  color: #371F52;
-}
-
-.forgot-link {
-  display: block;
-  margin-top: 0.5rem;
-}
-
-.forgot-link a {
-  color: #4B286D;
+.text-muted {
+  color: #4B5563;
   text-decoration: none;
   font-size: 0.875rem;
+  margin-top: 2rem;
+  display: inline-block;
 }
 
-.forgot-link a:hover {
-  color: #371F52;
-  text-decoration: underline;
+.text-muted:hover {
+  color: #1F2937; 
 }
 
-.btn-success {
-  background-color: #4B286D;
-  border-color: #4B286D;
-  padding: 0.75rem;
-  font-weight: 500;
-  width: 100%;
-  margin: 0;
-}
-
-.btn-success:hover {
-  background-color: #371F52;
-  border-color: #371F52;
-}
-
-.footer-links {
-  text-align: center;
-  margin-top: 1.5rem;
-  width: 100%;
-}
-
-.footer-links p {
-  margin: 0.5rem 0;
-  color: #2A2C2E;
-}
-
-.footer-links a {
-  color: #4B286D;
+.text-muted span {
+  color: #059669;
   text-decoration: none;
 }
 
-.footer-links a:hover {
-  color: #371F52;
+.text-muted span:hover {
   text-decoration: underline;
+}
+
+.form-control:disabled {
+  background-color: #f9fafb;
+  color: #1F2937;
+  cursor: pointer;
 }

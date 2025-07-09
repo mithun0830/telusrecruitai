@@ -20,8 +20,13 @@ const notificationBadgeStyle = {
   position: 'absolute',
   top: '-5px',
   right: '-5px',
+<<<<<<< HEAD
   backgroundColor: '#ff0000',
   color: '#ffffff',
+=======
+  backgroundColor: '#ffffff',
+  color: '#059669',
+>>>>>>> origin/origin/feature/telus_rmg_portal
   borderRadius: '50%',
   padding: '0.2rem 0.4rem',
   fontSize: '0.6rem',

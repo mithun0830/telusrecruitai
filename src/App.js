@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './modules/auth/Login';
 import SignUp from './modules/auth/SignUp';
+import Landing from './modules/landing/Landing';
 import RmgDashboard from './modules/dashboard/RmgDashboard';
 import MngDashboard from './modules/dashboard/MngDashboard';
 import Approvals from './modules/approvals/Approvals';
@@ -17,6 +18,7 @@ function App() {
     <Router>
       <AuthProvider>
       <Routes>
+        <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/rmg_dashboard" element={

@@ -16,7 +16,7 @@ const isFilterSelected = (filters) => {
 const loaderStyle = {
   width: '50px',
   height: '50px',
-  border: '3px solid #4B286D',
+  border: '3px solid #059669',
   borderTopColor: 'transparent',
   borderRadius: '50%',
   animation: 'spin 1s linear infinite',
@@ -32,7 +32,7 @@ const loaderContainerStyle = {
 };
 
 const loaderTextStyle = {
-  color: '#4B286D',
+  color: '#059669',
   fontSize: '18px',
 };
 
@@ -417,9 +417,9 @@ const ManagerCandidates = () => {
               <div className="no-candidates-message">
                 <div>
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#4B286D" strokeWidth="2" />
-                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#4B286D" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M19 4L23 8M23 4L19 8" stroke="#4B286D" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
+                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                   <div>No Candidate found matching your search criteria.</div>
                 </div>

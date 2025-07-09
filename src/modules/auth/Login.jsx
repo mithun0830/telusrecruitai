@@ -1,128 +1,151 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Form, Button, Alert } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import telusLogo from '../../assets/telus_logo.svg';
-import leavesImage from '../../assets/leaves.png';
-import '../../styles/variables.css';
+import loginImg from '../../assets/login.png'
 import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
+const [error, setError] = useState('');
+const [isLoading, setIsLoading] = useState(false);
+const [step, setStep] = useState('email');
+const navigate = useNavigate();
+
+const clearError = () => setError('');
+const { login } = useAuth();
+const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
 
-    try {
-      const result = await login(email, password);
-      if (result.success) {
-        const user = result.data.user;
-        const role = user.role;
-
-        let from = location.state?.from?.pathname;
-        if (!from) {
-          if (role === 'Manager') {
-            from = '/mng_dashboard';
-          } else if (role === 'RMG') {
-            from = '/rmg_dashboard';
-          } else {
-            console.error('Unexpected role:', role);
-            setError('Invalid user role');
-            return;
-          }
-        }
-        navigate(from, { replace: true });
+    if (step === 'email') {
+      // Validate email format
+      if (email && email.includes('@')) {
+        setStep('password');
       } else {
-        setError(result.message || 'Invalid email or password');
+        setError('Please enter a valid email address');
       }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      // Handle password submission
+      if (password) {
+        console.log('Form submitted', { step, email, password }); // Debug log
+
+        setError('');
+        setIsLoading(true);
+
+        try {
+          const result = await login(email, password);
+          if (result.success) {
+            const user = result.data.user;
+            const role = user.role;
+
+            let from = location.state?.from?.pathname;
+            if (!from) {
+              if (role === 'Manager') {
+                from = '/mng_dashboard';
+              } else if (role === 'RMG') {
+                from = '/rmg_dashboard';
+              } else {
+                console.error('Unexpected role:', role);
+                setError('Invalid user role');
+                return;
+              }
+            }
+            navigate(from, { replace: true });
+          } else {
+            setError(result.message || 'Invalid email or password');
+          }
+        } catch (err) {
+          console.error('Login error:', err);
+          setError(err.message || 'An error occurred. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setError('Please enter your password');
+      }
     }
   };
 
   return (
     <div className="login-page">
-      <header className="login-header">
-        <img src={telusLogo} alt="TELUS logo" className="telus-logo" />
-      </header>
       <div className="login-container">
-        <div className="login-card card-base">
-        <div className="login-header-image">
-          <img src={telusLogo} alt="TELUS" className="header-logo" />
-          <span className="digital-text">Recurit AI</span>
-        </div>
-        
-        {error && (
-          <Alert variant="danger" className="mb-4">
-            {error}
-          </Alert>
-        )}
-
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
-            <Form.Label>Email ID</Form.Label>
-            <Form.Control
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <div className="password-input">
-              <Form.Control
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <Button 
-                variant="link"
-                onClick={() => setShowPassword(!showPassword)}
-                className="password-toggle"
-              >
-                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-              </Button>
+        {/* <div className="login-image"></div> */}
+         <div className="login-image">
+              <img src={loginImg} alt="TELUS Recruiting" />
             </div>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Text className="forgot-link">
-              <Link to="/forgot-password">Forgot your password?</Link>
-            </Form.Text>
-          </Form.Group>
-
-          <Button
-            variant="success"
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Logging in...' : 'Log in'}
-          </Button>
-
-          <div className="footer-links">
-            <p>New to TelusRecruitAI? <Link to="/signup">Register now</Link></p>
+        <div className="login-form">
+          <div className="login-header">
+            <div className="telus-logo">
+              <img src={telusLogo} alt="TELUS Recruiting" />
+            </div>
+            <h1 className="login-title">Better hiring,<br />all-together.</h1>
           </div>
-        </Form>
-        </div>
-        <div className="leaves-image">
-          <img src={leavesImage} alt="Leaves" />
+
+          {error && (
+            <Alert variant="danger" className="mb-4">
+              {error}
+            </Alert>
+          )}
+
+          <Form onSubmit={handleSubmit}>
+            {step === 'email' ? (
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onClick={clearError}
+                  required
+                />
+              </Form.Group>
+            ) : (
+              <>
+                <Form.Group className="mb-3">
+                <Form.Control
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onClick={() => {
+                    setStep('email');
+                    clearError();
+                  }}
+                  style={{ cursor: 'pointer' }}
+                />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Control
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onClick={clearError}
+                    required
+                    autoFocus
+                  />
+                </Form.Group>
+              </>
+            )}
+
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={isLoading}
+              className="w-100"
+            >
+              {isLoading ? 'Logging in...' : (step === 'email' ? 'Next' : 'Sign in')}
+            </Button>
+
+            <div className="text-center">
+              <Link to="/signup" className="text-muted">
+                New to TelusRecruitAI? <span>Register now</span>
+              </Link>
+            </div>
+          </Form>
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@ const notificationBadgeStyle = {
   top: '-5px',
   right: '-5px',
   backgroundColor: '#ffffff',
-  color: '#4B286D',
+  color: '#059669',
   borderRadius: '50%',
   padding: '0.2rem 0.4rem',
   fontSize: '0.6rem',

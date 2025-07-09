@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:1998/api";
-const NOTIFICATION_BASE_URL = "http://localhost:8000/api";
-const AI_SEARCH_BASE_URL = "https://treko-480868035316.asia-south1.run.app/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const NOTIFICATION_BASE_URL = process.env.REACT_APP_NOTIFICATION_BASE_URL;
+const AI_SEARCH_BASE_URL = process.env.REACT_APP_AI_SEARCH_BASE_URL;
 
 if (!API_BASE_URL || !NOTIFICATION_BASE_URL || !AI_SEARCH_BASE_URL) {
   throw new Error('Missing required environment variables. Please check your .env file.');

@@ -27,6 +27,81 @@ const notificationApi = axios.create({
   },
 });
 
+// Error handler function
+const handleAxiosError = (error) => {
+  if (!error.response) {
+    // Network error
+    return Promise.reject({
+      success: false,
+      message: 'Network error. Please check your internet connection.'
+    });
+  }
+
+  console.error('API Error:', error.response);
+  const { data } = error.response;
+    console.error('data:', data);
+const { statusCode } = data;
+
+  console.error('statusCode Error:', statusCode);
+
+  // Prioritize the error message from response.errors.message
+  const errorMessage = data?.errors?.message || data?.message || data?.errors?.[0] || 'An error occurred';
+
+  switch (statusCode) {
+    case 400:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Invalid request'
+      });
+    case 401:
+      // Clear tokens on authentication error
+      removeTokens();
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Your session has expired. Please login again.'
+      });
+    case 403:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'You do not have permission to perform this action'
+      });
+    case 404:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Resource not found'
+      });
+    case 409:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Dulplicate entry or conflict'
+    });
+    case 422:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Validation error'
+      });
+    case 500:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Internal server error. Please try again later.'
+      });
+    default:
+      return Promise.reject({
+        success: false,
+        message: errorMessage || 'Something went wrong. Please try again.'
+      });
+  }
+};
+
+// Response success handler
+const handleAxiosSuccess = (response) => {
+  return {
+    success: true,
+    data: response.data?.data || response.data,
+    message: response.data?.message
+  };
+};
+
 
 
 // Token management
@@ -43,211 +118,94 @@ const removeTokens = () => {
   localStorage.removeItem('refreshToken');
 };
 
-// Request interceptor for adding token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = getAccessToken();
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Request interceptors for adding token to requests
+const addTokenInterceptor = (axiosInstance) => {
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      const token = getAccessToken();
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+};
+
+// Response interceptors for handling responses and errors
+const addResponseInterceptor = (axiosInstance) => {
+  axiosInstance.interceptors.response.use(
+    (response) => handleAxiosSuccess(response),
+    (error) => handleAxiosError(error)
+  );
+};
+
+// Add interceptors to all axios instances
+addTokenInterceptor(api);
+addTokenInterceptor(ai_api);
+addTokenInterceptor(notificationApi);
+
+addResponseInterceptor(api);
+addResponseInterceptor(ai_api);
+addResponseInterceptor(notificationApi);
 
 // Notification service
 export const notificationService = {
   getUnreadNotifications: async (userId) => {
-    try {
-      const response = await notificationApi.get(`/notifications/unread/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      return { success: false, data: { count: 0, notifications: [] } };
-    }
+    return await notificationApi.get(`/notifications/unread/${userId}`);
   },
   markAsRead: async (notificationId) => {
-    try {
-      const response = await notificationApi.post(`/notifications/${notificationId}/mark-as-read`);
-      return response.data;
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      return { success: false };
-    }
+    return await notificationApi.post(`/notifications/${notificationId}/mark-as-read`);
   }
 };
 
 // User service
 export const userService = {
   getPendingApprovals: async () => {
-    try {
-      const token = getAccessToken();
-      console.log('Access Token:', token);
-
-      const config = {
-        method: 'GET',
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-
-      const response = await fetch(`${API_BASE_URL}/users/pending-approvals`, config);
-      const data = await response.json();
-
-      if (data.success && Array.isArray(data.data)) {
-        return {
-          success: true,
-          data: data.data
-        };
-      }
-      return {
-        success: false,
-        error: 'Invalid response format'
-      };
-    } catch (error) {
-      console.error('Error fetching pending approvals:', error);
-      const errorResponse = error.response?.data;
-      return {
-        success: false,
-        error: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred while fetching pending approvals'
-      };
-    }
+    return await api.get('/users/pending-approvals');
   },
 
   approveUser: async (userId) => {
-    try {
-      const token = getAccessToken();
-      const config = {
-        method: 'put',
-        url: `${API_BASE_URL}/users/${userId}/approve`,
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        }
-      };
-      
-      const response = await axios(config);
-      return response.data;
-    } catch (error) {
-      console.error('Error approving user:', error);
-      throw error;
-    }
+    return await api.put(`/users/${userId}/approve`);
   },
 
   rejectUser: async (userId, reason) => {
-    try {
-      const token = getAccessToken();
-      const config = {
-        method: 'put',
-        url: `${API_BASE_URL}/users/${userId}/reject`,
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        },
-        data: { reason }
-      };
-      
-      const response = await axios(config);
-      const responseData = response.data;
-      
-      if (responseData.success) {
-        return responseData;
-      } else {
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Rejection failed'
-        };
-      }
-    } catch (error) {
-      console.error('Error rejecting user:', error);
-      const errorResponse = error.response?.data;
-      return {
-        success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred while rejecting user'
-      };
-    }
+    return await api.put(`/users/${userId}/reject`, { reason });
   }
 };
 
 // Auth service
 export const authService = {
   register: async (userData) => {
-    console.log('authService: Starting registration with data:', userData);
-    try {
-      const requestData = {
-        username:userData.fullName,
-        fullName: userData.fullName,
-        employeeId:userData.employeeId,
-        email: userData.email,
-        phoneNumber: userData.phoneNumber,
-        department: userData.department,
-        designation: userData.designation,
-        region: userData.region,
-        costCenter: userData.costCenter,
-        businessUnit: userData.businessUnit,
-        reportingManagerEmail: userData.reportingManagerEmail,
-        roleName: userData.role,
-        password: userData.password,
-        confirmPassword: userData.confirmPassword,
-        permissionNames: userData.managerPermissions,
-        profilePicture: userData.profilePicture,
-      };
-      console.log('authService: Sending registration request with:', requestData);
-      
-      const response = await api.post('/auth/register', requestData);
-      console.log('authService: Received registration response:', response);
-      
-      const responseData = response.data;
-      console.log('authService: Parsed response data:', responseData);
-      
-      if (responseData.success) {
-        console.log('authService: Registration successful');
-        return {
-          success: true,
-          data: responseData.data
-        };
-      } else {
-        console.log('authService: Registration failed with message:', responseData.message);
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Registration failed'
-        };
-      }
-    } catch (error) {
-      console.error('authService: Registration error:', error);
-      console.log('authService: Error response:', error.response);
-      const errorResponse = error.response?.data;
-      return {
-        success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during registration'
-      };
-    }
+    const requestData = {
+      username: userData.fullName,
+      fullName: userData.fullName,
+      employeeId: userData.employeeId,
+      email: userData.email,
+      phoneNumber: userData.phoneNumber,
+      department: userData.department,
+      designation: userData.designation,
+      region: userData.region,
+      costCenter: userData.costCenter,
+      businessUnit: userData.businessUnit,
+      reportingManagerEmail: userData.reportingManagerEmail,
+      roleName: userData.role,
+      password: userData.password,
+      confirmPassword: userData.confirmPassword,
+      permissionNames: userData.managerPermissions,
+      profilePicture: userData.profilePicture,
+    };
+    
+    return await api.post('/auth/register', requestData);
   },
 
   login: async (email, password) => {
-    try {
-      const loginResponse = await api.post('/auth/login', { email, password });
-      const responseData = loginResponse.data;
-      console.log('Login response data:', responseData);
-      if (responseData.success) {
-        localStorage.setItem('token', responseData.data.token);
-        setRefreshToken(responseData.data.refreshToken);
-        return responseData;
-      } else {
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Login failed'
-        };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      const errorResponse = error.response?.data;
-      return {
-        success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during login'
-      };
+    const response = await api.post('/auth/login', { email, password });
+    if (response.success) {
+      setAccessToken(response.data.token);
+      setRefreshToken(response.data.refreshToken);
     }
+    return response;
   },
 
   logout: () => {
@@ -258,28 +216,15 @@ export const authService = {
     try {
       const refreshToken = getRefreshToken();
       const response = await api.post('/auth/refresh-token', { refreshToken });
-      const responseData = response.data;
-      if (responseData.success) {
-        setAccessToken(responseData.data.token);
-        return {
-          success: true,
-          data: responseData.data
-        };
+      if (response.success) {
+        setAccessToken(response.data.token);
       } else {
         removeTokens();
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Token refresh failed'
-        };
       }
+      return response;
     } catch (error) {
-      console.error('Token refresh error:', error);
-      const errorResponse = error.response?.data;
       removeTokens();
-      return {
-        success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during token refresh'
-      };
+      throw error;
     }
   }
 };
@@ -287,31 +232,9 @@ export const authService = {
 // Candidate service
 export const candidateService = {
   searchCandidates: async (searchString) => {
-    try {
-      const response = await ai_api.post(`/resumes/match-new`, null, {
-        params: { jd: searchString }
-      });
-      const responseData = response.data;
-      console.log('Candidate search response data:', responseData);
-      if (responseData) {
-        return {
-          success: true,
-          data: responseData
-        };
-      } else {
-        return {
-          success: false,
-          message: responseData.errors?.[0] || responseData.message || 'Search failed'
-        };
-      }
-    } catch (error) {
-      console.error('Candidate search error:', error);
-      const errorResponse = error.response?.data;
-      return {
-        success: false,
-        message: errorResponse?.errors?.[0] || errorResponse?.message || error.message || 'An error occurred during candidate search'
-      };
-    }
+    return await ai_api.post(`/resumes/match-new`, null, {
+      params: { jd: searchString }
+    });
   }
 };
 

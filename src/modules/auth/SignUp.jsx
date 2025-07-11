@@ -25,12 +25,13 @@ const SignUp = () => {
     rmgPermissions: [],
     profilePicture: null
   });
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const navigate = useNavigate();
-  const { register } = useAuth();
+const [error, setError] = useState('');
+const [success, setSuccess] = useState('');
+const [isLoading, setIsLoading] = useState(false);
+const [passwordError, setPasswordError] = useState('');
+const [confirmPasswordError, setConfirmPasswordError] = useState('');
+const navigate = useNavigate();
+const { register } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,6 +84,7 @@ const SignUp = () => {
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
+  setSuccess('');
 
   // Check for password validation errors
   if (passwordError || confirmPasswordError) {
@@ -92,24 +94,36 @@ const handleSubmit = async (e) => {
 
   setIsLoading(true);
 
-  console.log('Submitting form data:', JSON.stringify(formData));
-
   try {
-    console.log('Calling register function');
     const result = await register(formData);
-    console.log('Register function result:', result);
 
     if (result.success) {
-      console.log('Registration successful, navigating to login');
-      navigate('/login', { state: { message: 'Registration successful. Please log in.' } });
+      setSuccess('Registration successful. Your account is under approval.');
+      // Clear the form data
+      setFormData({
+        fullName: '',
+        employeeId: '',
+        email: '',
+        phoneNumber: '',
+        department: '',
+        designation: '',
+        region: '',
+        costCenter: '',
+        businessUnit: '',
+        reportingManagerEmail: '',
+        role: '',
+        password: '',
+        confirmPassword: '',
+        managerPermissions: [],
+        rmgPermissions: [],
+        profilePicture: null
+      });
     } else {
-      console.log('Registration failed:', result.message);
       setError(result.message || 'Registration failed. Please try again.');
     }
   } catch (err) {
     console.error('Registration error:', err);
     if (err.response && err.response.data) {
-      console.log('Error response data:', err.response.data);
       setError(err.response.data.message || 'An error occurred during registration. Please try again.');
     } else {
       setError('An error occurred during registration. Please try again.');
@@ -228,6 +242,11 @@ const handleSubmit = async (e) => {
           {error && (
             <Alert variant="danger" className="mb-4">
               {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert variant="success" className="mb-4">
+              {success}
             </Alert>
           )}
           <Form onSubmit={handleSubmit}>

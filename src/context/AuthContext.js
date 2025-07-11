@@ -43,7 +43,7 @@ const register = async (formData) => {
     return result;
   } catch (error) {
     console.error('AuthContext: Registration error:', error);
-    throw error;
+    return error;
   }
 };
 

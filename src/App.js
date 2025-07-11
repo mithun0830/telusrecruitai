@@ -41,7 +41,8 @@ function App() {
             <ManagerCandidates />
           </Layout>
         } />
-        <Route path="/" element={
+        <Route path="/" element={<Navigate to="/landing" replace />} />
+        <Route path="/dashboard" element={
           <ProtectedRoute>
             {({ user }) => (
               <Navigate 

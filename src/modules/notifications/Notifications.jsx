@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -16,17 +16,18 @@ const Notifications = () => {
   const [error, setError] = useState(null);
   const { user } = useAuth();
 
+  // Debounce search term
+  const debouncedSearch = useMemo(
+    () => debounce((value) => setDebouncedSearchTerm(value), 300),
+    []
+  );
+
   useEffect(() => {
-    const debouncedSearch = debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, 300);
-
     debouncedSearch(searchTerm);
-
     return () => {
       debouncedSearch.cancel();
     };
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
 
   const fetchNotifications = async () => {
     try {
@@ -34,14 +35,12 @@ const Notifications = () => {
       const result = await notificationService.getUnreadNotifications(user?.id);
       if (result.success) {
         setNotifications(result.data.notifications);
-        setLoading(false);
+        setError(null);
       } else {
         setError('Failed to fetch notifications');
-        setLoading(false);
       }
     } catch (err) {
       setError('An error occurred while fetching notifications');
-      setLoading(false);
       console.error(err);
     } finally {
       setLoading(false);
@@ -58,7 +57,6 @@ const Notifications = () => {
     try {
       const result = await notificationService.markAsRead(notificationId);
       if (result.success) {
-        // Refresh the notifications list
         fetchNotifications();
       } else {
         setError('Failed to mark notification as read');
@@ -69,20 +67,22 @@ const Notifications = () => {
     }
   };
 
-  const filteredNotifications = notifications.filter(notification => {
-      if (!debouncedSearchTerm) return true;
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      const matchesSearch = 
+  const filteredNotifications = useMemo(() => {
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    return notifications.filter(notification => {
+      const matchesSearch =
+        !debouncedSearchTerm ||
         (notification.message && notification.message.toLowerCase().includes(searchLower));
       const matchesType = selectedType === 'all' || notification.type === selectedType;
       return matchesSearch && matchesType;
     });
+  }, [debouncedSearchTerm, selectedType, notifications]);
 
   const highlightMatch = (text, search) => {
     if (!search || !text) return text;
     const textStr = String(text);
     const parts = textStr.split(new RegExp(`(${search})`, 'gi'));
-    return parts.map((part, index) => 
+    return parts.map((part, index) =>
       part.toLowerCase() === search.toLowerCase() ? <mark key={index}>{part}</mark> : part
     );
   };
@@ -97,6 +97,7 @@ const Notifications = () => {
               type="text"
               className="search-input"
               placeholder="Search by message or ID..."
+              aria-label="Search Notifications"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -134,16 +135,23 @@ const Notifications = () => {
                     <th style={{ width: '45%' }}>Date</th>
                   </tr>
                 </thead>
-                <tbody className="unread">
+                <tbody>
                   {filteredNotifications.map((notification) => (
                     <tr
                       key={notification.id}
+                      tabIndex={0}
+                      className="unread"
+                      title={notification.message}
                       onClick={() => handleNotificationClick(notification.id)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleNotificationClick(notification.id)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <td style={{ width: '10%' }}>{notification.id}</td>
-                      <td style={{ width: '45%' }}>{highlightMatch(notification.message, debouncedSearchTerm)}</td>
-                      <td style={{ width: '45%' }}>{new Date(notification.created_at).toLocaleString()}</td>
+                      <td>{notification.id}</td>
+                      <td>{highlightMatch(notification.message, debouncedSearchTerm)}</td>
+                      <td>{new Intl.DateTimeFormat('en-IN', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      }).format(new Date(notification.created_at))}</td>
                     </tr>
                   ))}
                 </tbody>

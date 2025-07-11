@@ -74,10 +74,21 @@
 .col-auto .nav-link {
   padding: 0.75rem 0.5rem;
   text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.col-auto .nav-link > div {
+  justify-content: center;
+  width: 100%;
 }
 
 .col-auto .nav-link span {
   display: none;
+}
+
+.col-auto .nav-link .me-2 {
+  margin-right: 0 !important;
 }
 
 /* Custom transition for sidebar */

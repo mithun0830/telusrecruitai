@@ -8,6 +8,8 @@ import MngDashboard from './modules/dashboard/MngDashboard';
 import Approvals from './modules/approvals/Approvals';
 import RecruitPool from './modules/recruits/RecruitPool';
 import ManagerCandidates from './modules/candidates/ManagerCandidates';
+import Notifications from './modules/notifications/Notifications';
+import UserManagement from './modules/user-management/UserManagement';
 import Layout from './modules/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -40,6 +42,16 @@ function App() {
           <Layout>
             <ManagerCandidates />
           </Layout>
+        } />
+        <Route path="/notifications" element={
+          <Layout>
+            <Notifications />
+          </Layout>
+        } />
+        <Route path="/user-management" element={
+          <ProtectedRoute allowedRoles={['RMG']}>
+            <Layout><UserManagement /></Layout>
+          </ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to="/landing" replace />} />
         <Route path="/dashboard" element={

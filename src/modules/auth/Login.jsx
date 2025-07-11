@@ -9,14 +9,14 @@ import './Login.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-const [error, setError] = useState('');
-const [isLoading, setIsLoading] = useState(false);
-const [step, setStep] = useState('email');
-const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState('email');
+  const navigate = useNavigate();
 
-const clearError = () => setError('');
-const { login } = useAuth();
-const location = useLocation();
+  const clearError = () => setError('');
+  const { login } = useAuth();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,16 +43,14 @@ const location = useLocation();
             const role = user.role;
 
             let from = location.state?.from?.pathname;
-            if (!from) {
-              if (role === 'Manager') {
-                from = '/mng_dashboard';
-              } else if (role === 'RMG') {
-                from = '/rmg_dashboard';
-              } else {
-                console.error('Unexpected role:', role);
-                setError('Invalid user role');
-                return;
-              }
+            if (role === 'Manager') {
+              from = '/mng_dashboard';
+            } else if (role === 'RMG') {
+              from = '/rmg_dashboard';
+            } else {
+              console.error('Unexpected role:', role);
+              setError('Invalid user role');
+              return;
             }
             navigate(from, { replace: true });
           } else {
@@ -74,9 +72,9 @@ const location = useLocation();
     <div className="login-page">
       <div className="login-container">
         {/* <div className="login-image"></div> */}
-         <div className="login-image">
-              <img src={loginImg} alt="TELUS Recruiting" />
-            </div>
+        <div className="login-image">
+          <img src={loginImg} alt="TELUS Recruiting" />
+        </div>
         <div className="login-form">
           <div className="login-header">
             <div className="telus-logo">
@@ -106,16 +104,16 @@ const location = useLocation();
             ) : (
               <>
                 <Form.Group className="mb-3">
-                <Form.Control
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onClick={() => {
-                    setStep('email');
-                    clearError();
-                  }}
-                  style={{ cursor: 'pointer' }}
-                />
+                  <Form.Control
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onClick={() => {
+                      setStep('email');
+                      clearError();
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Control

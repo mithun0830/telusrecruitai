@@ -110,6 +110,9 @@ ul li {
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 12px;
+  height: calc(1.5em + 1.5rem + 2px); /* Match the height of form-control */
+  padding: 0.75rem;
+  font-size: 1rem;
 }
 
 .register-button {
@@ -196,6 +199,19 @@ ul li {
 
 .form-check-input:checked[type="checkbox"] {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+}
+
+.permissions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.permissions-grid .form-check {
+  margin-right: 1.5rem;
+  min-width: fit-content;
+  flex: 0 0 auto;
 }
 
 @media (max-width: 768px) {

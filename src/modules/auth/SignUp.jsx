@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
 import telusLogo from '../../assets/telus_logo.svg';
 import '../../styles/variables.css';
 import './Signup.css';
@@ -250,6 +250,33 @@ const handleSubmit = async (e) => {
             </Alert>
           )}
           <Form onSubmit={handleSubmit}>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Full Name <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Employee ID <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="employeeId"
+                    value={formData.employeeId}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
             <Form.Group className="mb-3">
               <Form.Label>Email ID <span className="required">*</span></Form.Label>
               <Form.Control
@@ -262,97 +289,90 @@ const handleSubmit = async (e) => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Full Name <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Phone Number <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phoneNumber"
+                    placeholder="1+ xxx-xxx-xxxx"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Region <span className="required">*</span></Form.Label>
+                  <Form.Select
+                    name="region"
+                    value={formData.region}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Region</option>
+                    <option value="North America">North America</option>
+                    <option value="Europe">Europe</option>
+                    <option value="Asia Pacific">Asia Pacific</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Employee ID <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="employeeId"
-                value={formData.employeeId}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Department <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Designation <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Phone Number <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="tel"
-                name="phoneNumber"
-                placeholder="1+ xxx-xxx-xxxx"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Department <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Designation <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="designation"
-                value={formData.designation}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Region <span className="required">*</span></Form.Label>
-              <Form.Select
-                name="region"
-                value={formData.region}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Region</option>
-                <option value="North America">North America</option>
-                <option value="Europe">Europe</option>
-                <option value="Asia Pacific">Asia Pacific</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Cost Center <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="costCenter"
-                value={formData.costCenter}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Business Unit</Form.Label>
-              <Form.Control
-                type="text"
-                name="businessUnit"
-                value={formData.businessUnit}
-                onChange={handleChange}
-              />
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Cost Center <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="costCenter"
+                    value={formData.costCenter}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Business Unit</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="businessUnit"
+                    value={formData.businessUnit}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Form.Group className="mb-3">
               <Form.Label>Reporting Manager Email</Form.Label>
@@ -364,43 +384,34 @@ const handleSubmit = async (e) => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Role <span className="required">*</span></Form.Label>
-              <Form.Select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Role</option>
-                <option value="Manager">Manager</option>
-                <option value="RMG">RMG</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Password <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              {passwordError && <Form.Text className="text-danger">{passwordError}</Form.Text>}
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Confirm Password <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-              {confirmPasswordError && <Form.Text className="text-danger">{confirmPasswordError}</Form.Text>}
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Password <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  {passwordError && <Form.Text className="text-danger">{passwordError}</Form.Text>}
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Confirm Password <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  {confirmPasswordError && <Form.Text className="text-danger">{confirmPasswordError}</Form.Text>}
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Form.Group className="mb-3">
               <Form.Label>Profile Picture (optional)</Form.Label>
@@ -419,6 +430,20 @@ const handleSubmit = async (e) => {
                 }}
                 accept="image/*"
               />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Role <span className="required">*</span></Form.Label>
+              <Form.Select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Role</option>
+                <option value="Manager">Manager</option>
+                <option value="RMG">RMG</option>
+              </Form.Select>
             </Form.Group>
 
             {formData.role && (

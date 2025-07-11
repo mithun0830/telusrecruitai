@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:1998/api';
-const NOTIFICATION_BASE_URL = 'http://localhost:8084/api';
+const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
 const AI_SEARCH_BASE_URL = 'https://treko-480868035316.asia-south1.run.app/api/'
 
 
@@ -155,7 +155,7 @@ export const notificationService = {
     return await notificationApi.get(`/notifications/unread/${userId}`);
   },
   markAsRead: async (notificationId) => {
-    return await notificationApi.post(`/notifications/${notificationId}/mark-as-read`);
+    return await notificationApi.put(`/notifications/${notificationId}/mark-as-read`);
   }
 };
 
@@ -235,6 +235,16 @@ export const candidateService = {
     return await ai_api.post(`/resumes/match-new`, null, {
       params: { jd: searchString }
     });
+  }
+};
+
+// Manager service
+export const managerService = {
+  getManagerStats: async () => {
+    return await api.get('/managers');
+  },
+  getAllManagers: async () => {
+    return await api.get('/managers');
   }
 };
 

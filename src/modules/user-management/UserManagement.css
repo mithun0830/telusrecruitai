@@ -1,0 +1,86 @@
+.user-management-container {
+  padding: 20px;
+  margin: 0 auto;
+}
+
+.user-management-title {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+.user-management-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.search-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  padding: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.table td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.table tr {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.table tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bg-success {
+  background-color: #28a745;
+}
+
+.bg-warning {
+  background-color: #ffc107;
+}
+
+mark {
+  background-color: #fff3cd;
+  padding: 2px;
+}

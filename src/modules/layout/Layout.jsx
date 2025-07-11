@@ -20,8 +20,8 @@ const notificationBadgeStyle = {
   position: 'absolute',
   top: '-5px',
   right: '-5px',
-  backgroundColor: '#ffffff',
-  color: '#059669',
+  backgroundColor: '#dc3545',
+  color: '#ffffff',
   borderRadius: '50%',
   padding: '0.2rem 0.4rem',
   fontSize: '0.6rem',
@@ -45,19 +45,19 @@ const menuItems = [
   { path: '/approvals', icon: faFileAlt, label: 'Approvals', permission: 'rmg_approval', role: 'RMG' },
   { path: '/user-management', icon: faUsersCog, label: 'User Management', permission: 'rmg_user_mng', role: 'RMG' },
   { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'rmg_notif', role: 'RMG' },
-  { path: '/interviews', icon: faCalendarAlt, label: 'Interview Management', permission: 'rmg_interview_mng', role: 'RMG' },
-  { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'rmg_pref', role: 'RMG' },
-  { path: '/candidate-pool', icon: faUsers, label: 'Candidate Pool', permission: 'rmg_candidate_pool', role: 'RMG' },
-  { path: '/track-status', icon: faClipboardList, label: 'Track Status', permission: 'rmg_track_status', role: 'RMG' },
+  // { path: '/interviews', icon: faCalendarAlt, label: 'Interview Management', permission: 'rmg_interview_mng', role: 'RMG' },
+  // { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'rmg_pref', role: 'RMG' },
+  // { path: '/candidate-pool', icon: faUsers, label: 'Candidate Pool', permission: 'rmg_candidate_pool', role: 'RMG' },
+  // { path: '/track-status', icon: faClipboardList, label: 'Track Status', permission: 'rmg_track_status', role: 'RMG' },
   { path: '/mng_dashboard', icon: faTachometerAlt, label: 'Dashboard', permission: 'mng_dashboard', role: 'Manager' },
   { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'mng_notif', role: 'Manager' },
-  { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'mng_pref', role: 'Manager' },
+  // { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'mng_pref', role: 'Manager' },
   { path: '/application-status', icon: faListAlt, label: 'Application Status', permission: 'mng_app_status', role: 'Manager' },
   { path: '/job-openings', icon: faBriefcase, label: 'Candidates Search', permission: 'mng_jb', role: 'Manager' },
 ];
 
 const Layout = ({ children }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [notifications, setNotifications] = useState([]);

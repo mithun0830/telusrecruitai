@@ -1,41 +1,50 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Alert, Spinner } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { notificationService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { Alert } from 'react-bootstrap';
-import { getRelativeTime } from '../../utils/dateUtils';
 import './Notifications.css';
+import { debounce } from 'lodash';
 
 const Notifications = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const { user } = useAuth();
 
-  const fetchNotifications = useCallback(async () => {
+  useEffect(() => {
+    const debouncedSearch = debounce((value) => {
+      setDebouncedSearchTerm(value);
+    }, 300);
+
+    debouncedSearch(searchTerm);
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchTerm]);
+
+  const fetchNotifications = async () => {
     try {
       setLoading(true);
       const result = await notificationService.getUnreadNotifications(user?.id);
       if (result.success) {
         setNotifications(result.data.notifications);
+        setLoading(false);
       } else {
         setError('Failed to fetch notifications');
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+    } catch (err) {
       setError('An error occurred while fetching notifications');
+      setLoading(false);
+      console.error(err);
     } finally {
       setLoading(false);
-    }
-  }, [user?.id]);
-
-  const handleMarkAsRead = async (notificationId) => {
-    try {
-      const result = await notificationService.markAsRead(notificationId);
-      if (result.success) {
-        setNotifications(notifications.filter(n => n.id !== notificationId));
-      }
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
     }
   };
 
@@ -43,52 +52,110 @@ const Notifications = () => {
     if (user?.id) {
       fetchNotifications();
     }
-  }, [user?.id, fetchNotifications]);
+  }, [user?.id]);
 
-  if (loading) {
-    return <div className="text-center p-4">Loading notifications...</div>;
-  }
+  const handleNotificationClick = async (notificationId) => {
+    try {
+      const result = await notificationService.markAsRead(notificationId);
+      if (result.success) {
+        // Refresh the notifications list
+        fetchNotifications();
+      } else {
+        setError('Failed to mark notification as read');
+      }
+    } catch (err) {
+      setError('An error occurred while marking notification as read');
+      console.error(err);
+    }
+  };
 
-  if (error) {
-    return <Alert variant="danger">{error}</Alert>;
-  }
+  const filteredNotifications = notifications.filter(notification => {
+      if (!debouncedSearchTerm) return true;
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      const matchesSearch = 
+        (notification.message && notification.message.toLowerCase().includes(searchLower));
+      const matchesType = selectedType === 'all' || notification.type === selectedType;
+      return matchesSearch && matchesType;
+    });
+
+  const highlightMatch = (text, search) => {
+    if (!search || !text) return text;
+    const textStr = String(text);
+    const parts = textStr.split(new RegExp(`(${search})`, 'gi'));
+    return parts.map((part, index) => 
+      part.toLowerCase() === search.toLowerCase() ? <mark key={index}>{part}</mark> : part
+    );
+  };
 
   return (
-    <div className="container-fluid">
-      <div className="row">
-        <div className="col">
-          <h2 className="mb-4">Notifications</h2>
-          <div className="card shadow">
-            <div className="card-body">
-              {notifications.length > 0 ? (
-                <div className="notification-list">
-                  {notifications.map(notification => (
-                    <div 
-                      key={notification.id} 
-                      className="notification-item p-3 border-bottom"
-                      onClick={() => handleMarkAsRead(notification.id)}
-                    >
-                      <div className="d-flex justify-content-between align-items-start">
-                        <div className="notification-content w-100">
-                          <div className="d-flex justify-content-between align-items-start">
-                            <p className="mb-1">{notification.message}</p>
-                            <small className="text-muted ms-2">
-                              {getRelativeTime(notification.created_at)}
-                            </small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 text-muted">
-                  No notifications found
-                </div>
-              )}
-            </div>
+    <div className="notifications-container">
+      <h2 className="notifications-title">Notifications</h2>
+      <div className="notifications-card">
+        <div className="search-filter-container">
+          <div className="search-container">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search by message or ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          </div>
+          <div className="filter-container">
+            <select
+              className="filter-select"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              {Array.from(new Set(notifications.map(n => n.type))).map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
           </div>
         </div>
+        {loading ? (
+          <div className="text-center py-4">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : error ? (
+          <Alert variant="danger">{error}</Alert>
+        ) : (
+          <>
+            <div className="table-responsive">
+              <table className="table align-middle">
+                <thead>
+                  <tr>
+                    <th style={{ width: '10%' }}>ID</th>
+                    <th style={{ width: '45%' }}>Message</th>
+                    <th style={{ width: '45%' }}>Date</th>
+                  </tr>
+                </thead>
+                <tbody className="unread">
+                  {filteredNotifications.map((notification) => (
+                    <tr
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td style={{ width: '10%' }}>{notification.id}</td>
+                      <td style={{ width: '45%' }}>{highlightMatch(notification.message, debouncedSearchTerm)}</td>
+                      <td style={{ width: '45%' }}>{new Date(notification.created_at).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {filteredNotifications.length === 0 && (
+              <div className="text-center py-4 text-muted">
+                No notifications found
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

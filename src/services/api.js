@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
-const AI_SEARCH_BASE_URL = 'https://treko-480868035316.asia-south1.run.app/api/'
+const AI_SEARCH_BASE_URL = 'https://aimatch-865090871947.asia-south1.run.app/api';
 
 
 // Create axios instances with default config

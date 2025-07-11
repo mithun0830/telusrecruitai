@@ -170,6 +170,41 @@
   border: 1px solid #E5E7EB;
   border-radius: 6px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-height: none;
+  overflow: visible;
+}
+
+.table-responsive {
+  overflow: visible;
+}
+
+.table {
+  margin-bottom: 1rem;
+}
+
+.approvals-card {
+  overflow: visible;
+}
+
+.dropdown-menu {
+  z-index: 1000;
+}
+
+.table td {
+  position: relative;
+}
+
+.dropdown {
+  position: static;
+}
+
+.dropdown-menu.show {
+  display: block;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
 }
 
 .dropdown-item {

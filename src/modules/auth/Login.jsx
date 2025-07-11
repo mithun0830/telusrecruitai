@@ -44,7 +44,7 @@ const Login = () => {
 
             let from = location.state?.from?.pathname;
             if (role === 'Manager') {
-              from = '/mng_dashboard';
+              from = '/job-openings';
             } else if (role === 'RMG') {
               from = '/rmg_dashboard';
             } else {

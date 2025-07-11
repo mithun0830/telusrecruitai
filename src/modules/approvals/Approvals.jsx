@@ -19,6 +19,17 @@ const Approvals = () => {
   const [showRejectError, setShowRejectError] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState({});
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown')) {
+        setDropdownOpen({});
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const fetchPendingApprovals = async () => {
     try {
       setLoading(true);
@@ -198,10 +209,10 @@ const Approvals = () => {
                           {user.status}
                         </span>
                       </td>
-                      <td>
+                      <td style={{ position: 'relative' }}>
                         {user.status === 'Pending' && (
                           <div className="d-flex justify-content-end">
-                            <div className="dropdown">
+                            <div className="dropdown" style={{ position: 'static' }}>
                               <button 
                                 className="btn btn-link p-0 border-0"
                                 onClick={(e) => {
@@ -219,7 +230,7 @@ const Approvals = () => {
                                 <FontAwesomeIcon icon={faEllipsisV} color="#6B7280" />
                               </button>
                               {dropdownOpen[user.id] && (
-                                <div className="dropdown-menu show" style={{ position: 'absolute', right: 0 }}>
+                                <div className="dropdown-menu show" style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)' }}>
                                   <button 
                                     className="dropdown-item d-flex align-items-center"
                                     onClick={(e) => {

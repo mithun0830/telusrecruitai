@@ -49,10 +49,10 @@ const menuItems = [
   // { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'rmg_pref', role: 'RMG' },
   // { path: '/candidate-pool', icon: faUsers, label: 'Candidate Pool', permission: 'rmg_candidate_pool', role: 'RMG' },
   // { path: '/track-status', icon: faClipboardList, label: 'Track Status', permission: 'rmg_track_status', role: 'RMG' },
-  { path: '/mng_dashboard', icon: faTachometerAlt, label: 'Dashboard', permission: 'mng_dashboard', role: 'Manager' },
+  // { path: '/mng_dashboard', icon: faTachometerAlt, label: 'Dashboard', permission: 'mng_dashboard', role: 'Manager' },
   { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'mng_notif', role: 'Manager' },
   // { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'mng_pref', role: 'Manager' },
-  { path: '/application-status', icon: faListAlt, label: 'Application Status', permission: 'mng_app_status', role: 'Manager' },
+  // { path: '/application-status', icon: faListAlt, label: 'Application Status', permission: 'mng_app_status', role: 'Manager' },
   { path: '/job-openings', icon: faBriefcase, label: 'Candidates Search', permission: 'mng_jb', role: 'Manager' },
 ];
 

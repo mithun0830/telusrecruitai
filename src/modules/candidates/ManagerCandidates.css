@@ -74,6 +74,10 @@
   transition: all 0.3s ease;
   height: 40px;
   min-width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .search-button:hover {
@@ -263,14 +267,6 @@
   display: flex;
   align-items: center;
   position: relative;
-}
-
-.search-button .search-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  color: var(--telus-white);
-  vertical-align: middle;
 }
 
 .ai-search-input,
@@ -757,6 +753,13 @@
 .content-section h4 {
   color: var(--telus-purple);
   margin-top: 0;
+  font-size: 20px;
+}
+
+.content-section p {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
 }
 
 .strengths-grid,
@@ -778,6 +781,7 @@
 .improvement-card h5 {
   margin: 0 0 5px 0;
   color: var(--telus-purple);
+  font-size: 16px;
 }
 
 .scores-grid {
@@ -884,6 +888,7 @@
 
 .resume-header h4 {
   margin: 0;
+  font-size: 20px;
 }
 
 .arrow {

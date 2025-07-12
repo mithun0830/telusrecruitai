@@ -256,7 +256,7 @@ const ManagerCandidates = () => {
                 <div className="filter-group">
                   <div className="filter-group-content">
                     <select
-                      className="filter-select"
+                      className="ai-search-input"
                       value={filters.jobTitle}
                       onChange={(e) => handleFilterChange('jobTitle', e.target.value)}
                       onFocus={() => setErrorMessage('')}
@@ -272,7 +272,7 @@ const ManagerCandidates = () => {
                 <div className="filter-group">
                   <div className="filter-group-content">
                     <select
-                      className="filter-select"
+                      className="ai-search-input"
                       value={filters.hardSkills[0] || ''}
                       onChange={(e) => handleFilterChange('hardSkills', [e.target.value])}
                       onFocus={() => setErrorMessage('')}
@@ -288,7 +288,7 @@ const ManagerCandidates = () => {
                 <div className="filter-group">
                   <div className="filter-group-content">
                     <select
-                      className="filter-select"
+                      className="ai-search-input"
                       value={filters.yearsOfExperience[0] || ''}
                       onChange={(e) => handleFilterChange('yearsOfExperience', [e.target.value])}
                       onFocus={() => setErrorMessage('')}
@@ -315,16 +315,12 @@ const ManagerCandidates = () => {
                 </div>
               </>
             )}
-            <div className="filter-group search-button-container">
+            <div>
               <button
                 className="search-button"
                 onClick={handleSearchClick}
                 aria-label="Search candidates"
               >
-                <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
                 Search
               </button>
             </div>

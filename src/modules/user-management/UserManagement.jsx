@@ -63,33 +63,42 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="user-management-container">
-      <h2 className="user-management-title">User Management</h2>
-      <div className="user-management-card">
-        <div className="search-container">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search by username or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <FontAwesomeIcon icon={faSearch} className="search-icon" />
-        </div>
-        {loading ? (
-          <div className="text-center py-4">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </Spinner>
+    <div className="user-management-page">
+      <div className="user-management-header">
+        <h1>User Management</h1>
+      </div>
+      <div className="user-management-content">
+        <div className="search-filter-container">
+          <div className="search-container">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search by username or email..."
+              aria-label="Search Users"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <FontAwesomeIcon icon={faSearch} className="search-icon" />
           </div>
-        ) : error ? (
-          <Alert variant="danger">{error}</Alert>
-        ) : (
-          <>
-            <div className="table-responsive">
-              <table className="table align-middle">
+        </div>
+        <div className="user-management-list">
+          <div className="user-management-list-header">
+            <h2>Users <span className="user-count">{filteredManagers.length}</span></h2>
+          </div>
+          <div className="user-management-table-container">
+            {loading ? (
+              <div className="loader-container">
+                <div className="loader"></div>
+                <span>Loading users...</span>
+              </div>
+            ) : error ? (
+              <Alert variant="danger">{error}</Alert>
+            ) : (
+              <table className="user-management-table">
                 <thead>
                   <tr>
+                    <th>User ID</th>
+                    <th>Employee ID</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Account Status</th>
@@ -97,7 +106,9 @@ const UserManagement = () => {
                 </thead>
                 <tbody>
                   {filteredManagers.map((manager) => (
-                    <tr key={manager.userId}>
+                    <tr key={manager.userId} className="user-row">
+                      <td>{manager.userId}</td>
+                      <td>{manager.employeeId || '-'}</td>
                       <td>{highlightMatch(manager.username, debouncedSearchTerm)}</td>
                       <td>{highlightMatch(manager.email, debouncedSearchTerm)}</td>
                       <td>
@@ -109,14 +120,21 @@ const UserManagement = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-            {filteredManagers.length === 0 && (
-              <div className="text-center py-4 text-muted">
-                No managers found
+            )}
+            {!loading && filteredManagers.length === 0 && (
+              <div className="no-users-message">
+                <div>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
+                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <div>No users found matching your search criteria.</div>
+                </div>
               </div>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );

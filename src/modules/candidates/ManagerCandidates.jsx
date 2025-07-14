@@ -97,94 +97,149 @@ const ManagerCandidates = () => {
     return (
       <div className="expanded-view">
         <div className="expanded-content">
-          <div className="content-section">
-            <h4>Executive Summary</h4>
-            <p>{candidate.analysis?.executiveSummary || 'No executive summary available.'}</p>
+          <div className="candidate-header">
+            <div className="candidate-info">
+                <div className="candidate-name-row">
+                  <div className="candidate-avatar-large">
+                    {candidate.resume.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="candidate-details">
+                    <h2 className="candidate-name-large">{candidate.resume.name}</h2>
+                    <div className="contact-info">
+                      <div className="contact-item">
+                        <span>📧</span>
+                        <span>{candidate.resume.email}</span>
+                      </div>
+                      <div className="contact-item">
+                        <span>📞</span>
+                        <span>{candidate.resume.phoneNumber}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div className="match-score">
+              <div className="score-percentage">{candidate.score}%</div>
+              <div className="score-label">Match Score</div>
+            </div>
+          </div>
+          <div className="expanded-row">
+            <div className="content-section">
+              <h4>Executive Summary</h4>
+              <p>{candidate.analysis?.executiveSummary || 'No executive summary available.'}</p>
+            </div>
           </div>
 
+          {candidate.analysis?.categoryScores && (
+            <div className="expanded-row">
+              <div className="content-section">
+                <h4>Category Scores</h4>
+                <div className="scores-list">
+                  {[
+                    { label: "Technical Skills", score: "technicalSkills", total: 40 },
+                    { label: "Experience", score: "experience", total: 25 },
+                    { label: "Education", score: "education", total: 10 },
+                    { label: "Soft Skills", score: "softSkills", total: 15 },
+                    { label: "Achievements", score: "achievements", total: 10 }
+                  ].map((item, index) => (
+                    <div key={index} className="score-item">
+                      <div className="score-label">{item.label}</div>
+                      <div className="score-bar-container">
+                        <div className="score-bar">
+                          <div 
+                            className="score-fill" 
+                            style={{ width: `${(candidate.analysis.categoryScores[item.score] / item.total) * 100}%` }}
+                          ></div>
+                        </div>
+                        <div className="score-value">{candidate.analysis.categoryScores[item.score]}/{item.total}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {candidate.analysis?.keyStrengths?.length > 0 && (
-            <div className="content-section">
-              <h4>Key Strengths</h4>
-              <div className="strengths-grid">
-                {candidate.analysis.keyStrengths.map((strength, index) => (
-                  <div key={index} className="strength-card">
-                    <h5>{strength.strength}</h5>
-                    <p>{strength.evidence}</p>
-                  </div>
-                ))}
+            <div className="expanded-row">
+              <div className="content-section">
+                <h4>Key Strengths</h4>
+                <div className="strengths-list">
+                  {candidate.analysis.keyStrengths.map((strength, index) => (
+                    <div key={index} className="strength-item">
+                      <div className="check-icon">✓</div>
+                      <div className="strength-content">
+                        <h5>{strength.strength}</h5>
+                        <p>{strength.evidence}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {candidate.analysis?.improvementAreas?.length > 0 && (
-            <div className="content-section">
-              <h4>Areas for Improvement</h4>
-              <div className="improvement-grid">
-                {candidate.analysis.improvementAreas.map((area, index) => (
-                  <div key={index} className="improvement-card">
-                    <h5>{area.gap}</h5>
-                    <p>{area.suggestion}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {candidate.analysis?.categoryScores && Object.keys(candidate.analysis.categoryScores).length > 0 && (
-            <div className="content-section">
-              <h4>Category Scores</h4>
-              <div className="scores-grid">
-                {Object.entries(candidate.analysis.categoryScores).map(([category, score]) => (
-                  <div key={category} className="score-card">
-                    <div className="score-label">{category.replace(/([A-Z])/g, ' $1').trim()}</div>
-                    <div className="score-bar">
-                      <div className="score-fill" style={{ width: `${score}%` }}></div>
+            <div className="expanded-row">
+              <div className="content-section">
+                <h4>Areas for Improvement</h4>
+                <div className="improvement-list">
+                  {candidate.analysis.improvementAreas.map((area, index) => (
+                    <div key={index} className="improvement-item">
+                      <div className="warning-icon">!</div>
+                      <div className="improvement-content">
+                        <h5>{area.gap}</h5>
+                        <p>{area.suggestion}</p>
+                      </div>
                     </div>
-                    <div className="score-number">{score}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {candidate.analysis?.recommendation && (
-            <div className="content-section">
-              <h4>Recommendation</h4>
-              <div className="recommendation-card">
-                <div className="recommendation-type">
-                  <span className={`recommendation-sign ${candidate.analysis.recommendation.type.toLowerCase().replace(/\s+/g, '-')}`}></span>
-                  {candidate.analysis.recommendation.type}
+            <div className="expanded-row">
+              <div className="content-section">
+                <h4>Recommendation</h4>
+                <div className="recommendation-card">
+                  <div className="recommendation-type">
+                    <span className={`recommendation-sign ${candidate.analysis.recommendation.type.toLowerCase().replace(/\s+/g, '-')}`}></span>
+                    {candidate.analysis.recommendation.type}
+                  </div>
+                  <p>{candidate.analysis.recommendation.reason}</p>
                 </div>
-                <p>{candidate.analysis.recommendation.reason}</p>
               </div>
             </div>
           )}
 
           {candidate.resume?.fullText && (
-            <div className="content-section resume-full-text">
-              <div className="resume-header" onClick={toggleResumeExpand}>
-                <h4>Resume</h4>
-                <span className={`arrow ${isResumeExpanded ? 'expanded' : ''}`}>▼</span>
-              </div>
-              {isResumeExpanded && (
-                <div className="resume-text-card">
-                  <div className="resume-body">
-                    {candidate.resume.fullText.split('\n\n').map((section, index) => {
-                      const lines = section.split('\n').map(line => line.trim()).filter(line => line !== '');
-                      const title = lines[0];
-                      const content = lines.slice(1);
-                      return (
-                        <div key={index} className="resume-section">
-                          <h3>{title}</h3>
-                          {content.map((line, lineIndex) => (
-                            <p key={lineIndex}>{line}</p>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
+            <div className="expanded-row">
+              <div className="content-section resume-full-text">
+                <div className="resume-header" onClick={toggleResumeExpand}>
+                  <h4>Resume</h4>
+                  <span className={`arrow ${isResumeExpanded ? 'expanded' : ''}`}>▼</span>
                 </div>
-              )}
+                {isResumeExpanded && (
+                  <div className="resume-text-card">
+                    <div className="resume-body">
+                      {candidate.resume.fullText.split('\n\n').map((section, index) => {
+                        const lines = section.split('\n').map(line => line.trim()).filter(line => line !== '');
+                        const title = lines[0];
+                        const content = lines.slice(1);
+                        return (
+                          <div key={index} className="resume-section">
+                            <h3>{title}</h3>
+                            {content.map((line, lineIndex) => (
+                              <p key={lineIndex}>{line}</p>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

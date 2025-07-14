@@ -151,131 +151,108 @@ const Approvals = () => {
   const selectedUser = approvals.find(approval => approval.id === selectedUserId);
 
   return (
-    <div className="approvals-container">
-      <h2 className="approvals-title">Approvals</h2>
-      <div className="approvals-card">
-        {loading && <p className="loading-text">Loading approvals...</p>}
-        {error && <Alert variant="danger">{error}</Alert>}
-        {!loading && !error && (
-          <>
-            <div className="search-filter-container">
-              <div className="search-container">
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search by name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
-              </div>
-              <div className="filter-container">
-                <select
-                  className="filter-select"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
+    <div className="approvals-page">
+      <h1 className="approvals-title">Approvals</h1>
+      <div className="search-filter-container">
+        <div className="search-container">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+        </div>
+        <div className="filter-container">
+          <select
+            className="filter-select"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div className="approvals-content">
+        <h2 className="approvals-list-header">Approval Requests <span className="approval-count">{filteredApprovals.length}</span></h2>
+        <div className="approvals-table-container">
+          {loading ? (
+            <div className="loader-container">
+              <div className="loader"></div>
+              <span>Loading approvals...</span>
             </div>
-
-            <div className="table-responsive">
-              <table className="table table-hover align-middle">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Position</th>
-                    <th>Request Date</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredApprovals.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.id}</td>
-                      <td>{highlightMatch(user.name, debouncedSearchTerm)}</td>
-                      <td>{highlightMatch(user.email, debouncedSearchTerm)}</td>
-                      <td>{user.position}</td>
-                      <td>{new Date(user.date).toLocaleDateString()}</td>
-                      <td>
-                        <span className={`badge rounded-pill ${user.status === 'Pending' ? 'bg-warning' : user.status === 'Approved' ? 'bg-success' : 'bg-danger'}`}>
-                          {user.status}
+          ) : error ? (
+            <Alert variant="danger">{error}</Alert>
+          ) : filteredApprovals.length === 0 ? (
+            <div className="no-approvals-message">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
+                <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <div>No approval requests found matching your search criteria.</div>
+            </div>
+          ) : (
+            <table className="approvals-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Position</th>
+                  <th>Request Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredApprovals.map((user) => (
+                  <tr key={user.id} className="approval-row">
+                    <td>{user.id}</td>
+                    <td>{highlightMatch(user.name, debouncedSearchTerm)}</td>
+                    <td>{highlightMatch(user.email, debouncedSearchTerm)}</td>
+                    <td>{user.position}</td>
+                    <td>{new Date(user.date).toLocaleDateString()}</td>
+                    <td>
+                      <span className={`badge ${user.status === 'Pending' ? 'bg-warning' : user.status === 'Approved' ? 'bg-success' : 'bg-danger'}`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td>
+                      {user.status === 'Pending' && (
+                        <div className="action-buttons">
+                          <button 
+                            className="btn btn-success btn-sm" 
+                            onClick={() => handleApprove(user.id)}
+                          >
+                            <FontAwesomeIcon icon={faCheck} />
+                            Approve
+                          </button>
+                          <button 
+                            className="btn btn-danger btn-sm" 
+                            onClick={() => handleReject(user.id)}
+                          >
+                            <FontAwesomeIcon icon={faTimes} />
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                      {user.status === 'Rejected' && user.rejectReason && (
+                        <span className="reject-reason" title={user.rejectReason}>
+                          Reason: {user.rejectReason.substring(0, 20)}...
                         </span>
-                      </td>
-                      <td style={{ position: 'relative' }}>
-                        {user.status === 'Pending' && (
-                          <div className="d-flex justify-content-end">
-                            <div className="dropdown" style={{ position: 'static' }}>
-                              <button 
-                                className="btn btn-link p-0 border-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDropdownOpen(prev => {
-                                    const newState = {};
-                                    Object.keys(prev).forEach(key => {
-                                      newState[key] = false;
-                                    });
-                                    newState[user.id] = !prev[user.id];
-                                    return newState;
-                                  });
-                                }}
-                              >
-                                <FontAwesomeIcon icon={faEllipsisV} color="#6B7280" />
-                              </button>
-                              {dropdownOpen[user.id] && (
-                                <div className="dropdown-menu show" style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)' }}>
-                                  <button 
-                                    className="dropdown-item d-flex align-items-center"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleApprove(user.id);
-                                      setDropdownOpen(prev => ({...prev, [user.id]: false}));
-                                    }}
-                                  >
-                                    <FontAwesomeIcon icon={faCheck} className="me-2 text-success" />
-                                    Approve
-                                  </button>
-                                  <button 
-                                    className="dropdown-item d-flex align-items-center"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleReject(user.id);
-                                      setDropdownOpen(prev => ({...prev, [user.id]: false}));
-                                    }}
-                                  >
-                                    <FontAwesomeIcon icon={faTimes} className="me-2 text-danger" />
-                                    Reject
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        {user.status === 'Rejected' && user.rejectReason && (
-                          <span className="text-muted" title={user.rejectReason}>
-                            Reason: {user.rejectReason.substring(0, 20)}...
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {filteredApprovals.length === 0 && (
-              <div className="text-center py-4 text-muted">
-                No approval requests found
-              </div>
-            )}
-          </>
-        )}
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       <Modal show={showRejectModal} onHide={handleModalClose}>

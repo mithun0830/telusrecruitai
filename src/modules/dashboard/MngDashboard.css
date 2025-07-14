@@ -4,8 +4,10 @@
 }
 
 .dashboard-header h1 {
+  color: #059669;
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  font-weight: 700;
 }
 
 .dashboard-content {

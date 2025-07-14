@@ -202,13 +202,76 @@
 }
 
 .bg-success {
-  background-color: var(--telus-green);
-  color: var(--telus-white);
+  background-color: #10B981 !important;
+  color: #FFFFFF !important;
 }
 
-.bg-warning {
-  background-color: #FCD34D;
-  color: #92400E;
+.bg-danger {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+}
+
+.bg-secondary {
+  background-color: #6B7280 !important;
+  color: #FFFFFF !important;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-more {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: bold;
+}
+
+.dropdown-content {
+  position: absolute;
+  right: 0;
+  background-color: white;
+  min-width: 120px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  z-index: 1000;
+  display: block;
+}
+
+.dropdown-content button {
+  color: #374151;
+  padding: 8px 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.dropdown-content button:hover {
+  background-color: #F3F4F6;
+}
+
+.btn-more {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-more:hover {
+  background-color: #F3F4F6;
 }
 
 mark {

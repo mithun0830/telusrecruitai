@@ -75,8 +75,9 @@ const Layout = ({ children }) => {
       try {
         const result = await notificationService.getUnreadNotifications(user?.id);
         if (result.success) {
-          setNotifications(result.data.notifications.slice(0, 5));
-          setNotificationCount(result.data.count);
+          const unreadNotifications = result.data.notifications.filter(notification => !notification.is_read);
+          setNotifications(unreadNotifications.slice(0, 5));
+          setNotificationCount(unreadNotifications.length);
           return;
         }
       } catch (error) {

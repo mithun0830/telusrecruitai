@@ -143,7 +143,7 @@ const Notifications = () => {
                   {filteredNotifications.map((notification) => (
                     <tr
                       key={notification.id}
-                      className="notification-row"
+                      className={`notification-row ${notification.is_read ? 'read' : 'unread'}`}
                       onClick={() => handleNotificationClick(notification.id)}
                     >
                       <td>{notification.id}</td>

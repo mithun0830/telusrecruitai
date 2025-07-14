@@ -225,6 +225,10 @@ export const authService = {
       removeTokens();
       throw error;
     }
+  },
+
+  updateAccountStatus: async (data) => {
+    return await api.post('/auth/update-account-status', data);
   }
 };
 

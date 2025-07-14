@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import { managerService } from '../../services/api';
+import { faSearch, faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
+import { managerService, authService } from '../../services/api';
 import './UserManagement.css';
 import { debounce } from 'lodash';
 
@@ -12,6 +12,70 @@ const UserManagement = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const handleMoreOptionsClick = (userId) => {
+    setActiveDropdown(activeDropdown === userId ? null : userId);
+  };
+
+  const handleBlockUser = async (userId, email) => {
+    try {
+      const response = await authService.updateAccountStatus({
+        email: email,
+        status: 'INACTIVE'
+      });
+      if (response.success) {
+        setManagers(prevManagers =>
+          prevManagers.map(manager =>
+            manager.userId === userId
+              ? { ...manager, accountStatus: 'INACTIVE' }
+              : manager
+          )
+        );
+        setActiveDropdown(null);
+      } else {
+        console.error('Failed to block user:', response.message);
+      }
+    } catch (error) {
+      console.error('Error blocking user:', error);
+    }
+  };
+
+  const handleUnblockUser = async (userId, email) => {
+    try {
+      const response = await authService.updateAccountStatus({
+        email: email,
+        status: 'ACTIVE'
+      });
+      if (response.success) {
+        setManagers(prevManagers =>
+          prevManagers.map(manager =>
+            manager.userId === userId
+              ? { ...manager, accountStatus: 'ACTIVE' }
+              : manager
+          )
+        );
+        setActiveDropdown(null);
+      } else {
+        console.error('Failed to unblock user:', response.message);
+      }
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown')) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -102,6 +166,7 @@ const UserManagement = () => {
                     <th>Username</th>
                     <th>Email</th>
                     <th>Account Status</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -112,9 +177,39 @@ const UserManagement = () => {
                       <td>{highlightMatch(manager.username, debouncedSearchTerm)}</td>
                       <td>{highlightMatch(manager.email, debouncedSearchTerm)}</td>
                       <td>
-                        <span className={`badge rounded-pill bg-${manager.accountStatus === 'Active' ? 'success' : 'warning'}`}>
+                        <span className={`badge rounded-pill ${
+                          manager.accountStatus === 'ACTIVE' ? 'bg-success' : 
+                          ['BLOCKED', 'INACTIVE', 'REJECTED', 'LOCKED'].includes(manager.accountStatus) ? 'bg-danger' : 
+                          'bg-secondary'
+                        }`}>
                           {manager.accountStatus}
                         </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div className="dropdown">
+                          <button
+                            className="btn-more"
+                            title="More options"
+                            onClick={() => handleMoreOptionsClick(manager.userId)}
+                          >
+                            ⋮
+                          </button>
+                          {activeDropdown === manager.userId && (
+                            <div className="dropdown-content">
+                              {manager.accountStatus === 'ACTIVE' ? (
+                                <button onClick={() => handleBlockUser(manager.userId, manager.email)}>
+                                  <FontAwesomeIcon icon={faLock} className="me-2" />
+                                  INACTIVE
+                                </button>
+                              ) : ['BLOCKED', 'INACTIVE', 'REJECTED', 'LOCKED'].includes(manager.accountStatus) ? (
+                                <button onClick={() => handleUnblockUser(manager.userId, manager.email)}>
+                                  <FontAwesomeIcon icon={faLockOpen} className="me-2" />
+                                  ACTIVE
+                                </button>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

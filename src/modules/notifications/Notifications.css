@@ -194,7 +194,6 @@
 .notifications-table td {
   padding: 16px 10px;
   text-align: left;
-  background-color: var(--telus-white);
   vertical-align: middle;
   font-size: 14px;
 }
@@ -206,9 +205,25 @@
   cursor: pointer;
 }
 
+.notifications-table tbody tr.unread {
+  background-color: #D3D3D3;
+  color: var(--telus-dark-gray);
+}
+
+.notifications-table tbody tr.read {
+  background-color: var(--telus-white);
+}
+
 .notifications-table tbody tr:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(5, 150, 105, 0.15);
+}
+
+.notifications-table tbody tr.unread:hover {
+  background-color: #C0C0C0;
+}
+
+.notifications-table tbody tr.read:hover {
   background-color: var(--telus-light-gray);
 }
 

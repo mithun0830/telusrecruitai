@@ -13,6 +13,7 @@ import RecruitPool from './modules/recruits/RecruitPool';
 import ManagerCandidates from './modules/candidates/ManagerCandidates';
 import Notifications from './modules/notifications/Notifications';
 import UserManagement from './modules/user-management/UserManagement';
+import InterviewManagement from './modules/interview-management/InterviewManagement';
 import Layout from './modules/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/Layout.css';
@@ -58,6 +59,11 @@ function App() {
         <Route path="/user-management" element={
           <ProtectedRoute allowedRoles={['RMG']}>
             <Layout><UserManagement /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/interviews" element={
+          <ProtectedRoute allowedRoles={['Manager', 'RMG']}>
+            <Layout><InterviewManagement /></Layout>
           </ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to="/landing" replace />} />

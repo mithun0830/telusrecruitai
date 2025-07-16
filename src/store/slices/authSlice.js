@@ -6,6 +6,15 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const response = await authService.login(email, password);
+      // const userData = {
+      //   ...result.data.user,
+      //   role: result.data.user.role,
+      //   permissionNames: result.data.user.permissionNames || [] // Include permissionNames from API response
+      // };
+      // setUser(userData);
+      // localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.message);

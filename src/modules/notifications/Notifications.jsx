@@ -3,7 +3,7 @@ import { Alert, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { notificationService } from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
+import { useSelector } from 'react-redux';
 import './Notifications.css';
 import { debounce } from 'lodash';
 
@@ -14,7 +14,7 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth();
+  const user = useSelector((state) => state.auth.user);
 
   // Debounce search term
   const debouncedSearch = useMemo(

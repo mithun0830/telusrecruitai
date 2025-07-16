@@ -12,13 +12,11 @@ import Notifications from './modules/notifications/Notifications';
 import UserManagement from './modules/user-management/UserManagement';
 import Layout from './modules/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './context/AuthContext';
 import './styles/Layout.css';
 
 function App() {
   return (
     <Router>
-      <AuthProvider>
       <Routes>
         <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -65,7 +63,6 @@ function App() {
           </ProtectedRoute>
         } />
       </Routes>
-      </AuthProvider>
     </Router>
   );
 }

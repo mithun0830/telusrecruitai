@@ -239,6 +239,52 @@ export const candidateService = {
     return await ai_api.post(`/resumes/match-new`, null, {
       params: { jd: searchString }
     });
+  },
+  lockCandidate: async (candidate) => {
+    const requestBody = {
+      resumeId: candidate.resume.id,
+      managerId: candidate.managerID,
+      name: candidate.resume.name,
+      email: candidate.resume.email,
+      phoneNumber: candidate.resume.phoneNumber,
+      score: candidate.score,
+      executiveSummary: candidate.analysis?.executiveSummary || '',
+      keyStrengths: candidate.analysis?.keyStrengths?.map(s => s.strength) || [],
+      improvementAreas: candidate.analysis?.improvementAreas?.map(a => a.gap) || [],
+      technicalSkills: candidate.analysis?.categoryScores?.technicalSkills || 0,
+      experience: candidate.analysis?.categoryScores?.experience || 0,
+      education: candidate.analysis?.categoryScores?.education || 0,
+      softSkills: candidate.analysis?.categoryScores?.softSkills || 0,
+      achievements: candidate.analysis?.categoryScores?.achievements || 0,
+      recommendationType: candidate.analysis?.recommendation?.type || '',
+      recommendationReason: candidate.analysis?.recommendation?.reason || '',
+      locked: true,
+      status: "INITIATE"
+    };
+    return await ai_api.post('/resume-locks/lock', requestBody);
+  },
+  unlockCandidate: async (candidate) => {
+    const requestBody = {
+      resumeId: candidate.resume.id,
+      managerId: candidate.managerID,
+      name: candidate.resume.name,
+      email: candidate.resume.email,
+      phoneNumber: candidate.resume.phoneNumber,
+      score: candidate.score,
+      executiveSummary: candidate.analysis?.executiveSummary || '',
+      keyStrengths: candidate.analysis?.keyStrengths?.map(s => s.strength) || [],
+      improvementAreas: candidate.analysis?.improvementAreas?.map(a => a.gap) || [],
+      technicalSkills: candidate.analysis?.categoryScores?.technicalSkills || 0,
+      experience: candidate.analysis?.categoryScores?.experience || 0,
+      education: candidate.analysis?.categoryScores?.education || 0,
+      softSkills: candidate.analysis?.categoryScores?.softSkills || 0,
+      achievements: candidate.analysis?.categoryScores?.achievements || 0,
+      recommendationType: candidate.analysis?.recommendation?.type || '',
+      recommendationReason: candidate.analysis?.recommendation?.reason || '',
+      locked: false,
+      status: "INITIATE"
+    };
+    return await ai_api.post('/resume-locks/unlock', requestBody);
   }
 };
 

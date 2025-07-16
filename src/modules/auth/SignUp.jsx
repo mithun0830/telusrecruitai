@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { signupUser, resetSignupState, setError } from '../../store/slices/signupSlice';
 import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
 import telusLogo from '../../assets/telus_logo.svg';
 import '../../styles/variables.css';
 import './Signup.css';
 
 const SignUp = () => {
+  const topRef = React.useRef(null);
   const [formData, setFormData] = useState({
     fullName: '',
     employeeId: '',
@@ -25,13 +27,12 @@ const SignUp = () => {
     rmgPermissions: [],
     profilePicture: null
   });
-const [error, setError] = useState('');
-const [success, setSuccess] = useState('');
-const [isLoading, setIsLoading] = useState(false);
+const dispatch = useDispatch();
+const { isLoading, error, success } = useSelector((state) => state.signup);
+const [successMessage, setSuccessMessage] = useState('');
 const [passwordError, setPasswordError] = useState('');
 const [confirmPasswordError, setConfirmPasswordError] = useState('');
 const navigate = useNavigate();
-const { register } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,22 +84,22 @@ const { register } = useAuth();
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-  setError('');
-  setSuccess('');
 
   // Check for password validation errors
   if (passwordError || confirmPasswordError) {
-    setError('Please fix the password errors before submitting.');
+    dispatch(setError('Please fix the password errors before submitting.'));
     return;
   }
 
-  setIsLoading(true);
+  dispatch(signupUser(formData));
+};
 
-  try {
-    const result = await register(formData);
-
-    if (result.success) {
-      setSuccess('Registration successful. Your account is under approval.');
+useEffect(() => {
+  if (success || error) { 
+    topRef.current?.scrollIntoView({ behavior: 'smooth' });
+   
+    if (success) {
+      setSuccessMessage('Registration successful. Your account is under approval.');
       // Clear the form data
       setFormData({
         fullName: '',
@@ -118,20 +119,16 @@ const handleSubmit = async (e) => {
         rmgPermissions: [],
         profilePicture: null
       });
-    } else {
-      setError(result.message || 'Registration failed. Please try again.');
     }
-  } catch (err) {
-    console.error('Registration error:', err);
-    if (err.response && err.response.data) {
-      setError(err.response.data.message || 'An error occurred during registration. Please try again.');
-    } else {
-      setError('An error occurred during registration. Please try again.');
-    }
-  } finally {
-    setIsLoading(false);
   }
-};
+}, [success, error]);
+
+useEffect(() => {
+  // Reset signup state when component unmounts
+  return () => {
+    dispatch(resetSignupState());
+  };
+}, [dispatch]);
 
   const renderPermissions = () => {
     if (!formData.role) return null;
@@ -238,15 +235,15 @@ const handleSubmit = async (e) => {
           <img src={telusLogo} alt="Telus Logo" className="telus-logo" />
           <h1>Just a few quick details and you're in. Let's get started.</h1>
         </div>
-        <div className="signup-right">
+        <div className="signup-right" ref={topRef}>
           {error && (
             <Alert variant="danger" className="mb-4">
               {error}
             </Alert>
           )}
-          {success && (
+          {successMessage && (
             <Alert variant="success" className="mb-4">
-              {success}
+              {successMessage}
             </Alert>
           )}
           <Form onSubmit={handleSubmit}>

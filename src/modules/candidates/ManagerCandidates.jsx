@@ -1,16 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
 import { candidateService } from '../../services/api';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
+import CompareView from './CompareView';
 
 const isFilterSelected = (filters) => {
-  return Boolean(
-    filters.aiSearch.trim() || 
-    filters.jobTitle || 
-    (filters.hardSkills.length > 0 && filters.hardSkills[0]) || 
-    (filters.yearsOfExperience.length > 0 && filters.yearsOfExperience[0]) || 
-    filters.score.trim()
-  );
+  return Boolean(filters.aiSearch.trim());
 };
 
 const loaderStyle = {
@@ -43,27 +41,30 @@ const ManagerCandidates = () => {
       to { transform: rotate(360deg); }
     }
   `;
+
+  const handleCandidateLockToggle = async (candidate) => {
+    try {
+      if (candidate.locked) {
+        await candidateService.unlockCandidate(candidate);
+      } else {
+        await candidateService.lockCandidate(candidate);
+      }
+      // Toggle the locked status
+      candidate.locked = !candidate.locked;
+      // Update the selectedCandidates list
+      handleSelectCandidate(candidate.resume.id);
+    } catch (error) {
+      console.error('Error updating candidate lock status:', error);
+      alert('Failed to update candidate status. Please try again.');
+    }
+  };
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [isResumeExpanded, setIsResumeExpanded] = useState(false);
-  const filtersRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (filtersRef.current && !filtersRef.current.contains(event.target)) {
-        setIsFiltersExpanded(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const [isCompareViewOpen, setIsCompareViewOpen] = useState(false);
+  const currentUserId = useSelector(state => state.auth.user?.id);
 
   const handleAISearchClick = () => {
-    setIsFiltersExpanded(true);
     setErrorMessage('');
   };
   const {
@@ -264,7 +265,7 @@ const ManagerCandidates = () => {
 
     setErrorMessage('');
     setIsLoading(true);
-    const searchString = `${filters.aiSearch || ''}, Job Title: ${filters.jobTitle || ''}, Hard Skill: ${filters.hardSkills || ''}, Years of Experience: ${filters.yearsOfExperience} and Score: ${filters.score}`;
+    const searchString = filters.aiSearch.trim();
     console.log("searchString", searchString)
     try {
       const response = await candidateService.searchCandidates(searchString);
@@ -289,8 +290,8 @@ const ManagerCandidates = () => {
         <h1>Manager Candidates</h1>
       </div>
       <div className="candidates-content">
-        <div className="filters-section horizontal" ref={filtersRef}>
-          <div className={`filters-container ${isFiltersExpanded ? 'expanded' : ''}`}>
+        <div className="filters-section horizontal">
+          <div className="filters-container">
             <div className="ai-search-container">
               <input
                 type="text"
@@ -298,78 +299,9 @@ const ManagerCandidates = () => {
                 className="ai-search-input"
                 value={filters.aiSearch}
                 onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
-                onFocus={() => {
-                  handleAISearchClick();
-                  setErrorMessage('');
-                }}
-                onClick={handleAISearchClick}
+                onFocus={() => setErrorMessage('')}
               />
             </div>
-            <div className="filter-divider"></div>
-            {isFiltersExpanded && (
-              <>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <select
-                      className="ai-search-input"
-                      value={filters.jobTitle}
-                      onChange={(e) => handleFilterChange('jobTitle', e.target.value)}
-                      onFocus={() => setErrorMessage('')}
-                    >
-                      <option value="">Select Job Title</option>
-                      {['React Developer', 'DevOps Engineer', 'Mobile App Developer', 'HR Manager', 'SQL Developer', 'Data Engineer', 'GenAI Engineer'].map((job) => (
-                        <option key={job} value={job}>{job}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-divider"></div>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <select
-                      className="ai-search-input"
-                      value={filters.hardSkills[0] || ''}
-                      onChange={(e) => handleFilterChange('hardSkills', [e.target.value])}
-                      onFocus={() => setErrorMessage('')}
-                    >
-                      <option value="">Select Hard Skill</option>
-                      {['GitHub', 'AWS', 'Rust', 'Flutter', 'SQL', 'Hadoop', 'GenAI', 'RedShift'].map((skill) => (
-                        <option key={skill} value={skill}>{skill}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-divider"></div>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <select
-                      className="ai-search-input"
-                      value={filters.yearsOfExperience[0] || ''}
-                      onChange={(e) => handleFilterChange('yearsOfExperience', [e.target.value])}
-                      onFocus={() => setErrorMessage('')}
-                    >
-                      <option value="">Select Experience</option>
-                      {['0-2 years', '2-4 years', '4-6 years', '6-8 years', '8-10 years', '10-12 years', '12-14 years', '14-16 years', '16-18 years', '18-20 years'].map((skill) => (
-                        <option key={skill} value={skill}>{skill}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-divider"></div>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <input
-                      type="text"
-                      placeholder="Enter Score"
-                      className="filter-input"
-                      value={filters.score}
-                      onChange={(e) => handleFilterChange('score', e.target.value)}
-                      onFocus={() => setErrorMessage('')}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
             <div>
               <button
                 className="search-button"
@@ -382,19 +314,21 @@ const ManagerCandidates = () => {
           </div>
           {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
-        <div className="candidates-list">
-          <div className="candidates-list-header">
-            <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
-            <div className="header-actions">
-            </div>
-          </div>
-          <div className="candidates-table-container">
-            {isLoading ? (
-              <div style={loaderContainerStyle}>
-                <div style={loaderStyle}></div>
-                <span style={loaderTextStyle}>Searching for candidates...</span>
+        <div className={`candidates-container ${isCompareViewOpen ? 'with-compare-view' : ''}`}>
+          <div className="candidates-list-wrapper">
+            <div className="candidates-list">
+              <div className="candidates-list-header">
+                <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
+                <div className="header-actions">
+                </div>
               </div>
-            ) : searchResults.length > 0 ? (
+              <div className="candidates-table-container">
+              {isLoading ? (
+                <div style={loaderContainerStyle}>
+                  <div style={loaderStyle}></div>
+                  <span style={loaderTextStyle}>Searching for candidates...</span>
+                </div>
+              ) : searchResults.length > 0 ? (
               <table className="candidates-table">
                 <thead>
                   <tr>
@@ -404,6 +338,7 @@ const ManagerCandidates = () => {
                     <th>Skill Set</th>
                     <th>Exp.</th>
                     <th>Score</th>
+                    <th>Status</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -415,7 +350,17 @@ const ManagerCandidates = () => {
                           <input
                             type="checkbox"
                             checked={selectedCandidates.includes(candidate.resume.id)}
-                            onChange={() => handleSelectCandidate(candidate.resume.id)}
+                            onChange={() => handleCandidateLockToggle(candidate)}
+                         
+                            // onChange={() => (!candidate.locked && (currentUserId === candidate.managerID)) && handleSelectCandidate(candidate.resume.id)}
+                            // disabled={candidate.locked || (currentUserId !== candidate.managerID)}
+                            // title={
+                            //   candidate.locked 
+                            //     ? "This candidate is already shortlisted" 
+                            //     : currentUserId !== candidate.managerID 
+                            //       ? "You don't have permission to select this candidate" 
+                            //       : ""
+                            // }
                           />
                         </td>
                         <td>
@@ -437,6 +382,11 @@ const ManagerCandidates = () => {
                           <span className="score-cell">{candidate.score}</span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
+                          <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+                            <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
                           <div className="dropdown">
                             <button
                               className="btn-more"
@@ -455,7 +405,7 @@ const ManagerCandidates = () => {
                       </tr>
                       {expandedCandidate?.resume.id === candidate.resume.id && (
                         <tr className="expanded-row">
-                          <td colSpan="7">
+                          <td colSpan="8">
                             {renderExpandedView(expandedCandidate)}
                           </td>
                         </tr>
@@ -475,17 +425,26 @@ const ManagerCandidates = () => {
                   <div>No Candidate found matching your search criteria.</div>
                 </div>
               </div>
-            )}
-          </div>
-          <div className="candidates-footer">
-            <div className="selection-info">
-              Selected: <span className="selected-count">{selectedCandidates.length}</span>
+              )}
+              </div>
+              <div className="candidates-footer">
+                <div className="selection-info">
+                  Selected: <span className="selected-count">{selectedCandidates.length}</span>
+                </div>
+                <div className="footer-actions">
+                  <button className="btn-action secondary">Shortlist</button>
+                </div>
+              </div>
             </div>
-            <div className="footer-actions">
-              <button className="btn-action secondary">Shortlist</button>
-              <button className="btn-action tertiary">Compare</button>
-            </div>
           </div>
+          {isCompareViewOpen && (
+            <div className="compare-view-wrapper">
+              <CompareView
+                candidates={selectedCandidates.map(id => searchResults.find(c => c.resume.id === id))}
+                onClose={() => setIsCompareViewOpen(false)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

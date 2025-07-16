@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../store/slices/authSlice';
 import { notificationService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UserAvatar from '../../components/UserAvatar';
@@ -65,7 +66,8 @@ const Layout = ({ children }) => {
   const POLL_INTERVAL = 30000; // 30 seconds
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   console.log("user", user)
@@ -139,7 +141,7 @@ const Layout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -155,7 +157,7 @@ const Layout = ({ children }) => {
       <button className="btn btn-link me-2" onClick={toggleMenu}>
         <FontAwesomeIcon icon={faBars} />
       </button>
-      <span className="navbar-brand mb-0 h1">TelusRecruitAI</span>
+      <span className="navbar-brand mb-0 h1">TELUS RecuritAI</span>
     </div>
     <div className="d-flex align-items-center">
       <div className="bell-icon-container" style={{ position: 'relative', cursor: 'pointer', padding: '0.25rem' }} onClick={handleNotificationClick}>

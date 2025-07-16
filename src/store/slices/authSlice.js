@@ -13,10 +13,22 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const initAuth = createAsyncThunk(
+  'auth/initAuth',
+  async (_, { dispatch }) => {
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token');
+    if (storedUser && storedToken) {
+      return { user: JSON.parse(storedUser), token: storedToken };
+    }
+    return null;
+  }
+);
+
 const initialState = {
   user: null,
   token: null,
-  isLoading: false,
+  isLoading: true,
   error: null,
 };
 
@@ -26,9 +38,13 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       authService.logout();
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       state.user = null;
       state.token = null;
       state.error = null;
+      state.isLoading = false;
     },
     clearError: (state) => {
       state.error = null;
@@ -52,9 +68,27 @@ const authSlice = createSlice({
         if (action.payload) {
           state.user = action.payload.user;
           state.token = action.payload.token;
+          localStorage.setItem('user', JSON.stringify(action.payload.user));
+          localStorage.setItem('token', action.payload.token);
+          localStorage.setItem('refreshToken', action.payload.refreshToken);
         }
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(initAuth.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(initAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload) {
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+        }
+      })
+      .addCase(initAuth.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

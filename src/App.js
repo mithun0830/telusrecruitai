@@ -1,5 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { initAuth } from './store/slices/authSlice';
 import Login from './modules/auth/Login';
 import SignUp from './modules/auth/SignUp';
 import Landing from './modules/landing/Landing';
@@ -15,6 +18,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 import './styles/Layout.css';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(initAuth());
+  }, [dispatch]);
+
   return (
     <Router>
       <Routes>

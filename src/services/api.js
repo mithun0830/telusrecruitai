@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://recruitai-authentication-service-865090871947.us-central1.run.app/api';
-const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.us-central1.run.app/api';
-const AI_SEARCH_BASE_URL = 'https://aimatch-865090871947.asia-south1.run.app/api';
+const API_BASE_URL = 'https://kong-dp-865090871947.asia-south1.run.app/api';
+const NOTIFICATION_BASE_URL = 'https://kong-dp-865090871947.asia-south1.run.app/api';
+const AI_SEARCH_BASE_URL = 'https://kong-dp-865090871947.asia-south1.run.app/api';
 
 // Create axios instances with default config
 const api = axios.create({

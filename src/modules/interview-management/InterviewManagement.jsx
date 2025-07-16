@@ -21,25 +21,21 @@ const getRandomColor = () => {
 };
 
 const InterviewManagement = () => {
-  const stages = {
-    'New Applications': { count: 4, color: '#6366F1' },
-    'Screening (HR Review)': { count: 2, color: '#F97316' },
-    'Technical Interview': { count: 4, color: '#F59E0B' },
-    'Final Interview': { count: 3, color: '#3B82F6' }
-  };
+  const stageColors = ['#6366F1', '#F97316', '#F59E0B', '#3B82F6'];
+  
+  const stages = dummyData.list.reduce((acc, round, index) => {
+    acc[round.roundName] = {
+      count: round.candidates.length,
+      color: stageColors[index],
+      roundId: round.roundId
+    };
+    return acc;
+  }, {});
 
   return (
     <div className="interview-management">
       <div className="header">
         <div className="left-controls">
-          <div className="control">
-            <i className="fas fa-columns"></i>
-            Kanban view
-          </div>
-          <div className="control">
-            <i className="fas fa-star"></i>
-            Select score range
-          </div>
           <div className="control">
             <i className="fas fa-th"></i>
             All stages
@@ -76,22 +72,8 @@ const InterviewManagement = () => {
             <div className="column-content">
               {(() => {
                 let candidates = [];
-                switch(stage) {
-                  case 'New Applications':
-                    candidates = dummyData.list[0].candidates;
-                    break;
-                  case 'Screening (HR Review)':
-                    candidates = dummyData.list[1].candidates;
-                    break;
-                  case 'Technical Interview':
-                    candidates = dummyData.list[0].candidates.filter(c => c.status === 'COMPLETED');
-                    break;
-                  case 'Final Interview':
-                    candidates = dummyData.list[1].candidates.filter(c => c.status === 'COMPLETED');
-                    break;
-                  default:
-                    candidates = [];
-                }
+                const roundData = dummyData.list.find(round => round.roundName === stage);
+                candidates = roundData ? roundData.candidates : [];
                 
                 return candidates.map(candidate => (
                   <div key={candidate.candidateId} className="candidate-card">
@@ -121,14 +103,10 @@ const InterviewManagement = () => {
                       <div className="score-section">
                         <span>{stage === 'New Applications' ? 'Resume Score' : 'Overall Score'}</span>
                         <div className="score-value">
-                          <span>{Math.floor(Math.random() * (98 - 80 + 1)) + 80}%</span>
-                          {stage === 'New Applications' ? (
-                            <span className="portfolio-tag">Portfolio Submitted</span>
-                          ) : (
-                            <span className={Math.random() > 0.5 ? "urgent-tag" : "not-urgent-tag"}>
-                              {Math.random() > 0.5 ? "Urgent" : "Not Urgent"}
-                            </span>
-                          )}
+                          <span>{candidate.score}%</span>
+                          <span className={candidate.status === 'COMPLETED' ? "urgent-tag" : "not-urgent-tag"}>
+                            {candidate.status === 'COMPLETED' ? "Completed" : "Pending"}
+                          </span>
                         </div>
                       </div>
                     </div>

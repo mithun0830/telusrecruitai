@@ -42,12 +42,12 @@ const ManagerCandidates = () => {
     }
   `;
 
-  const handleCandidateLockToggle = async (candidate) => {
+  const handleCandidateLockToggle = async (candidate, currentUserId) => {
     try {
       if (candidate.locked) {
-        await candidateService.unlockCandidate(candidate);
+        await candidateService.unlockCandidate(candidate, currentUserId);
       } else {
-        await candidateService.lockCandidate(candidate);
+        await candidateService.lockCandidate(candidate, currentUserId);
       }
       // Toggle the locked status
       candidate.locked = !candidate.locked;
@@ -350,7 +350,13 @@ const ManagerCandidates = () => {
                           <input
                             type="checkbox"
                             checked={selectedCandidates.includes(candidate.resume.id)}
-                            onChange={() => handleCandidateLockToggle(candidate)}
+                           onChange={() => {
+                              // if (candidate.locked) {
+                              //   alert("This candidate is already shortlisted");
+                              //   return;
+                              // }
+                              handleCandidateLockToggle(candidate, currentUserId);
+                            }}
                          
                             // onChange={() => (!candidate.locked && (currentUserId === candidate.managerID)) && handleSelectCandidate(candidate.resume.id)}
                             // disabled={candidate.locked || (currentUserId !== candidate.managerID)}

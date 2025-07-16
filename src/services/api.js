@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
-const AI_SEARCH_BASE_URL = 'https://aimatch-865090871947.asia-south1.run.app/api';
+const AI_SEARCH_BASE_URL = 'https://match-lock-865090871947.asia-south1.run.app/api';
 
 
 // Create axios instances with default config
@@ -239,6 +239,54 @@ export const candidateService = {
     return await ai_api.post(`/resumes/match-new`, null, {
       params: { jd: searchString }
     });
+  },
+  lockCandidate: async (candidate, currentUserId) => {
+    const requestBody = {
+      resumeId: candidate.resume.id,
+      managerId: candidate.managerID,
+      name: candidate.resume.name,
+      email: candidate.resume.email,
+      phoneNumber: candidate.resume.phoneNumber,
+      score: candidate.score,
+      executiveSummary: candidate.analysis?.executiveSummary || '',
+      keyStrengths: candidate.analysis?.keyStrengths?.map(s => s.strength) || [],
+      improvementAreas: candidate.analysis?.improvementAreas?.map(a => a.gap) || [],
+      technicalSkills: candidate.analysis?.categoryScores?.technicalSkills || 0,
+      experience: candidate.analysis?.categoryScores?.experience || 0,
+      education: candidate.analysis?.categoryScores?.education || 0,
+      softSkills: candidate.analysis?.categoryScores?.softSkills || 0,
+      achievements: candidate.analysis?.categoryScores?.achievements || 0,
+      recommendationType: candidate.analysis?.recommendation?.type || '',
+      recommendationReason: candidate.analysis?.recommendation?.reason || '',
+      managerId: currentUserId,
+      locked: true,
+      status: "INITIATE"
+    };
+    return await ai_api.post('/resume-locks/lock', requestBody);
+  },
+  unlockCandidate: async (candidate, currentUserId) => {
+    const requestBody = {
+      resumeId: candidate.resume.id,
+      managerId: candidate.managerID,
+      name: candidate.resume.name,
+      email: candidate.resume.email,
+      phoneNumber: candidate.resume.phoneNumber,
+      score: candidate.score,
+      executiveSummary: candidate.analysis?.executiveSummary || '',
+      keyStrengths: candidate.analysis?.keyStrengths?.map(s => s.strength) || [],
+      improvementAreas: candidate.analysis?.improvementAreas?.map(a => a.gap) || [],
+      technicalSkills: candidate.analysis?.categoryScores?.technicalSkills || 0,
+      experience: candidate.analysis?.categoryScores?.experience || 0,
+      education: candidate.analysis?.categoryScores?.education || 0,
+      softSkills: candidate.analysis?.categoryScores?.softSkills || 0,
+      achievements: candidate.analysis?.categoryScores?.achievements || 0,
+      recommendationType: candidate.analysis?.recommendation?.type || '',
+      recommendationReason: candidate.analysis?.recommendation?.reason || '',
+      managerId: currentUserId,
+      locked: false,
+      status: "INITIATE"
+    };
+    return await ai_api.post('/resume-locks/unlock', requestBody);
   }
 };
 

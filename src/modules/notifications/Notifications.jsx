@@ -5,29 +5,19 @@ import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { notificationService } from '../../services/api';
 import { useSelector } from 'react-redux';
 import './Notifications.css';
-import { debounce } from 'lodash';
 
 const Notifications = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const user = useSelector((state) => state.auth.user);
 
-  // Debounce search term
-  const debouncedSearch = useMemo(
-    () => debounce((value) => setDebouncedSearchTerm(value), 300),
-    []
-  );
-
-  useEffect(() => {
-    debouncedSearch(searchTerm);
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [searchTerm, debouncedSearch]);
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -68,15 +58,15 @@ const Notifications = () => {
   };
 
   const filteredNotifications = useMemo(() => {
-    const searchLower = debouncedSearchTerm.toLowerCase();
+    const searchLower = activeSearchTerm.toLowerCase();
     return notifications.filter(notification => {
       const matchesSearch =
-        !debouncedSearchTerm ||
+        !activeSearchTerm ||
         (notification.message && notification.message.toLowerCase().includes(searchLower));
       const matchesType = selectedType === 'all' || notification.type === selectedType;
       return matchesSearch && matchesType;
     });
-  }, [debouncedSearchTerm, selectedType, notifications]);
+  }, [activeSearchTerm, selectedType, notifications]);
 
   const highlightMatch = (text, search) => {
     if (!search || !text) return text;
@@ -102,8 +92,23 @@ const Notifications = () => {
               aria-label="Search Notifications"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
             />
-            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+            <div 
+              className="search-icon-wrapper"
+              onClick={handleSearch}
+              role="button"
+              tabIndex={0}
+            >
+              <FontAwesomeIcon 
+                icon={faSearch} 
+                className="search-icon"
+              />
+            </div>
           </div>
           <div className="filter-container">
             <select
@@ -147,7 +152,7 @@ const Notifications = () => {
                       onClick={() => handleNotificationClick(notification.id)}
                     >
                       <td>{notification.id}</td>
-                      <td>{highlightMatch(notification.message, debouncedSearchTerm)}</td>
+                      <td>{highlightMatch(notification.message, activeSearchTerm)}</td>
                       <td>{new Intl.DateTimeFormat('en-IN', {
                         dateStyle: 'medium',
                         timeStyle: 'short',

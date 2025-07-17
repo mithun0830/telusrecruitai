@@ -37,7 +37,7 @@ const RmgDashboard = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Hello {user?.username}</h1>
+        <h1>RMG Dashboard</h1>
       </div>
       <div className="dashboard-content">
         <div className="dashboard-summary">

@@ -1,4 +1,4 @@
-.approvals-page {
+/* .approvals-page {
   padding: 24px;
   background-color: #f9fafb;
 }
@@ -8,6 +8,18 @@
   font-size: 24px;
   margin-bottom: 24px;
   font-weight: 700;
+} */
+
+.approvals-page {
+  padding: 20px;
+}
+
+.approvals-title {
+  color: #059669;
+  font-size: 24px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  font-family: inherit;
 }
 
 .search-filter-container {
@@ -46,14 +58,32 @@
   box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
 }
 
-.search-icon {
+.search-icon-wrapper {
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #059669;
-  pointer-events: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.search-icon-wrapper:hover {
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+.search-icon {
+  color: #059669 !important;
   font-size: 14px;
+}
+
+.search-icon-wrapper:hover .search-icon {
+  color: #047857 !important;
 }
 
 .filter-select {

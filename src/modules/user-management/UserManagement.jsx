@@ -11,7 +11,7 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const handleMoreOptionsClick = (userId) => {
@@ -97,21 +97,13 @@ const UserManagement = () => {
     fetchManagers();
   }, []);
 
-  useEffect(() => {
-    const debouncedSearch = debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, 300);
-
-    debouncedSearch(searchTerm);
-
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [searchTerm]);
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+  };
 
   const filteredManagers = managers.filter(manager => {
-    if (!debouncedSearchTerm) return true;
-    const searchLower = debouncedSearchTerm.toLowerCase();
+    if (!activeSearchTerm) return true;
+    const searchLower = activeSearchTerm.toLowerCase();
     return (
       manager.username.toLowerCase().includes(searchLower) ||
       manager.email.toLowerCase().includes(searchLower)
@@ -141,8 +133,23 @@ const UserManagement = () => {
               aria-label="Search Users"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
             />
-            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+            <div 
+              className="search-icon-wrapper"
+              onClick={handleSearch}
+              role="button"
+              tabIndex={0}
+            >
+              <FontAwesomeIcon 
+                icon={faSearch} 
+                className="search-icon"
+              />
+            </div>
           </div>
         </div>
         <div className="user-management-list">
@@ -174,8 +181,8 @@ const UserManagement = () => {
                     <tr key={manager.userId} className="user-row">
                       <td>{manager.userId}</td>
                       <td>{manager.employeeId || '-'}</td>
-                      <td>{highlightMatch(manager.username, debouncedSearchTerm)}</td>
-                      <td>{highlightMatch(manager.email, debouncedSearchTerm)}</td>
+                      <td>{highlightMatch(manager.username, activeSearchTerm)}</td>
+                      <td>{highlightMatch(manager.email, activeSearchTerm)}</td>
                       <td>
                         <span className={`badge rounded-pill ${
                           manager.accountStatus === 'ACTIVE' ? 'bg-success' : 

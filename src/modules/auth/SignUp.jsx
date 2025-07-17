@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { signupUser, resetSignupState, setError } from '../../store/slices/signupSlice';
-import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Modal } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import telusLogo from '../../assets/telus_logo.svg';
 import '../../styles/variables.css';
 import './Signup.css';
@@ -29,7 +31,9 @@ const SignUp = () => {
   });
 const dispatch = useDispatch();
 const { isLoading, error, success } = useSelector((state) => state.signup);
-const [successMessage, setSuccessMessage] = useState('');
+const [showModal, setShowModal] = useState(false);
+const [modalType, setModalType] = useState(''); // 'success' or 'error'
+const [modalMessage, setModalMessage] = useState('');
 const [passwordError, setPasswordError] = useState('');
 const [confirmPasswordError, setConfirmPasswordError] = useState('');
 const navigate = useNavigate();
@@ -95,31 +99,33 @@ const handleSubmit = async (e) => {
 };
 
 useEffect(() => {
-  if (success || error) { 
-    topRef.current?.scrollIntoView({ behavior: 'smooth' });
-   
-    if (success) {
-      setSuccessMessage('Registration successful. Your account is under approval.');
-      // Clear the form data
-      setFormData({
-        fullName: '',
-        employeeId: '',
-        email: '',
-        phoneNumber: '',
-        department: '',
-        designation: '',
-        region: '',
-        costCenter: '',
-        businessUnit: '',
-        reportingManagerEmail: '',
-        role: '',
-        password: '',
-        confirmPassword: '',
-        managerPermissions: [],
-        rmgPermissions: [],
-        profilePicture: null
-      });
-    }
+  if (success) {
+    setModalType('success');
+    setModalMessage('Your account has been successfully registered and is now under approval.');
+    setShowModal(true);
+    // Clear the form data
+    setFormData({
+      fullName: '',
+      employeeId: '',
+      email: '',
+      phoneNumber: '',
+      department: '',
+      designation: '',
+      region: '',
+      costCenter: '',
+      businessUnit: '',
+      reportingManagerEmail: '',
+      role: '',
+      password: '',
+      confirmPassword: '',
+      managerPermissions: [],
+      rmgPermissions: [],
+      profilePicture: null
+    });
+  } else if (error) {
+    setModalType('error');
+    setModalMessage(error);
+    setShowModal(true);
   }
 }, [success, error]);
 
@@ -228,6 +234,10 @@ useEffect(() => {
     return null;
   };
 
+  const handleContinue = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="signup-page">
       <div className="signup-container">
@@ -236,16 +246,6 @@ useEffect(() => {
           <h1>Just a few quick details and you're in. Let's get started.</h1>
         </div>
         <div className="signup-right" ref={topRef}>
-          {error && (
-            <Alert variant="danger" className="mb-4">
-              {error}
-            </Alert>
-          )}
-          {successMessage && (
-            <Alert variant="success" className="mb-4">
-              {successMessage}
-            </Alert>
-          )}
           <Form onSubmit={handleSubmit}>
             <Row className="mb-3">
               <Col>
@@ -473,6 +473,48 @@ useEffect(() => {
           </Form>
         </div>
       </div>
+
+      <Modal 
+        show={showModal} 
+        onHide={() => modalType === 'error' ? setShowModal(false) : null} 
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="success-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="success-icon-wrapper mb-4">
+            <FontAwesomeIcon 
+              icon={modalType === 'success' ? faCheckCircle : faTimesCircle} 
+              className={`success-icon ${modalType === 'error' ? 'text-danger' : ''}`}
+            />
+          </div>
+          <h4 className="success-title mb-3">
+            {modalType === 'success' ? 'Registration Successful!' : 'Registration Failed'}
+          </h4>
+          <p className="success-message mb-4">{modalMessage}</p>
+          {modalType === 'success' ? (
+            <Button 
+              variant="success" 
+              onClick={handleContinue}
+              className="continue-button"
+            >
+              Continue to Login
+            </Button>
+          ) : (
+            <Button 
+              variant="danger" 
+              onClick={() => {
+                setShowModal(false);
+                topRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="continue-button"
+            >
+              Try Again
+            </Button>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

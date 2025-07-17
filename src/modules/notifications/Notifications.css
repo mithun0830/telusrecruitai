@@ -7,11 +7,10 @@
   --telus-dark-gray: #2A2C2E;
 }
 
-.notifications-page {
+/* .notifications-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: 'Helvetica', 'Arial', sans-serif;
   background-color: var(--telus-light-gray);
   color: var(--telus-dark-gray);
 }
@@ -30,6 +29,18 @@
   font-size: 24px;
   font-weight: 700;
   margin: 0;
+} */
+
+.notifications-page {
+  padding: 20px;
+}
+
+.notifications-header h1 {
+  color: #059669;
+  font-size: 24px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  font-family: inherit;
 }
 
 .notifications-content {
@@ -78,19 +89,36 @@
 .search-input:focus {
   outline: none !important;
   border-color: #059669 !important;
-  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(246, 248, 248, 0.2) !important;
 }
 
 /* Search Icon */
-.search-icon {
+.search-icon-wrapper {
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.search-icon-wrapper:hover {
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+.search-icon {
   color: #059669 !important;
-  /* ✅ Green */
-  pointer-events: none;
   font-size: 14px;
+}
+
+.search-icon-wrapper:hover .search-icon {
+  color: #047857 !important;
 }
 
 /* ✅ Fixed Filter Dropdown Styling */

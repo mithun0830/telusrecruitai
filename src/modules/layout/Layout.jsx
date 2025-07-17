@@ -6,6 +6,7 @@ import { notificationService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UserAvatar from '../../components/UserAvatar';
 import NotificationPanel from '../../components/NotificationPanel';
+import telusLogo from '../../assets/telus_logo_vertical.png';
 import {
   faBars, faTachometerAlt, faFileAlt,
   faUserFriends, faCalendarAlt, faBell,
@@ -157,7 +158,7 @@ const Layout = ({ children }) => {
       <button className="btn btn-link me-2" onClick={toggleMenu}>
         <FontAwesomeIcon icon={faBars} />
       </button>
-      <span className="navbar-brand mb-0 h1">TELUS RecuritAI</span>
+      <img src={telusLogo} alt="TELUS Logo" className="navbar-brand" style={{ height: '50px' }} />
     </div>
     <div className="d-flex align-items-center">
       <div className="bell-icon-container" style={{ position: 'relative', cursor: 'pointer', padding: '0.25rem' }} onClick={handleNotificationClick}>

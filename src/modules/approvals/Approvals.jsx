@@ -11,7 +11,7 @@ const Approvals = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
 const [showOverlay, setShowOverlay] = useState(false);
 const [overlayAction, setOverlayAction] = useState('');
@@ -58,17 +58,9 @@ const [dropdownOpen, setDropdownOpen] = useState({});
     fetchPendingApprovals();
   }, []);
 
-  useEffect(() => {
-    const debouncedSearch = debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, 300);
-
-    debouncedSearch(searchTerm);
-
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [searchTerm]);
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+  };
 
   const handleAction = (id, action) => {
     const user = approvals.find(approval => approval.id === id);
@@ -115,8 +107,8 @@ const [dropdownOpen, setDropdownOpen] = useState({});
   };
 
   const filteredApprovals = approvals.filter(approval => {
-      if (!debouncedSearchTerm) return true;
-      const searchLower = debouncedSearchTerm.toLowerCase();
+      if (!activeSearchTerm) return true;
+      const searchLower = activeSearchTerm.toLowerCase();
       const matchesSearch = 
         (approval.name && String(approval.name).toLowerCase().includes(searchLower)) ||
         (approval.email && String(approval.email).toLowerCase().includes(searchLower));
@@ -144,8 +136,23 @@ const [dropdownOpen, setDropdownOpen] = useState({});
             placeholder="Search by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch();
+              }
+            }}
           />
-          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          <div 
+            className="search-icon-wrapper"
+            onClick={handleSearch}
+            role="button"
+            tabIndex={0}
+          >
+            <FontAwesomeIcon 
+              icon={faSearch} 
+              className="search-icon"
+            />
+          </div>
         </div>
         <div className="filter-container">
           <select
@@ -199,8 +206,8 @@ const [dropdownOpen, setDropdownOpen] = useState({});
                 {filteredApprovals.map((user) => (
                   <tr key={user.id} className="approval-row">
                     <td>{user.id}</td>
-                    <td>{highlightMatch(user.name, debouncedSearchTerm)}</td>
-                    <td>{highlightMatch(user.email, debouncedSearchTerm)}</td>
+                    <td>{highlightMatch(user.name, activeSearchTerm)}</td>
+                    <td>{highlightMatch(user.email, activeSearchTerm)}</td>
                     <td>{user.position}</td>
                     <td>{new Date(user.date).toLocaleDateString()}</td>
                     <td>

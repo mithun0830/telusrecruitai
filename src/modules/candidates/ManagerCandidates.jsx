@@ -292,6 +292,7 @@ const ManagerCandidates = () => {
 
     setErrorMessage('');
     setIsLoading(true);
+    setExpandedCandidate(null); // Reset expanded view
     const searchString = filters.aiSearch.trim();
     console.log("searchString", searchString)
     try {
@@ -314,6 +315,8 @@ const ManagerCandidates = () => {
     return searchResults
       .filter(candidate => candidate.locked)
       .map(candidate => ({
+        resumeId: candidate.resume.id,
+        evaluationId: 123456,
         name: candidate.resume.name,
         email: candidate.resume.email,
         phone: candidate.resume.phoneNumber,

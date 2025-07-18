@@ -82,6 +82,14 @@
   flex: 1;
   min-width: 320px;
   max-width: 320px;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-right: 16px;
+}
+
+.kanban-column:last-child {
+  margin-right: 0;
 }
 
 .column-header {
@@ -124,6 +132,14 @@
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: move;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.candidate-card.is-dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .card-header {

@@ -1,16 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
-import { candidateService } from '../../services/api';
+import { authService, candidateService, interviewService } from '../../services/api';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
+import CompareView from './CompareView';
+import { Modal, Button } from 'react-bootstrap';
+
+const scrollToRef = (ref) => {
+  if (ref && ref.current) {
+    ref.current.scrollIntoView({ behavior: 'smooth' });
+  }
+};
 
 const isFilterSelected = (filters) => {
-  return Boolean(
-    filters.aiSearch.trim() || 
-    filters.jobTitle || 
-    (filters.hardSkills.length > 0 && filters.hardSkills[0]) || 
-    (filters.yearsOfExperience.length > 0 && filters.yearsOfExperience[0]) || 
-    filters.score.trim()
-  );
+  return Boolean(filters.aiSearch.trim());
 };
 
 const loaderStyle = {
@@ -37,33 +42,55 @@ const loaderTextStyle = {
 };
 
 const ManagerCandidates = () => {
+  const expandedViewRef = useRef(null);
+  const [showLockErrorModal, setShowLockErrorModal] = useState(false);
+  const [lockErrorMessage, setLockErrorMessage] = useState('');
+  const [showShortlistModal, setShowShortlistModal] = useState(false);
+  const [shortlistMessage, setShortlistMessage] = useState('');
+  const [shortlistSuccess, setShortlistSuccess] = useState(false);
+
   const spinKeyframes = `
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
   `;
+
+  const handleCandidateLockToggle = async (candidate, currentUserId) => {
+    try {
+      let response;
+      if (candidate.locked) {
+        response = await candidateService.unlockCandidate(candidate, currentUserId);
+      } else {
+        response = await candidateService.lockCandidate(candidate, currentUserId);
+      }
+
+      if (response.success) {
+        // Toggle the locked status
+        candidate.locked = !candidate.locked;
+        // Update the selectedCandidates list
+        handleSelectCandidate(candidate.resume.id);
+      } else {
+        throw new Error(response.message || 'Failed to update candidate status');
+      }
+    } catch (error) {
+      console.error('Error updating candidate lock status:', error);
+      if (error.message.includes('locked')) {
+        setLockErrorMessage('This candidate is already locked by another manager. You cannot modify it.');
+      }
+      else {
+        setLockErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      }
+      setShowLockErrorModal(true);
+    }
+  };
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [isResumeExpanded, setIsResumeExpanded] = useState(false);
-  const filtersRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (filtersRef.current && !filtersRef.current.contains(event.target)) {
-        setIsFiltersExpanded(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const [isCompareViewOpen, setIsCompareViewOpen] = useState(false);
+  const currentUserId = useSelector(state => state.auth.user?.id);
 
   const handleAISearchClick = () => {
-    setIsFiltersExpanded(true);
     setErrorMessage('');
   };
   const {
@@ -85,6 +112,7 @@ const ManagerCandidates = () => {
   const handleViewClick = (candidate) => {
     setExpandedCandidate(expandedCandidate?.resume.id === candidate.resume.id ? null : candidate);
     setActiveDropdown(null);
+    setTimeout(() => scrollToRef(expandedViewRef), 100);
   };
 
   const renderExpandedView = (candidate) => {
@@ -99,24 +127,24 @@ const ManagerCandidates = () => {
         <div className="expanded-content">
           <div className="candidate-header">
             <div className="candidate-info">
-                <div className="candidate-name-row">
-                  <div className="candidate-avatar-large">
-                    {candidate.resume.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="candidate-details">
-                    <h2 className="candidate-name-large">{candidate.resume.name}</h2>
-                    <div className="contact-info">
-                      <div className="contact-item">
-                        <span>📧</span>
-                        <span>{candidate.resume.email}</span>
-                      </div>
-                      <div className="contact-item">
-                        <span>📞</span>
-                        <span>{candidate.resume.phoneNumber}</span>
-                      </div>
+              <div className="candidate-name-row">
+                <div className="candidate-avatar-large">
+                  {candidate.resume.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="candidate-details">
+                  <h2 className="candidate-name-large">{candidate.resume.name}</h2>
+                  <div className="contact-info">
+                    <div className="contact-item">
+                      <span>📧</span>
+                      <span>{candidate.resume.email}</span>
+                    </div>
+                    <div className="contact-item">
+                      <span>📞</span>
+                      <span>{candidate.resume.phoneNumber}</span>
                     </div>
                   </div>
                 </div>
+              </div>
             </div>
             <div className="match-score">
               <div className="score-percentage">{candidate.score}%</div>
@@ -146,8 +174,8 @@ const ManagerCandidates = () => {
                       <div className="score-label">{item.label}</div>
                       <div className="score-bar-container">
                         <div className="score-bar">
-                          <div 
-                            className="score-fill" 
+                          <div
+                            className="score-fill"
                             style={{ width: `${(candidate.analysis.categoryScores[item.score] / item.total) * 100}%` }}
                           ></div>
                         </div>
@@ -264,7 +292,7 @@ const ManagerCandidates = () => {
 
     setErrorMessage('');
     setIsLoading(true);
-    const searchString = `${filters.aiSearch || ''}, Job Title: ${filters.jobTitle || ''}, Hard Skill: ${filters.hardSkills || ''}, Years of Experience: ${filters.yearsOfExperience} and Score: ${filters.score}`;
+    const searchString = filters.aiSearch.trim();
     console.log("searchString", searchString)
     try {
       const response = await candidateService.searchCandidates(searchString);
@@ -282,6 +310,50 @@ const ManagerCandidates = () => {
     }
   };
 
+  const getFormattedCandidateData = () => {
+    return searchResults
+      .filter(candidate => candidate.locked)
+      .map(candidate => ({
+        name: candidate.resume.name,
+        email: candidate.resume.email,
+        phone: candidate.resume.phoneNumber,
+        positionApplied: candidate.resume.positionApplied || "Not specified",
+        jobDetails: candidate.resume.jobDetails || "Not specified",
+        score: candidate.score
+      }));
+  };
+
+  const handleShortlistClick = async () => {
+    const formattedCandidates = getFormattedCandidateData();
+    if (formattedCandidates.length === 0) {
+      setShortlistMessage('Please select at least one candidate to shortlist.');
+      setShortlistSuccess(false);
+      setShowShortlistModal(true);
+      return;
+    }
+
+    const payload = {
+      managerId: 1, // Replace with actual manager ID
+      candidates: formattedCandidates
+    };
+
+    try {
+      const response = await interviewService.shortlistCandidates(payload);
+      if (response.success) {
+        setShortlistMessage('Candidates have been successfully shortlisted.');
+        setShortlistSuccess(true);
+      } else {
+        setShortlistMessage('Failed to shortlist candidates. Please try again.');
+        setShortlistSuccess(false);
+      }
+    } catch (error) {
+      console.error('Error shortlisting candidates:', error);
+      setShortlistMessage('An error occurred while shortlisting candidates. Please try again.');
+      setShortlistSuccess(false);
+    }
+    setShowShortlistModal(true);
+  };
+
   return (
     <div className="candidates-page">
       <style>{spinKeyframes}</style>
@@ -289,8 +361,8 @@ const ManagerCandidates = () => {
         <h1>Manager Candidates</h1>
       </div>
       <div className="candidates-content">
-        <div className="filters-section horizontal" ref={filtersRef}>
-          <div className={`filters-container ${isFiltersExpanded ? 'expanded' : ''}`}>
+        <div className="filters-section horizontal">
+          <div className="filters-container">
             <div className="ai-search-container">
               <input
                 type="text"
@@ -298,78 +370,9 @@ const ManagerCandidates = () => {
                 className="ai-search-input"
                 value={filters.aiSearch}
                 onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
-                onFocus={() => {
-                  handleAISearchClick();
-                  setErrorMessage('');
-                }}
-                onClick={handleAISearchClick}
+                onFocus={() => setErrorMessage('')}
               />
             </div>
-            <div className="filter-divider"></div>
-            {isFiltersExpanded && (
-              <>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <select
-                      className="ai-search-input"
-                      value={filters.jobTitle}
-                      onChange={(e) => handleFilterChange('jobTitle', e.target.value)}
-                      onFocus={() => setErrorMessage('')}
-                    >
-                      <option value="">Select Job Title</option>
-                      {['React Developer', 'DevOps Engineer', 'Mobile App Developer', 'HR Manager', 'SQL Developer', 'Data Engineer', 'GenAI Engineer'].map((job) => (
-                        <option key={job} value={job}>{job}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-divider"></div>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <select
-                      className="ai-search-input"
-                      value={filters.hardSkills[0] || ''}
-                      onChange={(e) => handleFilterChange('hardSkills', [e.target.value])}
-                      onFocus={() => setErrorMessage('')}
-                    >
-                      <option value="">Select Hard Skill</option>
-                      {['GitHub', 'AWS', 'Rust', 'Flutter', 'SQL', 'Hadoop', 'GenAI', 'RedShift'].map((skill) => (
-                        <option key={skill} value={skill}>{skill}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-divider"></div>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <select
-                      className="ai-search-input"
-                      value={filters.yearsOfExperience[0] || ''}
-                      onChange={(e) => handleFilterChange('yearsOfExperience', [e.target.value])}
-                      onFocus={() => setErrorMessage('')}
-                    >
-                      <option value="">Select Experience</option>
-                      {['0-2 years', '2-4 years', '4-6 years', '6-8 years', '8-10 years', '10-12 years', '12-14 years', '14-16 years', '16-18 years', '18-20 years'].map((skill) => (
-                        <option key={skill} value={skill}>{skill}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-divider"></div>
-                <div className="filter-group">
-                  <div className="filter-group-content">
-                    <input
-                      type="text"
-                      placeholder="Enter Score"
-                      className="filter-input"
-                      value={filters.score}
-                      onChange={(e) => handleFilterChange('score', e.target.value)}
-                      onFocus={() => setErrorMessage('')}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
             <div>
               <button
                 className="search-button"
@@ -382,112 +385,155 @@ const ManagerCandidates = () => {
           </div>
           {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
-        <div className="candidates-list">
-          <div className="candidates-list-header">
-            <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
-            <div className="header-actions">
-            </div>
-          </div>
-          <div className="candidates-table-container">
-            {isLoading ? (
-              <div style={loaderContainerStyle}>
-                <div style={loaderStyle}></div>
-                <span style={loaderTextStyle}>Searching for candidates...</span>
+        <div className={`candidates-container ${isCompareViewOpen ? 'with-compare-view' : ''}`}>
+          <div className="candidates-list-wrapper">
+            <div className="candidates-list">
+              <div className="candidates-list-header">
+                <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
+                <div className="header-actions">
+                </div>
               </div>
-            ) : searchResults.length > 0 ? (
-              <table className="candidates-table">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Skill Set</th>
-                    <th>Exp.</th>
-                    <th>Score</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {searchResults.map((candidate) => (
-                    <React.Fragment key={candidate.resume.id}>
-                      <tr className={expandedCandidate?.resume.id === candidate.resume.id ? 'expanded' : ''}>
-                        <td>
+              <div className="candidates-table-container">
+                {isLoading ? (
+                  <div style={loaderContainerStyle}>
+                    <div style={loaderStyle}></div>
+                    <span style={loaderTextStyle}>Searching for candidates...</span>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <div className="candidates-grid">
+                    {searchResults.map((candidate) => (
+                      <div key={candidate.resume.id} className="candidate-card">
+                        <div className="candidate-header">
                           <input
                             type="checkbox"
-                            checked={selectedCandidates.includes(candidate.resume.id)}
-                            onChange={() => handleSelectCandidate(candidate.resume.id)}
+                            checked={candidate.locked}
+                            onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
                           />
-                        </td>
-                        <td>
                           <div className="candidate-name">
                             <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
                             <span>{candidate.resume.name}</span>
                           </div>
-                        </td>
-                        <td><div className="candidate-name"><span>{candidate.resume.phoneNumber}</span></div></td>
-                        <td>
-                          <div className="candidate-name">
-                            <span>
-                              {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}
-                            </span>
-                          </div>
-                        </td>
-                        <td>{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</td>
-                        <td style={{ textAlign: 'center' }}>
-                          <span className="score-cell">{candidate.score}</span>
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <div className="dropdown">
-                            <button
-                              className="btn-more"
-                              title="More options"
-                              onClick={() => handleMoreOptionsClick(candidate.resume.id)}
-                            >
-                              ⋮
-                            </button>
-                            {activeDropdown === candidate.resume.id && (
-                              <div className="dropdown-content">
-                                <button onClick={() => handleViewClick(candidate)}>Detailed View</button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                      {expandedCandidate?.resume.id === candidate.resume.id && (
-                        <tr className="expanded-row">
-                          <td colSpan="7">
-                            {renderExpandedView(expandedCandidate)}
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="no-candidates-message">
-                <div>
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
-                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                  <div>No Candidate found matching your search criteria.</div>
+                          <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+                            <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+                          </span>
+                        </div>
+                        <div className="candidate-details">
+                          <div>Phone: {candidate.resume.phoneNumber}</div>
+                          <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
+                          <div>Exp: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
+                          <div>Score: {candidate.score}</div>
+                        </div>
+                        <div className="candidate-actions">
+                          <button
+                            className="btn-more"
+                            title="More options"
+                            onClick={() => handleMoreOptionsClick(candidate.resume.id)}
+                          >
+                            ⋮
+                          </button>
+                          {activeDropdown === candidate.resume.id && (
+                            <div className="dropdown-content">
+                              <button onClick={() => handleViewClick(candidate)}>
+                                {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-candidates-message">
+                    <div>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
+                        <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                      <div>No Candidate found matching your search criteria.</div>
+                    </div>
+                  </div>
+                )}
+                {expandedCandidate && (
+                  <div ref={expandedViewRef} className="expanded-view-container">
+                    {renderExpandedView(expandedCandidate)}
+                  </div>
+                )}
+              </div>
+              <div className="candidates-footer">
+                <div className="selection-info">
+                  Selected: <span className="selected-count">{searchResults.filter(c => c.locked).length}</span>
+                </div>
+                <div className="footer-actions">
+                  <button className="btn-action secondary" onClick={handleShortlistClick}>Shortlist</button>
                 </div>
               </div>
-            )}
-          </div>
-          <div className="candidates-footer">
-            <div className="selection-info">
-              Selected: <span className="selected-count">{selectedCandidates.length}</span>
-            </div>
-            <div className="footer-actions">
-              <button className="btn-action secondary">Shortlist</button>
-              <button className="btn-action tertiary">Compare</button>
             </div>
           </div>
+          {isCompareViewOpen && (
+            <div className="compare-view-wrapper">
+              <CompareView
+                candidates={selectedCandidates.map(id => searchResults.find(c => c.resume.id === id))}
+                onClose={() => setIsCompareViewOpen(false)}
+              />
+            </div>
+          )}
         </div>
       </div>
+
+      <Modal 
+        show={showLockErrorModal} 
+        onHide={() => setShowLockErrorModal(false)} 
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="error-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="error-icon-wrapper mb-4">
+            <FontAwesomeIcon
+              icon={faTimesCircle}
+              className="error-icon text-danger"
+            />
+          </div>
+          <h4 className="error-title mb-3">Operation Failed</h4>
+          <p className="error-message mb-4">{lockErrorMessage}</p>
+          <Button
+            variant="danger"
+            onClick={() => setShowLockErrorModal(false)}
+            className="continue-button"
+          >
+            Close
+          </Button>
+        </Modal.Body>
+      </Modal>
+
+      <Modal 
+        show={showShortlistModal} 
+        onHide={() => setShowShortlistModal(false)} 
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="shortlist-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="shortlist-icon-wrapper mb-4">
+            <FontAwesomeIcon
+              icon={shortlistSuccess ? faCheck : faTimesCircle}
+              className={`shortlist-icon ${shortlistSuccess ? 'text-success' : 'text-danger'}`}
+            />
+          </div>
+          <h4 className="shortlist-title mb-3">{shortlistSuccess ? 'Success' : 'Operation Failed'}</h4>
+          <p className="shortlist-message mb-4">{shortlistMessage}</p>
+          <Button
+            variant={shortlistSuccess ? 'success' : 'danger'}
+            onClick={() => setShowShortlistModal(false)}
+            className="continue-button"
+          >
+            Close
+          </Button>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

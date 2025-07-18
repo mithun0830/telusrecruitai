@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes, faUserPlus, faSearch, faFilter, faExclamationTriangle, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Button, Form, Alert, Dropdown } from 'react-bootstrap';
+import { Modal, Button, Form, Dropdown } from 'react-bootstrap';
 import { userService } from '../../services/api';
 import './Approvals.css';
 import { debounce } from 'lodash';
@@ -11,13 +11,14 @@ const Approvals = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [showRejectError, setShowRejectError] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState({});
+const [showOverlay, setShowOverlay] = useState(false);
+const [overlayAction, setOverlayAction] = useState('');
+const [reviewComment, setReviewComment] = useState('');
+const [selectedUser, setSelectedUser] = useState(null);
+const [showCommentError, setShowCommentError] = useState(false);
+const [dropdownOpen, setDropdownOpen] = useState({});
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -57,81 +58,57 @@ const Approvals = () => {
     fetchPendingApprovals();
   }, []);
 
-  useEffect(() => {
-    const debouncedSearch = debounce((value) => {
-      setDebouncedSearchTerm(value);
-    }, 300);
-
-    debouncedSearch(searchTerm);
-
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [searchTerm]);
-
-  const handleApprove = async (id) => {
-    if (window.confirm('Are you sure you want to approve this request?')) {
-      try {
-        const response = await userService.approveUser(id);
-        if (response.success) {
-          setApprovals(prevApprovals => 
-            prevApprovals.map(approval => 
-              approval.id === id ? {...approval, status: 'Approved'} : approval
-            )
-          );
-          alert('User approved successfully');
-        } else {
-          alert(`Failed to approve user: ${response.error}`);
-        }
-      } catch (error) {
-        alert('An error occurred while approving the user');
-      }
-    }
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
   };
 
-  const handleReject = (id) => {
-    setSelectedUserId(id);
-    setShowRejectModal(true);
-    setShowRejectError(false);
-    setRejectReason('');
+  const handleAction = (id, action) => {
+    const user = approvals.find(approval => approval.id === id);
+    setSelectedUser(user);
+    setOverlayAction(action);
+    setShowOverlay(true);
+    setShowCommentError(false);
+    setReviewComment('');
   };
 
-  const confirmReject = async () => {
-    if (!rejectReason.trim()) {
-      setShowRejectError(true);
+  const confirmAction = async () => {
+    if (!reviewComment.trim()) {
+      setShowCommentError(true);
       return;
     }
     try {
-      const response = await userService.rejectUser(selectedUserId, rejectReason);
+      let response;
+      if (overlayAction === 'approve') {
+        response = await userService.approveUser(selectedUser.id, reviewComment);
+      } else {
+        response = await userService.rejectUser(selectedUser.id, reviewComment);
+      }
       if (response.success) {
         setApprovals(prevApprovals => 
           prevApprovals.map(approval => 
-            approval.id === selectedUserId ? {...approval, status: 'Rejected', rejectReason} : approval
+            approval.id === selectedUser.id ? {...approval, status: overlayAction === 'approve' ? 'Approved' : 'Rejected', reviewComment} : approval
           )
         );
-        alert('User rejected successfully');
-      } else {
-        alert(`Failed to reject user: ${response.error}`);
       }
     } catch (error) {
-      alert('An error occurred while rejecting the user');
+      console.error(`An error occurred while ${overlayAction}ing the user:`, error);
     }
-    setShowRejectModal(false);
-    setRejectReason('');
-    setSelectedUserId(null);
-    setShowRejectError(false);
+    setShowOverlay(false);
+    setSelectedUser(null);
+    setReviewComment('');
+    setShowCommentError(false);
   };
 
-  const handleModalClose = () => {
-    setShowRejectModal(false);
-    setRejectReason('');
-    setSelectedUserId(null);
-    setShowRejectError(false);
+  const handleOverlayClose = () => {
+    setShowOverlay(false);
+    setReviewComment('');
+    setSelectedUser(null);
+    setShowCommentError(false);
   };
 
   const filteredApprovals = approvals.filter(approval => {
-      if (!debouncedSearchTerm) return true;
-      const searchLower = debouncedSearchTerm.toLowerCase();
+      if (!activeSearchTerm) return true;
+      const searchLower = activeSearchTerm.toLowerCase();
       const matchesSearch = 
         (approval.name && String(approval.name).toLowerCase().includes(searchLower)) ||
         (approval.email && String(approval.email).toLowerCase().includes(searchLower));
@@ -148,8 +125,6 @@ const Approvals = () => {
     );
   };
 
-  const selectedUser = approvals.find(approval => approval.id === selectedUserId);
-
   return (
     <div className="approvals-page">
       <h1 className="approvals-title">Approvals</h1>
@@ -161,8 +136,23 @@ const Approvals = () => {
             placeholder="Search by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch();
+              }
+            }}
           />
-          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          <div 
+            className="search-icon-wrapper"
+            onClick={handleSearch}
+            role="button"
+            tabIndex={0}
+          >
+            <FontAwesomeIcon 
+              icon={faSearch} 
+              className="search-icon"
+            />
+          </div>
         </div>
         <div className="filter-container">
           <select
@@ -186,7 +176,10 @@ const Approvals = () => {
               <span>Loading approvals...</span>
             </div>
           ) : error ? (
-            <Alert variant="danger">{error}</Alert>
+            <div className="error-message">
+              <FontAwesomeIcon icon={faTimes} className="error-icon" />
+              {error}
+            </div>
           ) : filteredApprovals.length === 0 ? (
             <div className="no-approvals-message">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -213,8 +206,8 @@ const Approvals = () => {
                 {filteredApprovals.map((user) => (
                   <tr key={user.id} className="approval-row">
                     <td>{user.id}</td>
-                    <td>{highlightMatch(user.name, debouncedSearchTerm)}</td>
-                    <td>{highlightMatch(user.email, debouncedSearchTerm)}</td>
+                    <td>{highlightMatch(user.name, activeSearchTerm)}</td>
+                    <td>{highlightMatch(user.email, activeSearchTerm)}</td>
                     <td>{user.position}</td>
                     <td>{new Date(user.date).toLocaleDateString()}</td>
                     <td>
@@ -227,23 +220,23 @@ const Approvals = () => {
                         <div className="action-buttons">
                           <button 
                             className="btn btn-success btn-sm" 
-                            onClick={() => handleApprove(user.id)}
+                            onClick={() => handleAction(user.id, 'approve')}
                           >
                             <FontAwesomeIcon icon={faCheck} />
                             Approve
                           </button>
                           <button 
                             className="btn btn-danger btn-sm" 
-                            onClick={() => handleReject(user.id)}
+                            onClick={() => handleAction(user.id, 'reject')}
                           >
                             <FontAwesomeIcon icon={faTimes} />
                             Reject
                           </button>
                         </div>
                       )}
-                      {user.status === 'Rejected' && user.rejectReason && (
-                        <span className="reject-reason" title={user.rejectReason}>
-                          Reason: {user.rejectReason.substring(0, 20)}...
+                      {(user.status === 'Rejected' || user.status === 'Approved') && user.reviewComment && (
+                        <span className="review-comment" title={user.reviewComment}>
+                          Comments: {user.reviewComment.substring(0, 20)}...
                         </span>
                       )}
                     </td>
@@ -255,50 +248,84 @@ const Approvals = () => {
         </div>
       </div>
 
-      <Modal show={showRejectModal} onHide={handleModalClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FontAwesomeIcon icon={faExclamationTriangle} className="text-warning me-2" />
-            Reject Approval Request
+      <Modal 
+        show={showOverlay} 
+        onHide={handleOverlayClose}
+        centered
+        size="lg"
+        className="overlay-modal"
+      >
+        <Modal.Header 
+          closeButton 
+          className={`overlay-header ${overlayAction === 'approve' ? 'overlay-header-approve' : 'overlay-header-reject'}`}
+        >
+          <Modal.Title className="overlay-title">
+            <FontAwesomeIcon 
+              icon={overlayAction === 'approve' ? faCheck : faTimes} 
+              className="overlay-title-icon"
+            />
+            {overlayAction === 'approve' ? 'Approve' : 'Reject'} Request
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="overlay-body">
           {selectedUser && (
-            <div className="mb-3">
-              <p className="mb-1">You are about to reject the approval request for:</p>
-              <div className="bg-light p-3 rounded">
-                <p className="mb-1"><strong>Name:</strong> {selectedUser.name}</p>
-                <p className="mb-1"><strong>Email:</strong> {selectedUser.email}</p>
-                <p className="mb-0"><strong>Position:</strong> {selectedUser.position}</p>
+            <div className="overlay-user-info">
+              <p className="overlay-user-title">
+                You are about to {overlayAction} the request for:
+              </p>
+              <div className="overlay-user-details">
+                <p className="overlay-user-detail-row">
+                  <strong className="overlay-user-detail-label">Name:</strong> 
+                  <span>{selectedUser.name}</span>
+                </p>
+                <p className="overlay-user-detail-row">
+                  <strong className="overlay-user-detail-label">Email:</strong> 
+                  <span>{selectedUser.email}</span>
+                </p>
+                <p className="overlay-user-detail-row">
+                  <strong className="overlay-user-detail-label">Position:</strong> 
+                  <span>{selectedUser.position}</span>
+                </p>
               </div>
             </div>
           )}
           <Form.Group>
-            <Form.Label>Rejection Reason <span className="text-danger">*</span></Form.Label>
+            <Form.Label className="overlay-comments-label">
+              Review Comments <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Control
               as="textarea"
-              rows={3}
-              value={rejectReason}
+              rows={4}
+              value={reviewComment}
               onChange={(e) => {
-                setRejectReason(e.target.value);
-                setShowRejectError(false);
+                setReviewComment(e.target.value);
+                setShowCommentError(false);
               }}
-              placeholder="Please provide a detailed reason for rejection..."
-              isInvalid={showRejectError}
+              placeholder={`Please provide ${overlayAction === 'approve' ? 'approval' : 'rejection'} comments...`}
+              isInvalid={showCommentError}
+              className="overlay-comments-textarea"
             />
-            {showRejectError && (
-              <Alert variant="danger" className="mt-2 py-2">
-                Please provide a reason for rejection before proceeding.
-              </Alert>
+            {showCommentError && (
+              <div className="overlay-error-message">
+                Please provide review comments before proceeding.
+              </div>
             )}
           </Form.Group>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleModalClose}>
+        <Modal.Footer className="overlay-footer">
+          <Button 
+            variant="light" 
+            onClick={handleOverlayClose}
+            className="overlay-button overlay-button-cancel"
+          >
             Cancel
           </Button>
-          <Button variant="danger" onClick={confirmReject}>
-            Reject Request
+          <Button 
+            variant={overlayAction === 'approve' ? 'success' : 'danger'} 
+            onClick={confirmAction}
+            className={`overlay-button overlay-button-confirm ${overlayAction === 'approve' ? 'overlay-button-confirm-approve' : 'overlay-button-confirm-reject'}`}
+          >
+            Confirm {overlayAction === 'approve' ? 'Approval' : 'Rejection'}
           </Button>
         </Modal.Footer>
       </Modal>

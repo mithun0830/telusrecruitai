@@ -6,12 +6,12 @@ import {
   faClipboardCheck, 
   faChartLine 
 } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useSelector } from 'react-redux';
 import { managerService } from '../../services/api';
 import './MngDashboard.css';
 
 const RmgDashboard = () => {
-  const { user } = useAuth();
+  const user = useSelector((state) => state.auth.user);
   const [managerData, setManagerData] = useState({
     totalManagers: 0,
     activeManagers: 0,
@@ -34,10 +34,11 @@ const RmgDashboard = () => {
 
     fetchManagerData();
   }, []);
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Hello {user?.username}</h1>
+        <h1>RMG Dashboard</h1>
       </div>
       <div className="dashboard-content">
         <div className="dashboard-summary">

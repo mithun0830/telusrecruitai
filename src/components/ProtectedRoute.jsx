@@ -1,12 +1,12 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useSelector((state) => state.auth);
   const location = useLocation();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-vh-100 d-flex justify-content-center align-items-center">
         <div className="spinner-border text-primary" role="status">

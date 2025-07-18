@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../store/slices/authSlice';
 import { notificationService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UserAvatar from '../../components/UserAvatar';
 import NotificationPanel from '../../components/NotificationPanel';
+import telusLogo from '../../assets/telus_logo_vertical.png';
 import {
   faBars, faTachometerAlt, faFileAlt,
   faUserFriends, faCalendarAlt, faBell,
   faSignOutAlt, faCaretDown, faCog, faUsers,
-  faUsersCog, faClipboardList, faListAlt, faBriefcase,
-  faChevronRight
+  faUsersCog, faClipboardList, faListAlt, faBriefcase
 } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/variables.css';
 import '../../styles/Layout.css';
@@ -45,7 +46,7 @@ const menuItems = [
   { path: '/approvals', icon: faFileAlt, label: 'Approvals', permission: 'rmg_approval', role: 'RMG' },
   { path: '/user-management', icon: faUsersCog, label: 'User Management', permission: 'rmg_user_mng', role: 'RMG' },
   { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'rmg_notif', role: 'RMG' },
-  // { path: '/interviews', icon: faCalendarAlt, label: 'Interview Management', permission: 'rmg_interview_mng', role: 'RMG' },
+  { path: '/interviews', icon: faCalendarAlt, label: 'Interview Management', permission: 'rmg_interview_mng', role: 'RMG' },
   // { path: '/preferences', icon: faCog, label: 'Preferences', permission: 'rmg_pref', role: 'RMG' },
   // { path: '/candidate-pool', icon: faUsers, label: 'Candidate Pool', permission: 'rmg_candidate_pool', role: 'RMG' },
   // { path: '/track-status', icon: faClipboardList, label: 'Track Status', permission: 'rmg_track_status', role: 'RMG' },
@@ -65,7 +66,8 @@ const Layout = ({ children }) => {
   const POLL_INTERVAL = 30000; // 30 seconds
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   console.log("user", user)
@@ -139,7 +141,7 @@ const Layout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -155,7 +157,7 @@ const Layout = ({ children }) => {
       <button className="btn btn-link me-2" onClick={toggleMenu}>
         <FontAwesomeIcon icon={faBars} />
       </button>
-      <span className="navbar-brand mb-0 h1">TelusRecruitAI</span>
+      <img src={telusLogo} alt="TELUS Logo" className="navbar-brand" style={{ height: '50px' }} />
     </div>
     <div className="d-flex align-items-center">
       <div className="bell-icon-container" style={{ position: 'relative', cursor: 'pointer', padding: '0.25rem' }} onClick={handleNotificationClick}>
@@ -219,7 +221,6 @@ const Layout = ({ children }) => {
                   <FontAwesomeIcon icon={item.icon} className="me-2" />
                   {isMenuOpen && <span>{item.label}</span>}
                 </div>
-                {isMenuOpen && <FontAwesomeIcon icon={faChevronRight} className="chevron-icon" />}
               </Link>
             ))}
           </nav>

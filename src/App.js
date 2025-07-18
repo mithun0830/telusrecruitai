@@ -1,5 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { initAuth } from './store/slices/authSlice';
 import Login from './modules/auth/Login';
 import SignUp from './modules/auth/SignUp';
 import Landing from './modules/landing/Landing';
@@ -10,15 +13,20 @@ import RecruitPool from './modules/recruits/RecruitPool';
 import ManagerCandidates from './modules/candidates/ManagerCandidates';
 import Notifications from './modules/notifications/Notifications';
 import UserManagement from './modules/user-management/UserManagement';
+import InterviewManagement from './modules/interview-management/InterviewManagement';
 import Layout from './modules/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './context/AuthContext';
 import './styles/Layout.css';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(initAuth());
+  }, [dispatch]);
+
   return (
     <Router>
-      <AuthProvider>
       <Routes>
         <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -53,6 +61,11 @@ function App() {
             <Layout><UserManagement /></Layout>
           </ProtectedRoute>
         } />
+        <Route path="/interviews" element={
+          <ProtectedRoute allowedRoles={['Manager', 'RMG']}>
+            <Layout><InterviewManagement /></Layout>
+          </ProtectedRoute>
+        } />
         <Route path="/" element={<Navigate to="/landing" replace />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
@@ -65,7 +78,6 @@ function App() {
           </ProtectedRoute>
         } />
       </Routes>
-      </AuthProvider>
     </Router>
   );
 }

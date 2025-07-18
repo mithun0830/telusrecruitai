@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser, clearError, setError, resetAuthState } from '../../store/slices/authSlice';
 import { Form, Button, Alert } from 'react-bootstrap';
 import telusLogo from '../../assets/telus_logo.svg';
 import loginImg from '../../assets/login.png'
@@ -9,14 +10,31 @@ import './Login.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState('email');
   const navigate = useNavigate();
-
-  const clearError = () => setError('');
-  const { login } = useAuth();
   const location = useLocation();
+  const dispatch = useDispatch();
+
+  const { isLoading, error, user } = useSelector((state) => state.auth);
+
+  const handleClearError = () => dispatch(clearError());
+
+  // Reset auth state when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(resetAuthState());
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'Manager') {
+        navigate('/job-openings', { replace: true });
+      } else if (user.role === 'RMG') {
+        navigate('/rmg_dashboard', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,44 +44,18 @@ const Login = () => {
       if (email && email.includes('@')) {
         setStep('password');
       } else {
-        setError('Please enter a valid email address');
+        dispatch(setError('Please enter a valid email address'));
       }
     } else {
       // Handle password submission
       if (password) {
-        console.log('Form submitted', { step, email, password }); // Debug log
-
-        setError('');
-        setIsLoading(true);
-
         try {
-          const result = await login(email, password);
-          if (result.success) {
-            const user = result.data.user;
-            const role = user.role;
-
-            let from = location.state?.from?.pathname;
-            if (role === 'Manager') {
-              from = '/job-openings';
-            } else if (role === 'RMG') {
-              from = '/rmg_dashboard';
-            } else {
-              console.error('Unexpected role:', role);
-              setError('Invalid user role');
-              return;
-            }
-            navigate(from, { replace: true });
-          } else {
-            setError(result.message || 'Invalid email or password');
-          }
+          await dispatch(loginUser({ email, password }));
         } catch (err) {
           console.error('Login error:', err);
-          setError(err.message || 'An error occurred. Please try again.');
-        } finally {
-          setIsLoading(false);
         }
       } else {
-        setError('Please enter your password');
+        dispatch(setError('Please enter your password'));
       }
     }
   };
@@ -97,7 +89,7 @@ const Login = () => {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onClick={clearError}
+                  onClick={handleClearError}
                   required
                 />
               </Form.Group>
@@ -110,7 +102,7 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onClick={() => {
                       setStep('email');
-                      clearError();
+                      handleClearError();
                     }}
                     style={{ cursor: 'pointer' }}
                   />
@@ -121,7 +113,7 @@ const Login = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onClick={clearError}
+                    onClick={handleClearError}
                     required
                     autoFocus
                   />
@@ -140,7 +132,7 @@ const Login = () => {
 
             <div className="text-center">
               <Link to="/signup" className="text-muted">
-                New to TelusRecruitAI? <span>Register now</span>
+                New to TELUS RecuritAI? <span>Register now</span>
               </Link>
             </div>
           </Form>

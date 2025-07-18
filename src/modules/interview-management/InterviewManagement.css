@@ -1,0 +1,255 @@
+.interview-management {
+  padding: 20px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 16px;
+}
+
+.left-controls {
+  display: flex;
+  gap: 16px;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.right-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.sort select {
+  margin-left: 8px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: white;
+  color: #1e293b;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  min-width: 240px;
+}
+
+.search input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.kanban-board {
+  display: flex;
+  gap: 24px;
+  padding: 0 16px;
+  overflow-x: auto;
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 320px;
+  max-width: 320px;
+}
+
+.column-header {
+  margin-bottom: 20px;
+}
+
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.stage-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.stage-count {
+  background-color: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.column-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.candidate-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.candidate-info {
+  display: flex;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+.candidate-info h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.candidate-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.manager-info {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.more-options {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #64748b;
+  padding: 0;
+  line-height: 1;
+}
+
+.score-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.score-section > span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.score-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.score-value span:first-child {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.portfolio-tag {
+  font-size: 12px;
+  color: #6366f1;
+  background-color: #eef2ff;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.urgent-tag {
+  font-size: 12px;
+  color: #6366f1;
+  background-color: #eef2ff;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.not-urgent-tag {
+  font-size: 12px;
+  color: #ea580c;
+  background-color: #fff7ed;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  width: 100%;
+}
+
+.loading-text {
+  font-size: 18px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  width: 100%;
+  color: #e53e3e;
+  font-size: 16px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Add FontAwesome icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');

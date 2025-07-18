@@ -18,6 +18,7 @@ const useManagerCandidates = () => {
   };
 
   const handleSelectCandidate = (id) => {
+    console.log('Toggling candidate selection:', id);
     setSelectedCandidates(prev => 
       prev.includes(id) ? prev.filter(cId => cId !== id) : [...prev, id]
     );

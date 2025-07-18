@@ -1,13 +1,15 @@
 .dashboard-page {
   padding: 20px;
+  background-color: #f8f9fa;
 }
 
 .dashboard-header h1 {
-  color: #059669;
+  color: #047857;
   font-size: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   font-weight: 700;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .dashboard-content {
@@ -19,7 +21,7 @@
 .dashboard-summary {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 15px;
 }
 
 .summary-card {
@@ -30,68 +32,43 @@
   flex: 1;
   display: flex;
   align-items: center;
-  border: 1px solid #C4BFD6;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .summary-icon {
   font-size: 24px;
-  margin-right: 16px;
-  margin-left: 8px;
-  color: #20c997;
+  margin-right: 15px;
+  color: #059669;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover .summary-icon {
+  transform: scale(1.1);
 }
 
 .summary-details {
   flex: 1;
-  text-align: left;
 }
 
 .summary-details h3 {
-  font-size: 16px;
+  font-size: 14px;
   margin: 0 0 5px 0;
-  color: #333;
+  color: #4a5568;
+  font-weight: 600;
 }
 
 .summary-value {
   font-size: 24px;
   font-weight: bold;
   margin: 0;
-  color: #20c997;
+  color: #047857;
+  line-height: 1;
 }
 
-.team-performance {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  border: 1px solid #C4BFD6;
-  text-align: center;
-}
-
-.team-performance h2 {
-  font-size: 20px;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.performance-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.performance-table th,
-.performance-table td {
-  padding: 12px;
-  text-align: center;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.performance-table th {
-  font-weight: bold;
-  color: #666;
-}
-
-.performance-indicator {
-  height: 8px;
-  background-color: #20c997;
-  border-radius: 4px;
-}
+/* Team performance overview section removed */

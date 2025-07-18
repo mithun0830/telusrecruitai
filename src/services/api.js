@@ -230,7 +230,8 @@ export const authService = {
 
   updateAccountStatus: async (data) => {
     return await api.post('/auth/update-account-status', data);
-  }
+  },
+
 };
 
 // Candidate service
@@ -297,6 +298,16 @@ export const managerService = {
   },
   getAllManagers: async () => {
     return await api.get('/managers');
+  }
+};
+
+export const interviewService = {
+  getInterviewRounds: async () => {
+    return await api.get('http://localhost:8084/api/interview-rounds');
+  },
+
+  shortlistCandidates: async (data) => {
+    return await api.post('http://localhost:8084/api/candidates/shortlist', data);
   }
 };
 

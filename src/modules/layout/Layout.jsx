@@ -11,8 +11,7 @@ import {
   faBars, faTachometerAlt, faFileAlt,
   faUserFriends, faCalendarAlt, faBell,
   faSignOutAlt, faCaretDown, faCog, faUsers,
-  faUsersCog, faClipboardList, faListAlt, faBriefcase,
-  faChevronRight
+  faUsersCog, faClipboardList, faListAlt, faBriefcase
 } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/variables.css';
 import '../../styles/Layout.css';
@@ -222,7 +221,6 @@ const Layout = ({ children }) => {
                   <FontAwesomeIcon icon={item.icon} className="me-2" />
                   {isMenuOpen && <span>{item.label}</span>}
                 </div>
-                {isMenuOpen && <FontAwesomeIcon icon={faChevronRight} className="chevron-icon" />}
               </Link>
             ))}
           </nav>

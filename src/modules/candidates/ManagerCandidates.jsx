@@ -66,8 +66,9 @@ const ManagerCandidates = () => {
       }
 
       if (response.success) {
-        // Toggle the locked status
+        // Toggle the locked status and set managerId
         candidate.locked = !candidate.locked;
+        candidate.managerId = candidate.locked ? currentUserId : null;
         // Update the selectedCandidates list
         handleSelectCandidate(candidate.resume.id);
       } else {
@@ -277,6 +278,7 @@ const ManagerCandidates = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [currentSearchValue, setCurrentSearchValue] = useState('');
 
   const handleSearchClick = async (e) => {
     // Prevent any event bubbling
@@ -292,7 +294,9 @@ const ManagerCandidates = () => {
 
     setErrorMessage('');
     setIsLoading(true);
+    setExpandedCandidate(null); // Reset expanded view
     const searchString = filters.aiSearch.trim();
+    setCurrentSearchValue(searchString); // Save the search value
     console.log("searchString", searchString)
     try {
       const response = await candidateService.searchCandidates(searchString);
@@ -312,13 +316,15 @@ const ManagerCandidates = () => {
 
   const getFormattedCandidateData = () => {
     return searchResults
-      .filter(candidate => candidate.locked)
+      .filter(candidate => candidate.locked && candidate.managerId === currentUserId)
       .map(candidate => ({
+        resumeId: candidate.resume.id,
+        evaluationId: 123456,
         name: candidate.resume.name,
         email: candidate.resume.email,
         phone: candidate.resume.phoneNumber,
-        positionApplied: candidate.resume.positionApplied || "Not specified",
-        jobDetails: candidate.resume.jobDetails || "Not specified",
+        positionApplied: currentSearchValue || candidate.resume.positionApplied || "Not specified",
+        jobDetails: currentSearchValue || candidate.resume.jobDetails || "Not specified",
         score: candidate.score
       }));
   };
@@ -406,15 +412,15 @@ const ManagerCandidates = () => {
                         <div className="candidate-header">
                           <input
                             type="checkbox"
-                            checked={candidate.locked}
+                            checked={candidate.locked && candidate.managerId === currentUserId}
                             onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
                           />
                           <div className="candidate-name">
                             <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
                             <span>{candidate.resume.name}</span>
                           </div>
-                          <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-                            <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+                          <span className={`status-icon ${candidate.locked && candidate.managerId === currentUserId ? 'locked' : 'unlocked'}`}>
+                            <FontAwesomeIcon icon={!(candidate.locked && candidate.managerId === currentUserId) ? faLockOpen : faLock} />
                           </span>
                         </div>
                         <div className="candidate-details">
@@ -462,7 +468,7 @@ const ManagerCandidates = () => {
               </div>
               <div className="candidates-footer">
                 <div className="selection-info">
-                  Selected: <span className="selected-count">{searchResults.filter(c => c.locked).length}</span>
+                  Selected: <span className="selected-count">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span>
                 </div>
                 <div className="footer-actions">
                   <button className="btn-action secondary" onClick={handleShortlistClick}>Shortlist</button>

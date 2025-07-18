@@ -1,21 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faLock, faLockOpen, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { managerService, authService } from '../../services/api';
 import './UserManagement.css';
 import { debounce } from 'lodash';
 
 const UserManagement = () => {
+  const aestheticColors = [
+    '#3498db', // bright blue
+    '#2ecc71', // emerald green
+    '#e74c3c', // flat red
+    '#f39c12', // orange
+    '#9b59b6', // amethyst purple
+    '#1abc9c', // turquoise
+    '#34495e', // wet asphalt
+    '#16a085', // green sea
+    '#d35400', // pumpkin
+    '#8e44ad', // wisteria
+  ];
+
+  const getAvatarColor = (userId) => {
+    // Use userId to consistently get same color for each user
+    const colorIndex = parseInt(userId) % aestheticColors.length;
+    return aestheticColors[colorIndex];
+  };
+
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [showConfirmOverlay, setShowConfirmOverlay] = useState(false);
+  const [confirmAction, setConfirmAction] = useState({ type: '', userId: '', email: '' });
 
   const handleMoreOptionsClick = (userId) => {
     setActiveDropdown(activeDropdown === userId ? null : userId);
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmAction.type === 'block') {
+      handleBlockUser(confirmAction.userId, confirmAction.email);
+    } else if (confirmAction.type === 'unblock') {
+      handleUnblockUser(confirmAction.userId, confirmAction.email);
+    }
+    setShowConfirmOverlay(false);
+    setConfirmAction({ type: '', userId: '', email: '' });
   };
 
   const handleBlockUser = async (userId, email) => {
@@ -62,6 +93,11 @@ const UserManagement = () => {
     } catch (error) {
       console.error('Error unblocking user:', error);
     }
+  };
+
+  const openConfirmOverlay = (type, userId, email) => {
+    setConfirmAction({ type, userId, email });
+    setShowConfirmOverlay(true);
   };
 
   useEffect(() => {
@@ -165,25 +201,63 @@ const UserManagement = () => {
             ) : error ? (
               <Alert variant="danger">{error}</Alert>
             ) : (
-              <table className="user-management-table">
-                <thead>
-                  <tr>
-                    <th>User ID</th>
-                    <th>Employee ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Account Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredManagers.map((manager) => (
-                    <tr key={manager.userId} className="user-row">
-                      <td>{manager.userId}</td>
-                      <td>{manager.employeeId || '-'}</td>
-                      <td>{highlightMatch(manager.username, activeSearchTerm)}</td>
-                      <td>{highlightMatch(manager.email, activeSearchTerm)}</td>
-                      <td>
+              <div className="user-grid">
+                {filteredManagers.map((manager) => (
+                  <div key={manager.userId} className="user-card">
+                    <div className="user-card-header">
+                      <div className="user-avatar-name">
+                        <div 
+                          className="user-avatar"
+                          style={{ backgroundColor: getAvatarColor(manager.userId) }}
+                        >
+                          {manager.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="user-header-info">
+                          <div className="user-header-name">
+                            {highlightMatch(manager.username, activeSearchTerm)}
+                          </div>
+                          <div className="user-header-email">
+                            {highlightMatch(manager.email, activeSearchTerm)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="dropdown">
+                        <button
+                          className="btn-more"
+                          title="More options"
+                          onClick={() => handleMoreOptionsClick(manager.userId)}
+                        >
+                          ⋮
+                        </button>
+                        {activeDropdown === manager.userId && (
+                          <div className="dropdown-content">
+                            {manager.accountStatus === 'ACTIVE' ? (
+                              <button onClick={() => openConfirmOverlay('block', manager.userId, manager.email)}>
+                                <FontAwesomeIcon icon={faLock} className="me-2" />
+                                INACTIVE
+                              </button>
+                            ) : ['BLOCKED', 'INACTIVE', 'REJECTED', 'LOCKED'].includes(manager.accountStatus) ? (
+                              <button onClick={() => openConfirmOverlay('unblock', manager.userId, manager.email)}>
+                                <FontAwesomeIcon icon={faLockOpen} className="me-2" />
+                                ACTIVE
+                              </button>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="user-card-content">
+                      <div className="user-details">
+                        <div className="detail-item">
+                          <span className="detail-label">User ID:</span>
+                          <span className="detail-value">{manager.userId}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Employee ID:</span>
+                          <span className="detail-value">{manager.employeeId || '-'}</span>
+                        </div>
+                      </div>
+                      <div className="user-status">
                         <span className={`badge rounded-pill ${
                           manager.accountStatus === 'ACTIVE' ? 'bg-success' : 
                           ['BLOCKED', 'INACTIVE', 'REJECTED', 'LOCKED'].includes(manager.accountStatus) ? 'bg-danger' : 
@@ -191,37 +265,11 @@ const UserManagement = () => {
                         }`}>
                           {manager.accountStatus}
                         </span>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <div className="dropdown">
-                          <button
-                            className="btn-more"
-                            title="More options"
-                            onClick={() => handleMoreOptionsClick(manager.userId)}
-                          >
-                            ⋮
-                          </button>
-                          {activeDropdown === manager.userId && (
-                            <div className="dropdown-content">
-                              {manager.accountStatus === 'ACTIVE' ? (
-                                <button onClick={() => handleBlockUser(manager.userId, manager.email)}>
-                                  <FontAwesomeIcon icon={faLock} className="me-2" />
-                                  INACTIVE
-                                </button>
-                              ) : ['BLOCKED', 'INACTIVE', 'REJECTED', 'LOCKED'].includes(manager.accountStatus) ? (
-                                <button onClick={() => handleUnblockUser(manager.userId, manager.email)}>
-                                  <FontAwesomeIcon icon={faLockOpen} className="me-2" />
-                                  ACTIVE
-                                </button>
-                              ) : null}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             {!loading && filteredManagers.length === 0 && (
               <div className="no-users-message">
@@ -238,6 +286,30 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+      {showConfirmOverlay && (
+        <div className="overlay">
+          <div className="overlay-content">
+            <div className="confirmation-icon">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="40" fill="#059669" fillOpacity="0.1"/>
+                <circle cx="40" cy="40" r="32" fill="#059669" fillOpacity="0.15"/>
+                <circle cx="40" cy="40" r="24" fill="white"/>
+                <path d="M28 40L38 50L52 36" stroke="#059669" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2>Confirm Action</h2>
+            <p>Are you sure you want to {confirmAction.type === 'block' ? 'deactivate' : 'activate'} this user?</p>
+            <div className="overlay-buttons">
+              <button onClick={handleConfirmAction} className="btn-confirm">
+                Confirm
+              </button>
+              <button onClick={() => setShowConfirmOverlay(false)} className="btn-cancel">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -499,9 +499,34 @@
 }
 
 .expanded-view-container {
-  margin-top: 20px;
+  margin-top: 40px;
   border-top: 2px solid var(--telus-light-purple);
   padding-top: 20px;
+  position: relative;
+}
+
+.expanded-view-container .close-button {
+  position: absolute;
+  top: 30px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--telus-dark-gray);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.expanded-view-container .close-button:hover {
+  background-color: var(--telus-light-purple);
+  color: var(--telus-purple);
 }
 
 .candidates-list-header {
@@ -1277,6 +1302,18 @@
 .btn-action.secondary:active {
   transform: scale(0.95);
   box-shadow: 0 0 4px rgba(5, 150, 105, 0.3);
+}
+
+.btn-action.secondary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.btn-action.secondary:disabled:hover {
+  background-color: #ccc;
+  transform: none;
 }
 
 .btn-action.tertiary {

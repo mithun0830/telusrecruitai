@@ -111,9 +111,13 @@ const ManagerCandidates = () => {
   };
 
   const handleViewClick = (candidate) => {
-    setExpandedCandidate(expandedCandidate?.resume.id === candidate.resume.id ? null : candidate);
+    if (expandedCandidate?.resume.id === candidate.resume.id) {
+      setExpandedCandidate(null);
+    } else {
+      setExpandedCandidate(candidate);
+      setTimeout(() => scrollToRef(expandedViewRef), 100);
+    }
     setActiveDropdown(null);
-    setTimeout(() => scrollToRef(expandedViewRef), 100);
   };
 
   const renderExpandedView = (candidate) => {
@@ -462,6 +466,13 @@ const ManagerCandidates = () => {
                 )}
                 {expandedCandidate && (
                   <div ref={expandedViewRef} className="expanded-view-container">
+                    <button 
+                      className="close-button" 
+                      onClick={() => setExpandedCandidate(null)}
+                      aria-label="Close expanded view"
+                    >
+                      ✕
+                    </button>
                     {renderExpandedView(expandedCandidate)}
                   </div>
                 )}
@@ -471,7 +482,13 @@ const ManagerCandidates = () => {
                   Selected: <span className="selected-count">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span>
                 </div>
                 <div className="footer-actions">
-                  <button className="btn-action secondary" onClick={handleShortlistClick}>Shortlist</button>
+                  <button 
+                    className="btn-action secondary" 
+                    onClick={handleShortlistClick}
+                    disabled={searchResults.length === 0}
+                  >
+                    Shortlist
+                  </button>
                 </div>
               </div>
             </div>

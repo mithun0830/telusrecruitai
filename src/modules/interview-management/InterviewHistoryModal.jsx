@@ -3,6 +3,10 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
 import { interviewService } from '../../services/api';
+import Loader from '../../components/Loader';
+import { Modal, Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -30,20 +34,24 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
 
   const resetScheduleFields = () => {
     setSelectedInterviewer('');
-    setSelectedDateTime(null);
+    setSelectedDateTime(new Date());
     setDuration('30');
     setShowSlots(false);
     setAvailableSlots([]);
     setSelectedSlot(null);
   };
   const [selectedInterviewer, setSelectedInterviewer] = useState('');
-  const [selectedDateTime, setSelectedDateTime] = useState(null);
+  const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [duration, setDuration] = useState('30');
   const [showSlots, setShowSlots] = useState(false);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [latestMeetingLink, setLatestMeetingLink] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   if (!isOpen || !candidateHistory) return null;
 
@@ -78,6 +86,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
       alert('Please select an interviewer and a date/time');
       return;
     }
+    setIsLoading(true);
 
     console.log('Candidate Email:', email);
     console.log('Full candidateHistory:', candidateHistory);
@@ -109,6 +118,8 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
     } catch (error) {
       console.error('Error fetching free slots:', error);
       alert(error.message || 'Failed to fetch available slots. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,6 +132,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
       alert('Please select an interviewer, date/time, and a time slot');
       return;
     }
+    setIsLoading(true);
 
     // Parse the selected slot to get start time
     const [startTime] = selectedSlot.split(' - ');
@@ -160,7 +172,6 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
       console.log('Schedule Meeting Response:', response);
       if (response.data?.meetingEvent?.hangoutLink) {
         const meetingLink = response.data.meetingEvent.hangoutLink;
-        alert('Interview scheduled successfully!');
         // Update the history array in the component
         if (history && history.length > 0) {
           history[history.length - 1].meetingLink = meetingLink;
@@ -168,21 +179,35 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
         // Update the latest meeting link state
         setLatestMeetingLink(meetingLink);
         resetScheduleFields();
+        // Show success modal
+        setModalType('success');
+        setModalMessage('Interview scheduled successfully!');
+        setShowModal(true);
         // Just update the parent component's state without closing the modal
         if (onClose) {
           onClose(true, meetingLink, false); // Pass false to indicate not to close the modal
         }
       } else {
-        alert('Failed to schedule interview. Please try again.');
+        // Show error modal
+        setModalType('error');
+        setModalMessage('Failed to schedule interview. Please try again.');
+        setShowModal(true);
       }
     } catch (error) {
       console.error('Error scheduling interview:', error);
-      alert(error.message || 'Failed to schedule interview. Please try again.');
+      // Show error modal
+      setModalType('error');
+      setModalMessage(error.message || 'Failed to schedule interview. Please try again.');
+      setShowModal(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     isOpen && candidateHistory && (
+      <>
+        {isLoading && <Loader />}
       <div className="modal-overlay">
         <div className="modal-content">
           <div className="modal-left">
@@ -216,6 +241,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
                     onCalendarClose={handleCalendarClose}
                     timeCaption="Time"
                     timeFormat="HH:mm"
+                    placeholderText="Select date and time"
                     renderCustomHeader={({
                       date,
                       decreaseMonth,
@@ -224,14 +250,11 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
                       nextMonthButtonDisabled
                     }) => (
                       <div className="custom-header">
-                        <button onClick={() => setSelectedDateTime(new Date())} className="home-button">⌂</button>
-                        <div className="month-year-selector">
-                          <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled}>◀</button>
-                          <span className="month-year">
-                            {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                          </span>
-                          <button onClick={increaseMonth} disabled={nextMonthButtonDisabled}>▶</button>
-                        </div>
+                        <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled}>◀</button>
+                        <span className="month-year">
+                          {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button onClick={increaseMonth} disabled={nextMonthButtonDisabled}>▶</button>
                       </div>
                     )}
                     renderCustomTimeSection={({ date }) => (
@@ -346,6 +369,35 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
           <button onClick={() => handleClose()} className="close-button">×</button>
         </div>
       </div>
+        <Modal 
+          show={showModal} 
+          onHide={() => setShowModal(false)} 
+          centered
+          backdrop="static"
+          keyboard={false}
+          className="success-modal"
+        >
+          <Modal.Body className="text-center p-5">
+            <div className="success-icon-wrapper mb-4">
+              <FontAwesomeIcon 
+                icon={modalType === 'success' ? faCheckCircle : faTimesCircle} 
+                className={`success-icon ${modalType === 'error' ? 'text-danger' : ''}`}
+              />
+            </div>
+            <h4 className="success-title mb-3">
+              {modalType === 'success' ? 'Interview Scheduled!' : 'Scheduling Failed'}
+            </h4>
+            <p className="success-message mb-4">{modalMessage}</p>
+            <Button 
+              variant={modalType === 'success' ? 'success' : 'danger'} 
+              onClick={() => setShowModal(false)}
+              className="continue-button"
+            >
+              {modalType === 'success' ? 'Continue' : 'Try Again'}
+            </Button>
+          </Modal.Body>
+        </Modal>
+      </>
     )
   );
 };

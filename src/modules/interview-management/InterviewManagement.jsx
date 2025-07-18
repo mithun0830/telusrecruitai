@@ -10,6 +10,7 @@ const ItemTypes = {
 };
 
 const getInitials = (name) => {
+  if (!name) return ''; // Return empty string if name is undefined or null
   return name
     .split(' ')
     .map(word => word[0])
@@ -70,8 +71,8 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
             {getInitials(candidate.name)}
           </div>
           <div>
-            <h3>{candidate.name}</h3>
-            <p>Applied at {new Date(candidate.interviewDateTime).toLocaleDateString()}</p>
+            <h3>{candidate.name || 'No Name'}</h3>
+            <p>Applied at {candidate.interviewDateTime ? new Date(candidate.interviewDateTime).toLocaleDateString() : 'N/A'}</p>
           </div>
         </div>
         <button className="more-options">...</button>
@@ -81,7 +82,7 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
           <span className="manager-info">Manager: {candidate.manager ? candidate.manager.fullName : 'RMG Admin'}</span>
           <span>{round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}</span>
           <div className="score-value">
-            <span>{candidate.score}%</span>
+            <span>{candidate.score || 0}%</span>
             <span 
               className={candidate.status === 'COMPLETED' ? "urgent-tag" : "not-urgent-tag"}
               onClick={() => handleStatusClick(candidate)}
@@ -165,13 +166,59 @@ const InterviewManagement = () => {
 
   const handleStatusClick = (candidate) => {
     setSelectedCandidate({
-      history: candidate.interviewHistory,
-      candidateName: candidate.name,
-      jobTitle: candidate.jobTitle || 'Software Engineer', // Add default or get from candidate object
-      jobDepartment: candidate.department || 'Engineering', // Add default or get from candidate object
+      history: candidate.interviewHistory || [],
+      candidateName: candidate.name || 'No Name',
+      jobTitle: candidate.jobTitle || 'Software Engineer',
+      jobDepartment: candidate.department || 'Engineering',
+      email: candidate.email || '',
+      candidateId: candidate.candidateId,
+      currentRoundId: candidate.currentRoundId
     });
     setIsModalOpen(true);
   };
+
+  const handleModalClose = (success, meetingLink, shouldClose = true) => {
+    if (shouldClose) {
+      setIsModalOpen(false);
+    }
+    if (success && meetingLink) {
+      // Find the current candidate in the rounds
+      const currentRound = interviewRounds.find(round => 
+        round.candidates.some(c => c.candidateId === selectedCandidate.candidateId)
+      );
+      
+      if (currentRound) {
+        const candidateIndex = currentRound.candidates.findIndex(c => 
+          c.candidateId === selectedCandidate.candidateId
+        );
+        
+        if (candidateIndex !== -1) {
+          const updatedCandidate = {
+            ...currentRound.candidates[candidateIndex]
+          };
+          
+          if (updatedCandidate.interviewHistory && updatedCandidate.interviewHistory.length > 0) {
+            updatedCandidate.interviewHistory[updatedCandidate.interviewHistory.length - 1].meetingLink = meetingLink;
+          }
+          
+          updateCandidateInRounds(updatedCandidate);
+        }
+      }
+    }
+  };
+
+  const updateCandidateInRounds = (updatedCandidate) => {
+    setInterviewRounds(prevRounds => 
+      prevRounds.map(round => ({
+        ...round,
+        candidates: round.candidates.map(candidate => 
+          candidate.candidateId === updatedCandidate.candidateId ? updatedCandidate : candidate
+        )
+      }))
+    );
+  };
+
+  // Removed moveToNextRound function
   
   const stages = interviewRounds.reduce((acc, round, index) => {
     acc[round.roundName] = {
@@ -253,7 +300,7 @@ const InterviewManagement = () => {
       )}
       <InterviewHistoryModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         candidateHistory={selectedCandidate || []}
       />
       </div>

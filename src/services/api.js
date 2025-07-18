@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
-const AI_SEARCH_BASE_URL = 'https://match-lock-865090871947.asia-south1.run.app/api';
+const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'http://localhost:8084/api';
 
@@ -24,6 +24,20 @@ const ai_api = axios.create({
 
 const notificationApi = axios.create({
   baseURL: NOTIFICATION_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const googleApi = axios.create({
+  baseURL: Google_Calendar_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const interviewApi = axios.create({
+  baseURL: INTERVIEW_ROUNDS_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -305,11 +319,19 @@ export const managerService = {
 
 export const interviewService = {
   getInterviewRounds: async () => {
-    return await api.get(INTERVIEW_ROUNDS_API_BASE_URL+'/interview-rounds');
+    return await interviewApi.get('/interview-rounds');
   },
 
   shortlistCandidates: async (data) => {
-    return await api.post(INTERVIEW_ROUNDS_API_BASE_URL+'/candidates/shortlist', data);
+    return await interviewApi.post('/candidates/shortlist', data);
+  },
+
+  getFreeSlots: async (requestBody) => {
+    return await googleApi.post('/free-slots', requestBody);
+  },
+
+  scheduleMeeting: async (requestBody) => {
+    return await googleApi.post('/schedule-meeting', requestBody)
   }
 };
 

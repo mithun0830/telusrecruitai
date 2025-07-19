@@ -31,7 +31,7 @@ const Login = () => {
       if (user.role === 'Manager') {
         navigate('/job-openings', { replace: true });
       } else if (user.role === 'RMG') {
-        navigate('/rmg_dashboard', { replace: true });
+        navigate('/interviews', { replace: true });
       }
     }
   }, [user, navigate]);

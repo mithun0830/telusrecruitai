@@ -303,6 +303,10 @@ export const candidateService = {
       status: "INITIATE"
     };
     return await ai_api.post('/resume-locks/unlock', requestBody);
+  },
+
+  getMatchingInterviewers: async (resumeId) => {
+    return await ai_api.get(`/interviewer-matching/resume/${resumeId}`);
   }
 };
 
@@ -331,7 +335,12 @@ export const interviewService = {
 
   scheduleMeeting: async (requestBody) => {
     return await googleApi.post('/schedule-meeting', requestBody)
-  }
+  },
+
+  updateInterviewStatus: async (requestBody) => {
+    return await interviewApi.put('/interviews/update-status', requestBody);
+  },
 };
+
 
 export default api;

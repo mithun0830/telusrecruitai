@@ -219,7 +219,7 @@ const ManagerCandidates = () => {
                 <div className="improvement-list">
                   {candidate.analysis.improvementAreas.map((area, index) => (
                     <div key={index} className="improvement-item">
-                      <div className="warning-icon">!</div>
+                      <div className="error-icon">!</div>
                       <div className="improvement-content">
                         <h5>{area.gap}</h5>
                         <p>{area.suggestion}</p>
@@ -299,6 +299,8 @@ const ManagerCandidates = () => {
     setErrorMessage('');
     setIsLoading(true);
     setExpandedCandidate(null); // Reset expanded view
+    setSearchResults([]);
+
     const searchString = filters.aiSearch.trim();
     setCurrentSearchValue(searchString); // Save the search value
     console.log("searchString", searchString)
@@ -343,13 +345,13 @@ const ManagerCandidates = () => {
     }
 
     const payload = {
-      managerId: 1, // Replace with actual manager ID
+      managerId: currentUserId,
       candidates: formattedCandidates
     };
 
     try {
       const response = await interviewService.shortlistCandidates(payload);
-      if (response.success) {
+      if (response) {
         setShortlistMessage('Candidates have been successfully shortlisted.');
         setShortlistSuccess(true);
       } else {
@@ -423,8 +425,8 @@ const ManagerCandidates = () => {
                             <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
                             <span>{candidate.resume.name}</span>
                           </div>
-                          <span className={`status-icon ${candidate.locked && candidate.managerId === currentUserId ? 'locked' : 'unlocked'}`}>
-                            <FontAwesomeIcon icon={!(candidate.locked && candidate.managerId === currentUserId) ? faLockOpen : faLock} />
+                          <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+                            <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
                           </span>
                         </div>
                         <div className="candidate-details">
@@ -460,14 +462,18 @@ const ManagerCandidates = () => {
                         <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
                         <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
                       </svg>
-                      <div>No Candidate found matching your search criteria.</div>
+                      <div>
+                        {currentSearchValue
+                          ? "Please check back later or try refreshing the data."
+                          : "Enter your requirements to discover candidates that fit your role"}
+                      </div>
                     </div>
                   </div>
                 )}
                 {expandedCandidate && (
                   <div ref={expandedViewRef} className="expanded-view-container">
-                    <button 
-                      className="close-button" 
+                    <button
+                      className="close-button"
                       onClick={() => setExpandedCandidate(null)}
                       aria-label="Close expanded view"
                     >
@@ -482,8 +488,8 @@ const ManagerCandidates = () => {
                   Selected: <span className="selected-count">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span>
                 </div>
                 <div className="footer-actions">
-                  <button 
-                    className="btn-action secondary" 
+                  <button
+                    className="btn-action secondary"
                     onClick={handleShortlistClick}
                     disabled={searchResults.length === 0}
                   >
@@ -504,23 +510,25 @@ const ManagerCandidates = () => {
         </div>
       </div>
 
-      <Modal 
-        show={showLockErrorModal} 
-        onHide={() => setShowLockErrorModal(false)} 
+      <Modal
+        show={showLockErrorModal}
+        onHide={() => setShowLockErrorModal(false)}
         centered
         backdrop="static"
         keyboard={false}
-        className="error-modal"
+        className="success-modal"
       >
         <Modal.Body className="text-center p-5">
-          <div className="error-icon-wrapper mb-4">
+          <div className="success-icon-wrapper mb-4">
             <FontAwesomeIcon
               icon={faTimesCircle}
-              className="error-icon text-danger"
+              className={'success-icon-text-danger'}
             />
           </div>
-          <h4 className="error-title mb-3">Operation Failed</h4>
-          <p className="error-message mb-4">{lockErrorMessage}</p>
+          <h4 className="success-title mb-3">
+            Operation Failed
+          </h4>
+          <p className="success-message mb-4">{lockErrorMessage}</p>
           <Button
             variant="danger"
             onClick={() => setShowLockErrorModal(false)}
@@ -531,9 +539,9 @@ const ManagerCandidates = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal 
-        show={showShortlistModal} 
-        onHide={() => setShowShortlistModal(false)} 
+      {/* <Modal
+        show={showShortlistModal}
+        onHide={() => setShowShortlistModal(false)}
         centered
         backdrop="static"
         keyboard={false}
@@ -548,6 +556,35 @@ const ManagerCandidates = () => {
           </div>
           <h4 className="shortlist-title mb-3">{shortlistSuccess ? 'Success' : 'Operation Failed'}</h4>
           <p className="shortlist-message mb-4">{shortlistMessage}</p>
+          <Button
+            variant={shortlistSuccess ? 'success' : 'danger'}
+            onClick={() => setShowShortlistModal(false)}
+            className="continue-button"
+          >
+            Close
+          </Button>
+        </Modal.Body>
+      </Modal> */}
+
+      <Modal
+        show={showShortlistModal}
+        onHide={() => setShowShortlistModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="success-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="success-icon-wrapper mb-4">
+            <FontAwesomeIcon
+              icon={shortlistSuccess === 'success' ? faCheck : faTimesCircle}
+              className={`success-icon ${shortlistSuccess ? '' : 'text-danger'}`}
+            />
+          </div>
+          <h4 className="success-title mb-3">
+            {shortlistSuccess ? 'Success' : 'Operation Failed'}
+          </h4>
+          <p className="success-message mb-4">{shortlistMessage}</p>
           <Button
             variant={shortlistSuccess ? 'success' : 'danger'}
             onClick={() => setShowShortlistModal(false)}

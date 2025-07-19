@@ -260,12 +260,19 @@
 }
 
 .overlay-modal .modal-content {
+  display: flex;
+  flex-direction: column;
   background-color: white;
   border-radius: 0.5rem;
   width: 100%;
   max-width: 600px;
   margin: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.overlay-modal .modal-body {
+  display: flex;
+  flex-direction: column;
 }
 
 .overlay-header {
@@ -293,53 +300,53 @@
 }
 
 .overlay-body {
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .overlay-user-info {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .overlay-user-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #495057;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .overlay-user-details {
   background: #f8f9fa;
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .overlay-user-detail-row {
-  margin-bottom: 0.75rem;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.overlay-user-detail-row:last-child {
-  margin-bottom: 0;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 .overlay-user-detail-label {
-  min-width: 80px;
+  min-width: 70px;
   font-weight: bold;
 }
 
 .overlay-comments-label {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: #495057;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .overlay-comments-textarea {
-  font-size: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
+  font-size: 0.9rem;
+  padding: 0.75rem;
+  border-radius: 6px;
   resize: vertical;
 }
 
@@ -350,7 +357,17 @@
 
 .overlay-footer {
   border-top: none;
-  padding: 1.5rem 2rem;
+  padding: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .overlay-button {

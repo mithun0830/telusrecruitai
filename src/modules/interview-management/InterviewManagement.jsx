@@ -255,25 +255,13 @@ const InterviewManagement = () => {
       <div className="interview-management">
       <div className="header">
         <div className="left-controls">
-          <div className="control">
-            <i className="fas fa-th"></i>
-            All stages
+          <div className="search">
+            <i className="fas fa-search"></i>
+            <input type="text" placeholder="Search candidate" />
           </div>
           <div className="control">
             <i className="fas fa-filter"></i>
             More filters
-          </div>
-        </div>
-        <div className="right-controls">
-          <div className="sort">
-            Sort by:
-            <select>
-              <option>Stage</option>
-            </select>
-          </div>
-          <div className="search">
-            <i className="fas fa-search"></i>
-            <input type="text" placeholder="Search candidate" />
           </div>
         </div>
       </div>

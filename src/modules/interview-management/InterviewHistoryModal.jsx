@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
-import { interviewService } from '../../services/api';
+import { candidateService, interviewService } from '../../services/api';
 import Loader from '../../components/Loader';
 import { Modal, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -26,13 +26,14 @@ const scrollTimeList = (direction) => {
   }
 };
 
-const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
+const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRounds, onUpdateSuccess }) => {
   const handleClose = (success = false, meetingLink = null) => {
     resetScheduleFields();
     onClose(success, meetingLink);
   };
 
   const resetScheduleFields = () => {
+    setSelectedRound('');
     setSelectedInterviewer('');
     setSelectedDateTime(new Date());
     setDuration('30');
@@ -40,6 +41,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
     setAvailableSlots([]);
     setSelectedSlot(null);
   };
+  const [selectedRound, setSelectedRound] = useState('');
   const [selectedInterviewer, setSelectedInterviewer] = useState('');
   const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -52,18 +54,44 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+  const [interviewers, setInterviewers] = useState([]); // Array of {id, email} objects
+  const [loadingInterviewers, setLoadingInterviewers] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(loadingInterviewers);
+  }, [loadingInterviewers]);
+
+  useEffect(() => {
+    if (isOpen && candidateHistory && candidateHistory.resumeId) {
+      fetchInterviewers(candidateHistory.resumeId);
+    }
+  }, [isOpen, candidateHistory]);
+
+  const fetchInterviewers = async (resumeId) => {
+    setLoadingInterviewers(true);
+    try {
+      const response = await candidateService.getMatchingInterviewers(resumeId);
+      if (response.success && Array.isArray(response.data)) {
+        setInterviewers(response.data); // Store full interviewer objects
+      } else {
+        throw new Error('Failed to fetch interviewers');
+      }
+    } catch (error) {
+      console.error('Error fetching interviewers:', error);
+      setInterviewers([]);
+      setModalType('error');
+      setModalMessage('Failed to fetch interviewers. Please try again.');
+      setShowModal(true);
+    } finally {
+      setLoadingInterviewers(false);
+    }
+  };
 
   if (!isOpen || !candidateHistory) return null;
 
-  const { history, candidateName, jobTitle, jobDepartment, email } = candidateHistory;
+  const { history, candidateName, jobTitle, jobDepartment, email, resumeId } = candidateHistory;
 
-  console.log('Candidate Info:', { candidateName, jobTitle, jobDepartment, email });
-
-  const interviewers = [
-    'interviewer1@example.com',
-    'interviewer2@example.com',
-    'interviewer3@example.com'
-  ];
+  console.log('Candidate Info:', { candidateName, jobTitle, jobDepartment, email, resumeId });
 
   const handleDateTimeSelect = (dateTime) => {
     setSelectedDateTime(dateTime);
@@ -83,7 +111,9 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
 
   const handleFindSlots = async () => {
     if (!selectedInterviewer || !selectedDateTime) {
-      alert('Please select an interviewer and a date/time');
+      setModalType('error');
+      setModalMessage('Please select an interviewer and a date/time');
+      setShowModal(true);
       return;
     }
     setIsLoading(true);
@@ -92,7 +122,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
     console.log('Full candidateHistory:', candidateHistory);
 
     const requestBody = {
-      email: "mithunwalawalkar1002@gmail.com", //selectedInterviewer,
+      email: selectedInterviewer,
       dateTime: selectedDateTime.toISOString(),
       duration: parseInt(duration),
       title: "Interview",
@@ -109,15 +139,23 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
           return `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })} - ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`;
         });
 
-        setAvailableSlots(formattedSlots);
-        setShowSlots(true);
-        setSelectedSlot(null);
+        if (formattedSlots.length === 0) {
+          setModalType('error');
+          setModalMessage('No available slots found for the selected time range');
+          setShowModal(true);
+        } else {
+          setAvailableSlots(formattedSlots);
+          setShowSlots(true);
+          setSelectedSlot(null);
+        }
       } else {
-        alert('No available slots found');
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('Error fetching free slots:', error);
-      alert(error.message || 'Failed to fetch available slots. Please try again.');
+      setModalType('error');
+      setModalMessage(error.message || 'Failed to fetch available slots. Please try again.');
+      setShowModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -128,8 +166,10 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
   };
 
   const handleSchedule = async () => {
-    if (!selectedInterviewer || !selectedDateTime || !selectedSlot) {
-      alert('Please select an interviewer, date/time, and a time slot');
+    if (!selectedRound || !selectedInterviewer || !selectedDateTime || !selectedSlot) {
+      setModalType('error');
+      setModalMessage('Please select a round, interviewer, date/time, and a time slot');
+      setShowModal(true);
       return;
     }
     setIsLoading(true);
@@ -172,20 +212,47 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
       console.log('Schedule Meeting Response:', response);
       if (response.data?.meetingEvent?.hangoutLink) {
         const meetingLink = response.data.meetingEvent.hangoutLink;
-        // Update the history array in the component
-        if (history && history.length > 0) {
-          history[history.length - 1].meetingLink = meetingLink;
-        }
-        // Update the latest meeting link state
-        setLatestMeetingLink(meetingLink);
-        resetScheduleFields();
-        // Show success modal
-        setModalType('success');
-        setModalMessage('Interview scheduled successfully!');
-        setShowModal(true);
-        // Just update the parent component's state without closing the modal
-        if (onClose) {
-          onClose(true, meetingLink, false); // Pass false to indicate not to close the modal
+        const startMeetingTimeStamp = new Date(response.data.meetingEvent.start.dateTime).toISOString().slice(0, 19);
+        const endMeetingTimeStamp = new Date(response.data.meetingEvent.end.dateTime).toISOString().slice(0, 19);
+
+        // Update interview status
+        const updateStatusBody = {
+          candidateId: candidateHistory.candidateId,
+          roundId: parseInt(selectedRound), // Ensure roundId is sent as a number
+          interviewerId: interviewers.find(i => i.email === selectedInterviewer)?.interviewerId,
+          interviewerEmail: selectedInterviewer,
+          status: "In progress",
+          meetingLink: meetingLink,
+          startMeetingTimeStamp: startMeetingTimeStamp,
+          endMeetingTimeStamp: endMeetingTimeStamp
+        };
+
+        try {
+          await interviewService.updateInterviewStatus(updateStatusBody);
+          
+          // Refresh the interview management screen
+          onUpdateSuccess();
+          
+          // Update the history array in the component
+          if (history && history.length > 0) {
+            history[history.length - 1].meetingLink = meetingLink;
+          }
+          // Update the latest meeting link state
+          setLatestMeetingLink(meetingLink);
+          resetScheduleFields();
+          // Show success modal
+          setModalType('success');
+          setModalMessage('Interview scheduled successfully!');
+          setShowModal(true);
+          // Just update the parent component's state without closing the modal
+          if (onClose) {
+            onClose(true, meetingLink, false); // Pass false to indicate not to close the modal
+          }
+        } catch (updateError) {
+          console.error('Error updating interview status:', updateError);
+          setModalType('error');
+          setModalMessage('Interview scheduled, but failed to update status. Please contact support.');
+          setShowModal(true);
         }
       } else {
         // Show error modal
@@ -207,24 +274,43 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory }) => {
   return (
     isOpen && candidateHistory && (
       <>
-        {isLoading && <Loader />}
+        {(isLoading || loadingInterviewers) && <Loader />}
       <div className="modal-overlay">
         <div className="modal-content">
           <div className="modal-left">
             <h2>Schedule Interview</h2>
             <div className="schedule-form">
               <label>
+                Select Interview Round:
+                <select
+                  value={selectedRound}
+                  onChange={(e) => {
+                    console.log('Selected Round:', e.target.value);
+                    setSelectedRound(e.target.value);
+                  }}
+                >
+                  <option value="">Select interview round</option>
+                  {interviewRounds.map((round) => (
+                    <option key={round.roundId} value={round.roundId}>
+                      {round.roundName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
                 Select Interviewer:
                 <select
                   value={selectedInterviewer}
                   onChange={(e) => setSelectedInterviewer(e.target.value)}
+                  disabled={loadingInterviewers}
                 >
                   <option value="">Select an interviewer</option>
                   {interviewers.map((interviewer, index) => (
-                    <option key={index} value={interviewer}>{interviewer}</option>
+                    <option key={index} value={interviewer.email}>{interviewer.email}</option>
                   ))}
                 </select>
               </label>
+              {loadingInterviewers && <p>Loading interviewers...</p>}
               <div className="datetime-duration-container">
                 <div className="datetime-field">
                   <label>Select Date and Time:</label>

@@ -84,11 +84,11 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
           <div className="score-value">
             <span>{candidate.score || 0}%</span>
             <span 
-              className={candidate.status === 'COMPLETED' ? "urgent-tag" : "not-urgent-tag"}
+              className={candidate.status === 'COMPLETED' || candidate.status === 'IN_PROGRESS' ? "urgent-tag" : "not-urgent-tag"}
               onClick={() => handleStatusClick(candidate)}
               style={{ cursor: 'pointer' }}
             >
-              {candidate.status === 'COMPLETED' ? "Completed" : "Pending"}
+              {candidate.status}
             </span>
           </div>
         </div>
@@ -147,20 +147,20 @@ const InterviewManagement = () => {
   const [error, setError] = useState(null);
   const stageColors = ['#6366F1', '#F97316', '#F59E0B', '#3B82F6'];
 
-  useEffect(() => {
-    const fetchInterviewRounds = async () => {
-      try {
-        setIsLoading(true);
-        const response = await interviewService.getInterviewRounds();
-        const sortedRounds = response.data.list.sort((a, b) => a.roundId - b.roundId);
-        setInterviewRounds(sortedRounds);
-        setIsLoading(false);
-      } catch (err) {
-        setError('Failed to fetch interview rounds');
-        setIsLoading(false);
-      }
-    };
+  const fetchInterviewRounds = async () => {
+    try {
+      setIsLoading(true);
+      const response = await interviewService.getInterviewRounds();
+      const sortedRounds = response.data.list.sort((a, b) => a.roundId - b.roundId);
+      setInterviewRounds(sortedRounds);
+      setIsLoading(false);
+    } catch (err) {
+      setError('Failed to fetch interview rounds');
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchInterviewRounds();
   }, []);
 
@@ -172,7 +172,8 @@ const InterviewManagement = () => {
       jobDepartment: candidate.department || 'Engineering',
       email: candidate.email || '',
       candidateId: candidate.candidateId,
-      currentRoundId: candidate.currentRoundId
+      currentRoundId: candidate.currentRoundId,
+      resumeId: candidate.resumeId || ''
     });
     setIsModalOpen(true);
   };
@@ -302,6 +303,8 @@ const InterviewManagement = () => {
         isOpen={isModalOpen}
         onClose={handleModalClose}
         candidateHistory={selectedCandidate || []}
+        interviewRounds={interviewRounds}
+        onUpdateSuccess={fetchInterviewRounds}
       />
       </div>
     </DndProvider>

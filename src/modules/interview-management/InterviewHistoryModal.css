@@ -324,7 +324,7 @@
 
 .find-slots-button {
   padding: 0 16px;
-  background-color: #4299e1;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: white;
   border: none !important;
   font-weight: 500;
@@ -336,15 +336,20 @@
   align-self: flex-end;
 }
 
-
 .find-slots-button:hover {
-  background-color: #3182ce;
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  transform: translateY(-1px);
+}
+
+.find-slots-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.4);
 }
 
 .schedule-button {
   margin-top: 30px;
   padding: 12px;
-  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -355,9 +360,14 @@
 }
 
 .schedule-button:hover {
-  background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.4);
 }
 
 .schedule-button:active {

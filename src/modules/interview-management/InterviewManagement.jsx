@@ -19,13 +19,18 @@ const getInitials = (name) => {
     .slice(0, 2);
 };
 
-const getRandomColor = () => {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+const getDarkColor = () => {
+  const h = Math.floor(Math.random() * 360);
+  const s = Math.floor(Math.random() * 30) + 70; // 70-100%
+  const l = Math.floor(Math.random() * 20) + 10; // 10-30%
+  return `hsl(${h}, ${s}%, ${l}%)`;
+};
+
+const getLightColor = () => {
+  const h = Math.floor(Math.random() * 360);
+  const s = Math.floor(Math.random() * 30) + 70; // 70-100%
+  const l = Math.floor(Math.random() * 10) + 85; // 85-95%
+  return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
 const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
@@ -57,17 +62,17 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
     >
       <div className="card-header">
         <div className="candidate-info">
-          <div 
-            className="avatar" 
-            style={{
-              backgroundColor: getRandomColor(),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-          >
+            <div 
+              className="avatar" 
+              style={{
+                backgroundColor: getLightColor(),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: getDarkColor(),
+                fontWeight: 'bold'
+              }}
+            >
             {getInitials(candidate.name)}
           </div>
           <div>
@@ -84,11 +89,25 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
           <div className="score-value">
             <span>{candidate.score || 0}%</span>
             <span 
-              className={candidate.status === 'COMPLETED' || candidate.status === 'IN_PROGRESS' ? "urgent-tag" : "not-urgent-tag"}
-              onClick={() => handleStatusClick(candidate)}
-              style={{ cursor: 'pointer' }}
+              onClick={(e) => {
+                e.preventDefault();
+                if (candidate.status.toUpperCase() !== 'IN PROGRESS') {
+                  handleStatusClick(candidate, round);
+                } else {
+                  console.log('Not calling handleStatusClick for IN PROGRESS');
+                }
+              }}
+              style={{ 
+                cursor: candidate.status.toUpperCase() !== 'IN PROGRESS' ? 'pointer' : 'default',
+                backgroundColor: getLightColor(),
+                color: getDarkColor(),
+                padding: '4px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                display: 'inline-block'
+              }}
             >
-              {candidate.status}
+              {candidate.status.toUpperCase()}
             </span>
           </div>
         </div>
@@ -142,6 +161,7 @@ const KanbanColumn = ({ round, stages, handleStatusClick, onDrop }) => {
 const InterviewManagement = () => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   const [interviewRounds, setInterviewRounds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -164,18 +184,36 @@ const InterviewManagement = () => {
     fetchInterviewRounds();
   }, []);
 
-  const handleStatusClick = (candidate) => {
-    setSelectedCandidate({
-      history: candidate.interviewHistory || [],
-      candidateName: candidate.name || 'No Name',
-      jobTitle: candidate.jobTitle || 'Software Engineer',
-      jobDepartment: candidate.department || 'Engineering',
-      email: candidate.email || '',
-      candidateId: candidate.candidateId,
-      currentRoundId: candidate.currentRoundId,
-      resumeId: candidate.resumeId || ''
-    });
-    setIsModalOpen(true);
+  const handleStatusClick = (candidate, round) => {
+    console.log('handleStatusClick called with status:', candidate.status.toUpperCase());
+    
+    if (candidate.status.toUpperCase() === 'COMPLETED') {
+      console.log('Showing overlay for COMPLETED status');
+      setSelectedCandidate({
+        candidateName: candidate.name || 'No Name',
+        candidateId: candidate.candidateId,
+        roundId: round?.roundId
+      });
+      setShowOverlay(true);
+      return;
+    }
+    
+    if (candidate.status.toUpperCase() !== 'IN PROGRESS') {
+      console.log('Setting selected candidate and opening modal');
+      setSelectedCandidate({
+        history: candidate.interviewHistory || [],
+        candidateName: candidate.name || 'No Name',
+        jobTitle: candidate.jobTitle || 'Software Engineer',
+        jobDepartment: candidate.department || 'Engineering',
+        email: candidate.email || '',
+        candidateId: candidate.candidateId,
+        currentRoundId: candidate.currentRoundId,
+        resumeId: candidate.resumeId || ''
+      });
+      setIsModalOpen(true);
+    } else {
+      console.log('Not taking any action for IN PROGRESS status');
+    }
   };
 
   const handleModalClose = (success, meetingLink, shouldClose = true) => {
@@ -294,6 +332,28 @@ const InterviewManagement = () => {
         interviewRounds={interviewRounds}
         onUpdateSuccess={fetchInterviewRounds}
       />
+      {showOverlay && (
+        <div className="overlay">
+          <div className="overlay-content">
+            <button className="close-btn" onClick={() => setShowOverlay(false)}>&times;</button>
+            <div className="feedback-icon">
+              <i className="fas fa-comments"></i>
+            </div>
+            <h2>Submit Feedback</h2>
+            <p>Please provide the feedback for {selectedCandidate?.candidateName}</p>
+            <button 
+              className="submit-btn" 
+              onClick={() => {
+                const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(selectedCandidate?.candidateName)}&round_id=${selectedCandidate?.roundId}&candidate_id=${selectedCandidate?.candidateId}`;
+                window.open(url, '_blank');
+                setShowOverlay(false);
+              }}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
       </div>
     </DndProvider>
   );

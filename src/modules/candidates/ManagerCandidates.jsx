@@ -8,6 +8,30 @@ import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-so
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 
+const getInitials = (name) => {
+  if (!name) return '';
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getDarkColor = () => {
+  const h = Math.floor(Math.random() * 360);
+  const s = Math.floor(Math.random() * 30) + 70; // 70-100%
+  const l = Math.floor(Math.random() * 20) + 10; // 10-30%
+  return `hsl(${h}, ${s}%, ${l}%)`;
+};
+
+const getLightColor = () => {
+  const h = Math.floor(Math.random() * 360);
+  const s = Math.floor(Math.random() * 30) + 70; // 70-100%
+  const l = Math.floor(Math.random() * 10) + 85; // 85-95%
+  return `hsl(${h}, ${s}%, ${l}%)`;
+};
+
 const scrollToRef = (ref) => {
   if (ref && ref.current) {
     ref.current.scrollIntoView({ behavior: 'smooth' });
@@ -296,7 +320,7 @@ const ManagerCandidates = () => {
     }
 
     if (!isFilterSelected(filters)) {
-      setErrorMessage('Please select at least one filter before searching.');
+      setErrorMessage('Transform your job description into a talent magnet. Enter the details and watch our AI find your perfect match!');
       return;
     }
 
@@ -315,13 +339,13 @@ const ManagerCandidates = () => {
       if (filters.externalSearch) {
         const externalResponse = await candidateService.searchExternalCandidates(searchString);
         if (externalResponse.success) {
-          externalCandidates = externalResponse.data.map(candidate => ({...candidate, source: 'External'}));
+          externalCandidates = externalResponse.data.map(candidate => ({ ...candidate, source: 'External' }));
         }
       }
 
       const internalResponse = await candidateService.searchCandidates(searchString);
       if (internalResponse.success) {
-        internalCandidates = internalResponse.data.map(candidate => ({...candidate, source: 'Internal'}));
+        internalCandidates = internalResponse.data.map(candidate => ({ ...candidate, source: 'Internal' }));
       }
 
       const mergedResults = [...internalCandidates, ...externalCandidates];
@@ -448,52 +472,78 @@ const ManagerCandidates = () => {
                   <div className="candidates-grid">
                     {searchResults.map((candidate) => (
                       <div key={candidate.resume.id} className="candidate-card">
-                        <div className="candidate-header">
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={
-                              <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
-                                {lockErrorState.message}
-                              </Tooltip>
-                            }
-                            show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={candidate.locked}
-                              onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-                            />
-                          </OverlayTrigger>
-                          <div className="candidate-name">
-                            <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
-                            <span>{candidate.resume.name}</span>
-                          </div>
-                          <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-                            <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
-                          </span>
-                        </div>
-                        <div className="candidate-details">
-                          <div>Phone: {candidate.resume.phoneNumber}</div>
-                          <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
-                          <div>Exp: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
-                          <div>Score: {candidate.score}</div>
-                          <div>Source: <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span></div>
-                        </div>
-                        <div className="candidate-actions">
-                          <button
-                            className="btn-more"
-                            title="More options"
-                            onClick={() => handleMoreOptionsClick(candidate.resume.id)}
-                          >
-                            ⋮
-                          </button>
-                          {activeDropdown === candidate.resume.id && (
-                            <div className="dropdown-content">
-                              <button onClick={() => handleViewClick(candidate)}>
-                                {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
-                              </button>
+                        <div className="card-header">
+                          <div className="candidate-info">
+                            <div
+                              className="avatar"
+                              style={{
+                                backgroundColor: getLightColor(),
+                                color: getDarkColor(),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                              }}
+                            >
+                              {getInitials(candidate.resume.name)}
                             </div>
-                          )}
+                            <div>
+                              <h3>{candidate.resume.name}</h3>
+                            </div>
+                          </div>
+  <div className="card-actions">
+    <OverlayTrigger
+      placement="top"
+      overlay={
+        <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
+          {lockErrorState.message}
+        </Tooltip>
+      }
+      show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
+    >
+      <div className="lock-toggle">
+        <input
+          type="checkbox"
+          checked={candidate.locked}
+          onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
+        />
+        <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+          <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+        </span>
+      </div>
+    </OverlayTrigger>
+    <div className="dropdown">
+      <button
+        className="btn-more"
+        title="More options"
+        onClick={() => handleMoreOptionsClick(candidate.resume.id)}
+      >
+        ⋮
+      </button>
+      {activeDropdown === candidate.resume.id && (
+        <div className="dropdown-content">
+          <button onClick={() => handleViewClick(candidate)}>
+            {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+                        </div>
+                        <div className="card-content">
+                          <div className="candidate-details">
+                            <div>Phone: {candidate.resume.phoneNumber}</div>
+                            <div>Email: {candidate.resume.email}</div>
+                            <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
+                            <div>Exp: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
+                          </div>
+                          <div className="source-section">
+                            <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
+                          </div>
                         </div>
                       </div>
                     ))}

@@ -6,7 +6,7 @@ import { authService, candidateService, interviewService } from '../../services/
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 
 const scrollToRef = (ref) => {
   if (ref && ref.current) {
@@ -43,8 +43,7 @@ const loaderTextStyle = {
 
 const ManagerCandidates = () => {
   const expandedViewRef = useRef(null);
-  const [showLockErrorModal, setShowLockErrorModal] = useState(false);
-  const [lockErrorMessage, setLockErrorMessage] = useState('');
+  const [lockErrorState, setLockErrorState] = useState({ show: false, message: '', candidateId: null });
   const [showShortlistModal, setShowShortlistModal] = useState(false);
   const [shortlistMessage, setShortlistMessage] = useState('');
   const [shortlistSuccess, setShortlistSuccess] = useState(false);
@@ -76,13 +75,14 @@ const ManagerCandidates = () => {
       }
     } catch (error) {
       console.error('Error updating candidate lock status:', error);
+      let errorMessage;
       if (error.message.includes('locked')) {
-        setLockErrorMessage('This candidate is already locked by another manager. You cannot modify it.');
+        errorMessage = 'This candidate is already locked by another manager. You cannot modify it.';
+      } else {
+        errorMessage = error.message || 'An unexpected error occurred. Please try again.';
       }
-      else {
-        setLockErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
-      }
-      setShowLockErrorModal(true);
+      setLockErrorState({ show: true, message: errorMessage, candidateId: candidate.resume.id });
+      setTimeout(() => setLockErrorState({ show: false, message: '', candidateId: null }), 3000); // Hide tooltip after 3 seconds
     }
   };
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -305,7 +305,9 @@ const ManagerCandidates = () => {
     setCurrentSearchValue(searchString); // Save the search value
     console.log("searchString", searchString)
     try {
-      const response = await candidateService.searchCandidates(searchString);
+      const response = filters.externalSearch 
+        ? await candidateService.searchExternalCandidates(searchString)
+        : await candidateService.searchCandidates(searchString);
       if (response.success) {
         setSearchResults(response.data);
       } else {
@@ -385,7 +387,21 @@ const ManagerCandidates = () => {
                 onFocus={() => setErrorMessage('')}
               />
             </div>
-            <div>
+            <div className="search-controls">
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
+              >
+                <div className="external-search-checkbox">
+                  <input
+                    type="checkbox"
+                    id="externalSearch"
+                    checked={filters.externalSearch || false}
+                    onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
+                  />
+                  <label htmlFor="externalSearch"></label>
+                </div>
+              </OverlayTrigger>
               <button
                 className="search-button"
                 onClick={handleSearchClick}
@@ -416,11 +432,21 @@ const ManagerCandidates = () => {
                     {searchResults.map((candidate) => (
                       <div key={candidate.resume.id} className="candidate-card">
                         <div className="candidate-header">
-                          <input
-                            type="checkbox"
-                            checked={candidate.locked && candidate.managerId === currentUserId}
-                            onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-                          />
+                          <OverlayTrigger
+                            placement="top"
+                            overlay={
+                              <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
+                                {lockErrorState.message}
+                              </Tooltip>
+                            }
+                            show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={candidate.locked}
+                              onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
+                            />
+                          </OverlayTrigger>
                           <div className="candidate-name">
                             <div className="candidate-avatar">{candidate.resume.name.charAt(0).toUpperCase()}</div>
                             <span>{candidate.resume.name}</span>
@@ -509,35 +535,6 @@ const ManagerCandidates = () => {
           )}
         </div>
       </div>
-
-      <Modal
-        show={showLockErrorModal}
-        onHide={() => setShowLockErrorModal(false)}
-        centered
-        backdrop="static"
-        keyboard={false}
-        className="success-modal"
-      >
-        <Modal.Body className="text-center p-5">
-          <div className="success-icon-wrapper mb-4">
-            <FontAwesomeIcon
-              icon={faTimesCircle}
-              className={'success-icon-text-danger'}
-            />
-          </div>
-          <h4 className="success-title mb-3">
-            Operation Failed
-          </h4>
-          <p className="success-message mb-4">{lockErrorMessage}</p>
-          <Button
-            variant="danger"
-            onClick={() => setShowLockErrorModal(false)}
-            className="continue-button"
-          >
-            Close
-          </Button>
-        </Modal.Body>
-      </Modal>
 
       {/* <Modal
         show={showShortlistModal}

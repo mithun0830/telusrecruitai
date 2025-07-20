@@ -6,7 +6,7 @@ import { candidateService, interviewService } from '../../services/api';
 import Loader from '../../components/Loader';
 import { Modal, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faTimesCircle, faRobot } from '@fortawesome/free-solid-svg-icons';
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -278,8 +278,10 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
       <div className="modal-overlay">
         <div className="modal-content">
           <div className="modal-left">
-            <h2>Schedule Interview</h2>
-            <div className="schedule-form">
+            <h2>Interview Details</h2>
+            {history && history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (
+              <>
+              <div className="schedule-form">
               <label>
                 Select Interview Round:
                 <select
@@ -298,7 +300,10 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                 </select>
               </label>
               <label>
-                Select Interviewer:
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                  <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px', color: '#66CC00' }} />
+                  Select Interviewer:
+                </div>
                 <select
                   value={selectedInterviewer}
                   onChange={(e) => setSelectedInterviewer(e.target.value)}
@@ -412,8 +417,20 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                   ))}
                 </div>
               )}
-              <button onClick={handleSchedule} className="schedule-button">Schedule Interview</button>
-            </div>
+                  <button onClick={handleSchedule} className="schedule-button">
+                    <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
+                    Schedule Interview
+                  </button>
+                </div>
+              </>
+            ) : (
+              history[history.length - 1].status.toUpperCase() === 'COMPLETED' ? (
+                <div className="candidate-info-modal" style={{ marginTop: '20px' }}>
+                  <h3>Schedule Next Interview</h3>
+                  <p style={{ color: '#666', fontSize: '14px', marginTop: '10px' }}>Feedback for the last interview round is required before scheduling the next interview.</p>
+                </div>
+              ) : null
+            )}
           </div>
           <div className="modal-right">
             <h2>Interview Process</h2>
@@ -438,16 +455,30 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                       <i className="fas fa-check"></i>
                     </div>
                   </div>
-                  <div className="timeline-content">
-                    <h3>{interview.roundName}</h3>
-                    <p className="timeline-subtitle">{interview.status}</p>
-                    {interview.feedback && (
-                      <p className="timeline-description">
-                        <strong>Interviewer's feedback: </strong>
-                        {interview.feedback}
-                      </p>
-                    )}
-                  </div>
+                    <div className="timeline-content">
+                      <h3>{interview.roundName}</h3>
+                      <div className="status-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <p className="timeline-subtitle" style={{ margin: 0 }}>{interview.status}</p>
+                        {interview.status.toUpperCase() === 'COMPLETED' && !interview.feedback && (
+                          <div className="ai-feedback-icon" title="Generate AI feedback">
+                            <FontAwesomeIcon 
+                              icon={faRobot} 
+                              onClick={() => {
+                                const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(candidateName)}&round_id=${interview.roundId}&candidate_id=${candidateHistory.candidateId}`;
+                                window.open(url, '_blank');
+                              }}
+                              style={{ cursor: 'pointer', color: '#6366F1' }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      {interview.feedback && (
+                        <p className="timeline-description">
+                          <strong>Interviewer's feedback: </strong>
+                          {interview.feedback}
+                        </p>
+                      )}
+                    </div>
                 </div>
               ))}
             </div>

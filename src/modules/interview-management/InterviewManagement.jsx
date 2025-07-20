@@ -1,7 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { interviewService } from '../../services/api';
 import InterviewHistoryModal from './InterviewHistoryModal';
+import ChatBot from '../../components/ChatBot';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faComments } from '@fortawesome/free-solid-svg-icons';
 import './InterviewManagement.css';
+
+const CandidateChatBot = ({ candidate, onChatToggle }) => {
+  return (
+    <button 
+      className="chat-bot-toggle" 
+      title="Ask AI"
+      onClick={() => onChatToggle({
+        id: candidate.candidateId,
+        name: candidate.name,
+        resumeId: candidate.resumeId
+      })}
+    >
+      <FontAwesomeIcon icon={faComments} />
+    </button>
+  );
+};
 
 const getInitials = (name) => {
   if (!name) return ''; // Return empty string if name is undefined or null
@@ -27,7 +46,7 @@ const getLightColor = () => {
   return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
-const CandidateCard = ({ candidate, round, handleStatusClick }) => {
+const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) => {
   return (
     <div className="candidate-card">
       <div className="card-header">
@@ -50,7 +69,7 @@ const CandidateCard = ({ candidate, round, handleStatusClick }) => {
             <p>Applied at {candidate.interviewDateTime ? new Date(candidate.interviewDateTime).toLocaleDateString() : 'N/A'}</p>
           </div>
         </div>
-        <button className="more-options">...</button>
+        <CandidateChatBot candidate={candidate} onChatToggle={onChatToggle} />
       </div>
       <div className="card-content">
         <div className="score-section">
@@ -86,7 +105,7 @@ const CandidateCard = ({ candidate, round, handleStatusClick }) => {
   );
 };
 
-const KanbanColumn = ({ round, stages, handleStatusClick }) => {
+const KanbanColumn = ({ round, stages, handleStatusClick, handleChatToggle }) => {
   return (
     <div className="kanban-column">
       <div className="column-header">
@@ -103,6 +122,7 @@ const KanbanColumn = ({ round, stages, handleStatusClick }) => {
             candidate={candidate}
             round={round}
             handleStatusClick={handleStatusClick}
+            onChatToggle={handleChatToggle}
           />
         ))}
       </div>
@@ -117,7 +137,14 @@ const InterviewManagement = () => {
   const [interviewRounds, setInterviewRounds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeChatCandidate, setActiveChatCandidate] = useState(null);
   const stageColors = ['#6366F1', '#F97316', '#F59E0B', '#3B82F6'];
+
+  const handleChatToggle = (candidateInfo) => {
+    setIsChatOpen(true);
+    setActiveChatCandidate(candidateInfo);
+  };
 
   const fetchInterviewRounds = async () => {
     try {
@@ -271,10 +298,11 @@ const InterviewManagement = () => {
         <div className="kanban-board">
           {interviewRounds.map((round) => (
             <KanbanColumn
-              key={round.roundId}
-              round={round}
-              stages={stages}
-              handleStatusClick={handleStatusClick}
+            key={round.roundId}
+            round={round}
+            stages={stages}
+            handleStatusClick={handleStatusClick}
+            handleChatToggle={handleChatToggle}
             />
           ))}
         </div>
@@ -309,6 +337,14 @@ const InterviewManagement = () => {
             </div>
           </div>
         </div>
+      )}
+      {isChatOpen && (
+        <ChatBot
+          candidateId={activeChatCandidate.id}
+          candidateName={activeChatCandidate.name}
+          resumeId={activeChatCandidate.resumeId}
+          onClose={() => setIsChatOpen(false)}
+        />
       )}
     </div>
   );

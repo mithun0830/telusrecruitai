@@ -428,6 +428,28 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                 <div className="candidate-info-modal" style={{ marginTop: '20px' }}>
                   <h3>Schedule Next Interview</h3>
                   <p style={{ color: '#666', fontSize: '14px', marginTop: '10px' }}>Feedback for the last interview round is required before scheduling the next interview.</p>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                    <button 
+                      onClick={() => {
+                        const lastInterview = history[history.length - 1];
+                        const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(candidateName)}&round_id=${lastInterview.roundId}&candidate_id=${candidateHistory.candidateId}`;
+                        window.open(url, '_blank');
+                      }}
+                      className="btn btn-success"
+                      style={{ 
+                        marginTop: '10px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        backgroundColor: '#059669', 
+                        borderColor: '#059669',
+                        marginLeft: 'auto'
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faRobot} />
+                      Generate AI Feedback
+                    </button>
+                  </div>
                 </div>
               ) : null
             )}
@@ -459,18 +481,6 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                       <h3>{interview.roundName}</h3>
                       <div className="status-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                         <p className="timeline-subtitle" style={{ margin: 0 }}>{interview.status}</p>
-                        {interview.status.toUpperCase() === 'COMPLETED' && !interview.feedback && (
-                          <div className="ai-feedback-icon" title="Generate AI feedback">
-                            <FontAwesomeIcon 
-                              icon={faRobot} 
-                              onClick={() => {
-                                const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(candidateName)}&round_id=${interview.roundId}&candidate_id=${candidateHistory.candidateId}`;
-                                window.open(url, '_blank');
-                              }}
-                              style={{ cursor: 'pointer', color: '#6366F1' }}
-                            />
-                          </div>
-                        )}
                       </div>
                       {interview.feedback && (
                         <p className="timeline-description">

@@ -147,6 +147,10 @@ const ManagerCandidates = () => {
                       <span>📞</span>
                       <span>{candidate.resume.phoneNumber}</span>
                     </div>
+                    <div className="contact-item">
+                      <span>🔍</span>
+                      <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -305,14 +309,27 @@ const ManagerCandidates = () => {
     setCurrentSearchValue(searchString); // Save the search value
     console.log("searchString", searchString)
     try {
-      const response = filters.externalSearch 
-        ? await candidateService.searchExternalCandidates(searchString)
-        : await candidateService.searchCandidates(searchString);
-      if (response.success) {
-        setSearchResults(response.data);
+      let internalCandidates = [];
+      let externalCandidates = [];
+
+      if (filters.externalSearch) {
+        const externalResponse = await candidateService.searchExternalCandidates(searchString);
+        if (externalResponse.success) {
+          externalCandidates = externalResponse.data.map(candidate => ({...candidate, source: 'External'}));
+        }
+      }
+
+      const internalResponse = await candidateService.searchCandidates(searchString);
+      if (internalResponse.success) {
+        internalCandidates = internalResponse.data.map(candidate => ({...candidate, source: 'Internal'}));
+      }
+
+      const mergedResults = [...internalCandidates, ...externalCandidates];
+
+      if (mergedResults.length > 0) {
+        setSearchResults(mergedResults);
       } else {
-        console.error('Search failed:', response.message);
-        setErrorMessage('Search failed. Please try again.');
+        setErrorMessage('No candidates found. Please try a different search.');
       }
     } catch (error) {
       console.error('Error during search:', error);
@@ -460,6 +477,7 @@ const ManagerCandidates = () => {
                           <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
                           <div>Exp: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
                           <div>Score: {candidate.score}</div>
+                          <div>Source: <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span></div>
                         </div>
                         <div className="candidate-actions">
                           <button

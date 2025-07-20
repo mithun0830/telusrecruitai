@@ -517,25 +517,83 @@
   box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
 }
 
-.candidate-card .candidate-header {
+.candidate-card .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--telus-light-purple);
 }
 
-.candidate-card .candidate-name {
+.candidate-card .candidate-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 1;
+  gap: 12px;
+}
+
+.candidate-card .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.candidate-card .candidate-info h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--telus-dark-gray);
+}
+
+.candidate-card .card-content {
+  padding-top: 12px;
 }
 
 .candidate-card .candidate-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
+  margin-top: 2px;
+  margin-bottom: 12px;
   font-size: 14px;
+  color: var(--telus-dark-gray);
+}
+
+.candidate-card .source-section {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--telus-light-purple);
+}
+
+.candidate-card .source-tag {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: normal;
+  background-color: var(--telus-light-purple);
+  color: var(--telus-dark-gray);
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lock-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-more {
+  padding: 4px;
+  font-size: 20px;
   color: var(--telus-dark-gray);
 }
 
@@ -880,17 +938,19 @@
   display: block;
   position: absolute;
   right: 0;
+  top: 100%;
   background-color: var(--telus-white);
   min-width: 120px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
+  z-index: 10;
   border-radius: 4px;
   overflow: hidden;
+  margin-top: 4px;
 }
 
 .dropdown-content button {
   color: var(--telus-dark-gray);
-  padding: 12px 16px;
+  padding: 8px 12px;
   text-decoration: none;
   display: block;
   width: 100%;
@@ -898,7 +958,8 @@
   border: none;
   background: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .dropdown-content button:hover {

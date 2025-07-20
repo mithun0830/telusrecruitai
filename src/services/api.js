@@ -310,6 +310,13 @@ export const candidateService = {
 
   getMatchingInterviewers: async (resumeId) => {
     return await ai_api.get(`/interviewer-matching/resume/${resumeId}`);
+  },
+
+  sendChatMessage: async (resumeId, message) => {
+    return await ai_api.post('/chat/message', {
+      currentResumeId: resumeId,
+      message: message
+    });
   }
 };
 

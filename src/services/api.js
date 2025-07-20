@@ -257,6 +257,9 @@ export const candidateService = {
       params: { jd: searchString }
     });
   },
+  searchExternalCandidates: async (searchString) => {
+    return await ai_api.post(`/candidates/generate-candidates`, { jd: searchString });
+  },
   lockCandidate: async (candidate, currentUserId) => {
     const requestBody = {
       resumeId: candidate.resume.id,

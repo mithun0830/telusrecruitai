@@ -98,6 +98,53 @@
   box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
+.search-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.external-search-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.external-search-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--telus-green);
+  border-radius: 2px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+  background-color: var(--telus-white);
+}
+
+.external-search-checkbox input[type="checkbox"]:checked {
+  background-color: var(--telus-white);
+  border-color: var(--telus-green);
+}
+
+.external-search-checkbox input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: var(--telus-green);
+  font-size: 12px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.external-search-checkbox label {
+  margin: 0;
+  cursor: pointer;
+}
+
 .filters-container {
   display: flex;
   align-items: center;
@@ -1438,4 +1485,36 @@
   border-color: #047857;
   box-shadow: 0 6px 12px rgba(5, 150, 105, 0.2);
   transform: translateY(-2px);
+}
+
+/* Custom Tooltip Styles */
+.custom-tooltip {
+  color: #FFFFFF;
+  font-size: 14px;
+  max-width: 250px;
+  z-index: 1000;
+  background-color: #000000 !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  padding: 4px 8px !important;
+  border-radius: 4px;
+}
+
+.custom-tooltip .arrow {
+  display: none !important;
+}
+
+.custom-tooltip-inner {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+.lock-error-ref {
+  display: inline-block;
+  width: 0;
+  height: 0;
 }

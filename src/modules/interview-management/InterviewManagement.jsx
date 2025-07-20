@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { interviewService } from '../../services/api';
 import InterviewHistoryModal from './InterviewHistoryModal';
 import './InterviewManagement.css';
-
-const ItemTypes = {
-  CANDIDATE: 'candidate'
-};
 
 const getInitials = (name) => {
   if (!name) return ''; // Return empty string if name is undefined or null
@@ -33,46 +27,22 @@ const getLightColor = () => {
   return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
-const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
-  const [{ isDragging }, drag] = useDrag({
-    type: ItemTypes.CANDIDATE,
-    item: () => ({
-      type: ItemTypes.CANDIDATE,
-      candidateId: candidate?.candidateId,
-      fromRound: round?.roundId,
-      candidate: candidate
-    }),
-    canDrag: () => candidate && round && candidate.candidateId && round.roundId,
-    end: (item, monitor) => {
-      const dropResult = monitor.getDropResult();
-      if (item?.candidateId && item?.fromRound && dropResult?.roundId) {
-        onDragEnd(item.candidateId, item.fromRound, dropResult.roundId);
-      }
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
+const CandidateCard = ({ candidate, round, handleStatusClick }) => {
   return (
-    <div
-      ref={drag}
-      className={`candidate-card ${isDragging ? 'is-dragging' : ''}`}
-      style={{ opacity: isDragging ? 0.5 : 1 }}
-    >
+    <div className="candidate-card">
       <div className="card-header">
         <div className="candidate-info">
-            <div 
-              className="avatar" 
-              style={{
-                backgroundColor: getLightColor(),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: getDarkColor(),
-                fontWeight: 'bold'
-              }}
-            >
+          <div
+            className="avatar"
+            style={{
+              backgroundColor: getLightColor(),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: getDarkColor(),
+              fontWeight: 'bold'
+            }}
+          >
             {getInitials(candidate.name)}
           </div>
           <div>
@@ -88,17 +58,17 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
           <span>{round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}</span>
           <div className="score-value">
             <span>{candidate.score || 0}%</span>
-            <span 
+            <span
               onClick={(e) => {
                 e.preventDefault();
-                if (candidate.status.toUpperCase() !== 'IN PROGRESS') {
+                if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) {
                   handleStatusClick(candidate, round);
                 } else {
-                  console.log('Not calling handleStatusClick for IN PROGRESS');
+                  console.log('Not calling handleStatusClick for IN PROGRESS, REJECTED, or PENDING in New Applications status');
                 }
               }}
-              style={{ 
-                cursor: candidate.status.toUpperCase() !== 'IN PROGRESS' ? 'pointer' : 'default',
+              style={{
+                cursor: (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) ? 'pointer' : 'default',
                 backgroundColor: getLightColor(),
                 color: getDarkColor(),
                 padding: '4px 8px',
@@ -116,26 +86,9 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onDragEnd }) => {
   );
 };
 
-const KanbanColumn = ({ round, stages, handleStatusClick, onDrop }) => {
-  const [{ isOver }, drop] = useDrop({
-    accept: ItemTypes.CANDIDATE,
-    drop: () => ({ roundId: round?.roundId }),
-    canDrop: (item) => {
-      return item?.fromRound !== round?.roundId && round?.roundId != null;
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  });
-
-  const columnStyle = {
-    backgroundColor: isOver ? '#e2e8f0' : '#f1f5f9',
-    transition: 'background-color 0.2s ease'
-  };
-
+const KanbanColumn = ({ round, stages, handleStatusClick }) => {
   return (
-    <div ref={drop} className="kanban-column" style={columnStyle}>
+    <div className="kanban-column">
       <div className="column-header">
         <div className="stage-info">
           <span className="stage-dot" style={{ backgroundColor: stages[round.roundName].color }}></span>
@@ -150,7 +103,6 @@ const KanbanColumn = ({ round, stages, handleStatusClick, onDrop }) => {
             candidate={candidate}
             round={round}
             handleStatusClick={handleStatusClick}
-            onDragEnd={onDrop}
           />
         ))}
       </div>
@@ -185,20 +137,22 @@ const InterviewManagement = () => {
   }, []);
 
   const handleStatusClick = (candidate, round) => {
-    console.log('handleStatusClick called with status:', candidate.status.toUpperCase());
-    
-    if (candidate.status.toUpperCase() === 'COMPLETED') {
-      console.log('Showing overlay for COMPLETED status');
+    console.log('handleStatusClick called:', round.roundName.toUpperCase());
+    if (round.roundName.toUpperCase() == 'NEW APPLICATION' && candidate.status.toUpperCase() === 'PENDING') {
       setSelectedCandidate({
+        history: candidate.interviewHistory || [],
         candidateName: candidate.name || 'No Name',
+        jobTitle: candidate.jobTitle || 'Software Engineer',
+        jobDepartment: candidate.department || 'Engineering',
+        email: candidate.email || '',
         candidateId: candidate.candidateId,
+        currentRoundId: candidate.currentRoundId,
+        resumeId: candidate.resumeId || '',
+        status: candidate.status.toUpperCase(),
         roundId: round?.roundId
       });
       setShowOverlay(true);
-      return;
-    }
-    
-    if (candidate.status.toUpperCase() !== 'IN PROGRESS') {
+    } else if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED') {
       console.log('Setting selected candidate and opening modal');
       setSelectedCandidate({
         history: candidate.interviewHistory || [],
@@ -208,12 +162,34 @@ const InterviewManagement = () => {
         email: candidate.email || '',
         candidateId: candidate.candidateId,
         currentRoundId: candidate.currentRoundId,
-        resumeId: candidate.resumeId || ''
+        resumeId: candidate.resumeId || '',
+        status: candidate.status.toUpperCase(),
+        roundId: round?.roundId
       });
       setIsModalOpen(true);
     } else {
-      console.log('Not taking any action for IN PROGRESS status');
+      console.log('Not taking any action for IN PROGRESS, REJECTED, or PENDING status');
     }
+  };
+
+  const handleOverlayClose = async () => {
+    try {
+      await interviewService.updateInterviewStatus({
+        candidateId: selectedCandidate.candidateId,
+        roundId: selectedCandidate.roundId,
+        interviewerId: "",
+        interviewerEmail: "",
+        status: "Rejected",
+        meetingLink: "",
+        startMeetingTimeStamp: "",
+        endMeetingTimeStamp: ""
+      });
+      await fetchInterviewRounds();
+    } catch (error) {
+      console.error('Error rejecting candidate:', error);
+    }
+    setShowOverlay(false);
+    setSelectedCandidate(null);
   };
 
   const handleModalClose = (success, meetingLink, shouldClose = true) => {
@@ -222,24 +198,24 @@ const InterviewManagement = () => {
     }
     if (success && meetingLink) {
       // Find the current candidate in the rounds
-      const currentRound = interviewRounds.find(round => 
+      const currentRound = interviewRounds.find(round =>
         round.candidates.some(c => c.candidateId === selectedCandidate.candidateId)
       );
-      
+
       if (currentRound) {
-        const candidateIndex = currentRound.candidates.findIndex(c => 
+        const candidateIndex = currentRound.candidates.findIndex(c =>
           c.candidateId === selectedCandidate.candidateId
         );
-        
+
         if (candidateIndex !== -1) {
           const updatedCandidate = {
             ...currentRound.candidates[candidateIndex]
           };
-          
+
           if (updatedCandidate.interviewHistory && updatedCandidate.interviewHistory.length > 0) {
             updatedCandidate.interviewHistory[updatedCandidate.interviewHistory.length - 1].meetingLink = meetingLink;
           }
-          
+
           updateCandidateInRounds(updatedCandidate);
         }
       }
@@ -247,10 +223,10 @@ const InterviewManagement = () => {
   };
 
   const updateCandidateInRounds = (updatedCandidate) => {
-    setInterviewRounds(prevRounds => 
+    setInterviewRounds(prevRounds =>
       prevRounds.map(round => ({
         ...round,
-        candidates: round.candidates.map(candidate => 
+        candidates: round.candidates.map(candidate =>
           candidate.candidateId === updatedCandidate.candidateId ? updatedCandidate : candidate
         )
       }))
@@ -258,7 +234,7 @@ const InterviewManagement = () => {
   };
 
   // Removed moveToNextRound function
-  
+
   const stages = interviewRounds.reduce((acc, round, index) => {
     acc[round.roundName] = {
       count: round.candidates.length,
@@ -268,29 +244,8 @@ const InterviewManagement = () => {
     return acc;
   }, {});
 
-  const handleDrop = (candidateId, fromRoundId, toRoundId) => {
-    if (!candidateId || !fromRoundId || !toRoundId || fromRoundId === toRoundId) return;
-
-    setInterviewRounds(prevRounds => {
-      const newRounds = [...prevRounds];
-      const fromRoundIndex = newRounds.findIndex(r => r.roundId === fromRoundId);
-      const toRoundIndex = newRounds.findIndex(r => r.roundId === toRoundId);
-      
-      if (fromRoundIndex === -1 || toRoundIndex === -1) return prevRounds;
-      
-      const candidateIndex = newRounds[fromRoundIndex].candidates.findIndex(c => c.candidateId === candidateId);
-      if (candidateIndex === -1) return prevRounds;
-      
-      const [candidate] = newRounds[fromRoundIndex].candidates.splice(candidateIndex, 1);
-      newRounds[toRoundIndex].candidates.push(candidate);
-      
-      return newRounds;
-    });
-  };
-
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="interview-management">
+    <div className="interview-management">
       <div className="header">
         <div className="left-controls">
           <div className="search">
@@ -320,7 +275,6 @@ const InterviewManagement = () => {
               round={round}
               stages={stages}
               handleStatusClick={handleStatusClick}
-              onDrop={handleDrop}
             />
           ))}
         </div>
@@ -332,30 +286,31 @@ const InterviewManagement = () => {
         interviewRounds={interviewRounds}
         onUpdateSuccess={fetchInterviewRounds}
       />
-      {showOverlay && (
+      {showOverlay && selectedCandidate && (
         <div className="overlay">
           <div className="overlay-content">
-            <button className="close-btn" onClick={() => setShowOverlay(false)}>&times;</button>
-            <div className="feedback-icon">
-              <i className="fas fa-comments"></i>
+            <h3>Do you want to schedule an interview for this candidate?</h3>
+            <div className="overlay-buttons">
+              <button
+                onClick={handleOverlayClose}
+                className="overlay-button overlay-button-reject"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => {
+                  setShowOverlay(false);
+                  setIsModalOpen(true);
+                }}
+                className="overlay-button overlay-button-schedule"
+              >
+                Schedule
+              </button>
             </div>
-            <h2>Submit Feedback</h2>
-            <p>Please provide the feedback for {selectedCandidate?.candidateName}</p>
-            <button 
-              className="submit-btn" 
-              onClick={() => {
-                const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(selectedCandidate?.candidateName)}&round_id=${selectedCandidate?.roundId}&candidate_id=${selectedCandidate?.candidateId}`;
-                window.open(url, '_blank');
-                setShowOverlay(false);
-              }}
-            >
-              Submit
-            </button>
           </div>
         </div>
       )}
-      </div>
-    </DndProvider>
+    </div>
   );
 };
 

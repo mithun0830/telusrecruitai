@@ -8,8 +8,8 @@ import './InterviewManagement.css';
 
 const CandidateChatBot = ({ candidate, onChatToggle }) => {
   return (
-    <button 
-      className="chat-bot-toggle" 
+    <button
+      className="chat-bot-toggle"
       title="Ask AI"
       onClick={() => onChatToggle({
         id: candidate.candidateId,
@@ -165,7 +165,16 @@ const InterviewManagement = () => {
 
   const handleStatusClick = (candidate, round) => {
     const roundId = round.roundId;
-    
+
+    const isLastRound = round.roundId === interviewRounds[interviewRounds.length - 1].roundId;
+    const isSelected = candidate.status.toUpperCase() === 'SELECTED';
+    const hasFeedback = candidate.interviewHistory && candidate.interviewHistory.length > 0 && candidate.interviewHistory[candidate.interviewHistory.length - 1].feedback;
+
+    if (isLastRound && isSelected && hasFeedback) {
+      console.log('Modal not opened: Last round, not selected status, and feedback present');
+      return;
+    }
+
     if (round.roundName.toUpperCase() == 'NEW APPLICATION' && candidate.status.toUpperCase() === 'PENDING') {
       setSelectedCandidate({
         history: candidate.interviewHistory || [],
@@ -296,11 +305,11 @@ const InterviewManagement = () => {
         <div className="kanban-board">
           {interviewRounds.map((round) => (
             <KanbanColumn
-            key={round.roundId}
-            round={round}
-            stages={stages}
-            handleStatusClick={handleStatusClick}
-            handleChatToggle={handleChatToggle}
+              key={round.roundId}
+              round={round}
+              stages={stages}
+              handleStatusClick={handleStatusClick}
+              handleChatToggle={handleChatToggle}
             />
           ))}
         </div>

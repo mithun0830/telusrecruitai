@@ -287,16 +287,21 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                 <select
                   value={selectedRound}
                   onChange={(e) => {
-                    console.log('Selected Round:', e.target.value);
                     setSelectedRound(e.target.value);
                   }}
                 >
                   <option value="">Select interview round</option>
-                  {interviewRounds.map((round) => (
-                    <option key={round.roundId} value={round.roundId}>
-                      {round.roundName}
-                    </option>
-                  ))}
+                  {interviewRounds
+                    .filter(round => {
+                      const currentRoundId = history[history.length - 1]?.roundNumber;
+                      return currentRoundId && round.roundId > currentRoundId;
+                    })
+                    .map((round) => (
+                      <option key={round.roundId} value={round.roundId}>
+                        {round.roundName}
+                      </option>
+                    ))
+                  }
                 </select>
               </label>
               <label>

@@ -431,8 +431,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                   <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                     <button 
                       onClick={() => {
-                        const lastInterview = history[history.length - 1];
-                        const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(candidateName)}&round_id=${lastInterview.roundId}&candidate_id=${candidateHistory.candidateId}`;
+                        const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(candidateName)}&round_id=${candidateHistory.roundId}&candidate_id=${candidateHistory.candidateId}`;
                         window.open(url, '_blank');
                       }}
                       className="btn btn-success"

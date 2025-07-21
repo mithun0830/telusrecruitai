@@ -164,7 +164,8 @@ const InterviewManagement = () => {
   }, []);
 
   const handleStatusClick = (candidate, round) => {
-    console.log('handleStatusClick called:', round.roundName.toUpperCase());
+    const roundId = round.roundId;
+    
     if (round.roundName.toUpperCase() == 'NEW APPLICATION' && candidate.status.toUpperCase() === 'PENDING') {
       setSelectedCandidate({
         history: candidate.interviewHistory || [],
@@ -176,11 +177,10 @@ const InterviewManagement = () => {
         currentRoundId: candidate.currentRoundId,
         resumeId: candidate.resumeId || '',
         status: candidate.status.toUpperCase(),
-        roundId: round?.roundId
+        roundId: roundId
       });
       setShowOverlay(true);
     } else if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED') {
-      console.log('Setting selected candidate and opening modal');
       setSelectedCandidate({
         history: candidate.interviewHistory || [],
         candidateName: candidate.name || 'No Name',
@@ -191,11 +191,9 @@ const InterviewManagement = () => {
         currentRoundId: candidate.currentRoundId,
         resumeId: candidate.resumeId || '',
         status: candidate.status.toUpperCase(),
-        roundId: round?.roundId
+        roundId: roundId
       });
       setIsModalOpen(true);
-    } else {
-      console.log('Not taking any action for IN PROGRESS, REJECTED, or PENDING status');
     }
   };
 
@@ -317,6 +315,12 @@ const InterviewManagement = () => {
       {showOverlay && selectedCandidate && (
         <div className="overlay">
           <div className="overlay-content">
+            <button
+              onClick={() => setShowOverlay(false)}
+              className="overlay-close-button"
+            >
+              ×
+            </button>
             <h3>Do you want to schedule an interview for this candidate?</h3>
             <div className="overlay-buttons">
               <button

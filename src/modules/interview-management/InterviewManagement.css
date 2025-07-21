@@ -434,6 +434,7 @@
 
 /* Additional styles for overlay content */
 .overlay-content h3 {
+  margin-top: 20px;
   margin-bottom: 20px;
   font-size: 20px;
   color: #1e293b;
@@ -443,7 +444,7 @@
   margin-top: 20px;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 20px;
 }
 
 .overlay-button {
@@ -460,6 +461,31 @@
 
 .overlay-button-schedule {
   background-color: #66CC00;
+}
+
+.overlay-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #64748b;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+}
+
+.overlay-close-button:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  transform: scale(1.1);
 }
 
 /* Styles for candidate card elements */

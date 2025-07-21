@@ -413,7 +413,7 @@ const ManagerCandidates = () => {
     <div className="candidates-page">
       <style>{spinKeyframes}</style>
       <div className="candidates-header">
-        <h1>Manager Candidates</h1>
+        <h1>Shortlist Candidates</h1>
       </div>
       <div className="candidates-content">
         <div className="filters-section horizontal">
@@ -495,51 +495,52 @@ const ManagerCandidates = () => {
                               <h3>{candidate.resume.name}</h3>
                             </div>
                           </div>
-  <div className="card-actions">
-    <OverlayTrigger
-      placement="top"
-      overlay={
-        <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
-          {lockErrorState.message}
-        </Tooltip>
-      }
-      show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
-    >
-      <div className="lock-toggle">
-        <input
-          type="checkbox"
-          checked={candidate.locked}
-          onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-        />
-        <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-          <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
-        </span>
-      </div>
-    </OverlayTrigger>
-    <div className="dropdown">
-      <button
-        className="btn-more"
-        title="More options"
-        onClick={() => handleMoreOptionsClick(candidate.resume.id)}
-      >
-        ⋮
-      </button>
-      {activeDropdown === candidate.resume.id && (
-        <div className="dropdown-content">
-          <button onClick={() => handleViewClick(candidate)}>
-            {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
+                          <div className="card-actions">
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={
+                                <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
+                                  {lockErrorState.message}
+                                </Tooltip>
+                              }
+                              show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
+                            >
+                              <div className="lock-toggle">
+                                <input
+                                  type="checkbox"
+                                  checked={candidate.locked}
+                                  onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
+                                />
+                                <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+                                  <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+                                </span>
+                              </div>
+                            </OverlayTrigger>
+                            <div className="dropdown">
+                              <button
+                                className="btn-more"
+                                title="More options"
+                                onClick={() => handleMoreOptionsClick(candidate.resume.id)}
+                              >
+                                ⋮
+                              </button>
+                              {activeDropdown === candidate.resume.id && (
+                                <div className="dropdown-content">
+                                  <button onClick={() => handleViewClick(candidate)}>
+                                    {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         <div className="card-content">
                           <div className="candidate-details">
                             <div>Phone: {candidate.resume.phoneNumber}</div>
                             <div>Email: {candidate.resume.email}</div>
                             <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
-                            <div>Exp: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
+                            <div>Experience: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
+                            <div>Score: {candidate.score}%</div>
                           </div>
                           <div className="source-section">
                             <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>

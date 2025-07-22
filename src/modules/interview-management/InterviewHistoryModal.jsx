@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
@@ -32,17 +32,24 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
     onClose(success, meetingLink);
   };
 
-  const resetScheduleFields = () => {
-    setSelectedRound('');
-    setSelectedInterviewer('');
-    setSelectedDateTime(new Date());
-    setDuration('30');
-    setShowSlots(false);
-    setAvailableSlots([]);
-    setSelectedSlot(null);
-  };
+const resetScheduleFields = () => {
+  setSelectedRound('');
+  setSelectedInterviewers([]);
+  setSelectedDateTime(new Date());
+  setDuration('30');
+  setShowSlots(false);
+  setAvailableSlots([]);
+  setSelectedSlot(null);
+  setIsDropdownOpen(false);
+};
   const [selectedRound, setSelectedRound] = useState('');
-  const [selectedInterviewer, setSelectedInterviewer] = useState('');
+  const [selectedInterviewers, setSelectedInterviewers] = useState([]);
+  
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedInterviewers([]);
+    }
+  }, [isOpen]);
   const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [duration, setDuration] = useState('30');
@@ -56,6 +63,21 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   const [modalMessage, setModalMessage] = useState('');
   const [interviewers, setInterviewers] = useState([]); // Array of {id, email} objects
   const [loadingInterviewers, setLoadingInterviewers] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const multiselectRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setIsLoading(loadingInterviewers);
@@ -72,7 +94,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
     try {
       const response = await candidateService.getMatchingInterviewers(resumeId);
       if (response.success && Array.isArray(response.data)) {
-        setInterviewers(response.data); // Store full interviewer objects
+        setInterviewers(response.data);
       } else {
         throw new Error('Failed to fetch interviewers');
       }
@@ -110,9 +132,9 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   };
 
   const handleFindSlots = async () => {
-    if (!selectedInterviewer || !selectedDateTime) {
+    if (selectedInterviewers.length === 0 || !selectedDateTime) {
       setModalType('error');
-      setModalMessage('Please select an interviewer and a date/time');
+      setModalMessage('Please select at least one interviewer and a date/time');
       setShowModal(true);
       return;
     }
@@ -122,7 +144,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
     console.log('Full candidateHistory:', candidateHistory);
 
     const requestBody = {
-      email: selectedInterviewer,
+      emails: selectedInterviewers,
       dateTime: selectedDateTime.toISOString(),
       duration: parseInt(duration),
       title: "Interview",
@@ -166,9 +188,9 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   };
 
   const handleSchedule = async () => {
-    if (!selectedRound || !selectedInterviewer || !selectedDateTime || !selectedSlot) {
+    if (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot) {
       setModalType('error');
-      setModalMessage('Please select a round, interviewer, date/time, and a time slot');
+      setModalMessage('Please select a round, at least one interviewer, date/time, and a time slot');
       setShowModal(true);
       return;
     }
@@ -203,7 +225,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
       duration: parseInt(duration),
       title: "Interview",
       description: "Candidate Interview",
-      attendees: [email, selectedInterviewer],
+      attendees: [email, ...selectedInterviewers],
       timeZone: "Asia/Kolkata"
     };
 
@@ -219,12 +241,15 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
         const updateStatusBody = {
           candidateId: candidateHistory.candidateId,
           roundId: parseInt(selectedRound), // Ensure roundId is sent as a number
-          interviewerId: interviewers.find(i => i.email === selectedInterviewer)?.interviewerId,
-          interviewerEmail: selectedInterviewer,
+          interviewers: selectedInterviewers.map(email => ({
+            interviewerId: interviewers.find(i => i.email === email)?.interviewerId,
+            interviewerEmail: email
+          })),
           status: "In progress",
           meetingLink: meetingLink,
           startMeetingTimeStamp: startMeetingTimeStamp,
-          endMeetingTimeStamp: endMeetingTimeStamp
+          endMeetingTimeStamp: endMeetingTimeStamp,
+          feedback: ""
         };
 
         try {
@@ -307,18 +332,40 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
               <label>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                   <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px', color: '#66CC00' }} />
-                  Select Interviewer:
+                  Select Interviewers:
                 </div>
-                <select
-                  value={selectedInterviewer}
-                  onChange={(e) => setSelectedInterviewer(e.target.value)}
-                  disabled={loadingInterviewers}
-                >
-                  <option value="">Select an interviewer</option>
-                  {interviewers.map((interviewer, index) => (
-                    <option key={index} value={interviewer.email}>{interviewer.email}</option>
-                  ))}
-                </select>
+                <div className="custom-multiselect" ref={multiselectRef}>
+                  <div
+                    className="multiselect-selected"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  >
+                    {selectedInterviewers.length === 0
+                      ? "Select interviewers"
+                      : `${selectedInterviewers.length} interviewer(s) selected`}
+                  </div>
+                  {isDropdownOpen && (
+                    <div className="multiselect-options">
+                      {interviewers.map((interviewer, index) => (
+                        <div key={index} className="multiselect-option">
+                          <input
+                            type="checkbox"
+                            value={interviewer.email}
+                            checked={selectedInterviewers.includes(interviewer.email)}
+                            onChange={(e) => {
+                              const email = e.target.value;
+                              setSelectedInterviewers((prev) =>
+                                e.target.checked
+                                  ? [...prev, email]
+                                  : prev.filter((i) => i !== email)
+                              );
+                            }}
+                          />
+                          {interviewer.email}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </label>
               {loadingInterviewers && <p>Loading interviewers...</p>}
               <div className="datetime-duration-container">
@@ -407,7 +454,13 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                     <option value="60">60 mins</option>
                   </select>
                 </div>
-                <button className="find-slots-button" onClick={handleFindSlots}>Find Slots</button>
+                <button 
+                  className="find-slots-button" 
+                  onClick={handleFindSlots}
+                  disabled={selectedInterviewers.length === 0}
+                >
+                  Find Slots
+                </button>
               </div>
               {showSlots && (
                 <div className="available-slots">
@@ -422,7 +475,11 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                   ))}
                 </div>
               )}
-                  <button onClick={handleSchedule} className="schedule-button">
+                  <button 
+                    onClick={handleSchedule} 
+                    className="schedule-button"
+                    disabled={selectedInterviewers.length === 0 || !selectedSlot}
+                  >
                     <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
                     Schedule Interview
                   </button>

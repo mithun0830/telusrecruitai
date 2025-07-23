@@ -15,7 +15,7 @@ const AIJobDescriptionPopup = ({ onClose, onEnable, onMaybeLater }) => {
         </div>
         
         <h2>AI-powered Job Description</h2>
-        <p>Transform your hiring process with AI-powered job descriptions. Let our AI craft the perfect job posting that attracts your ideal candidates.</p>
+        <p>Transform your hiring process with AI-powered job descriptions. Let our AI craft the perfect job description that attracts your ideal candidates.</p>
         
         <button className="enable-button" onClick={onEnable}>
           Generate with AI

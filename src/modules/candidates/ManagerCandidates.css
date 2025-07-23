@@ -212,6 +212,31 @@
   transition: all 0.3s ease;
   background-color: var(--telus-white);
   color: var(--telus-dark-gray);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ai-generated-textarea {
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  height: 150px;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ai-generated-textarea::-webkit-scrollbar {
+  display: none;
+}
+
+
+.ai-search-input::-webkit-scrollbar {
+  display: none;
 }
 
 .ai-search-input::placeholder {
@@ -227,6 +252,17 @@
 
 .ai-search-input:hover {
   background-color: transparent;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.ai-search-input::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ai-search-input {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 .candidates-container {

@@ -260,6 +260,9 @@ export const candidateService = {
   searchExternalCandidates: async (searchString) => {
     return await ai_api.post(`/candidates/generate-candidates`, { jd: searchString });
   },
+  generateJobDescription: async (prompt) => {
+    return await ai_api.post('/job-descriptions/generate', { prompt });
+  },
   lockCandidate: async (candidate, currentUserId) => {
     const requestBody = {
       resumeId: candidate.resume.id,

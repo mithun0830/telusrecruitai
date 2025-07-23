@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { interviewService } from '../../services/api';
+import { interviewService, aiFeedbackService } from '../../services/api';
 import InterviewHistoryModal from './InterviewHistoryModal';
 import ChatBot from '../../components/ChatBot';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -139,6 +139,7 @@ const InterviewManagement = () => {
   const [error, setError] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeChatCandidate, setActiveChatCandidate] = useState(null);
+  const [candidateFolderStatus, setCandidateFolderStatus] = useState({});
   const stageColors = ['#6366F1', '#F97316', '#F59E0B', '#3B82F6'];
 
   const handleChatToggle = (candidateInfo) => {
@@ -159,9 +160,97 @@ const InterviewManagement = () => {
     }
   };
 
+  // Function to check candidate folder status
+  const checkCandidateFolderStatus = async (candidateId) => {
+    try {
+      console.log(`🔍 Checking folder status for candidate: ${candidateId}`);
+      const response = await aiFeedbackService.checkCandidateFolder(candidateId);
+      console.log(`📁 Folder check response for ${candidateId}:`, response);
+      console.log(`📊 Response data:`, response.data);
+      console.log(`✅ Response success:`, response.success);
+      console.log(`📂 Folder exists:`, response.data?.exists);
+      
+      const folderExists = response.success && response.data?.exists;
+      console.log(`🎯 Final folder status for ${candidateId}:`, folderExists);
+      
+      setCandidateFolderStatus(prev => {
+        const newStatus = {
+          ...prev,
+          [candidateId]: folderExists
+        };
+        console.log(`🔄 Updated candidateFolderStatus:`, newStatus);
+        return newStatus;
+      });
+      
+      return folderExists;
+    } catch (error) {
+      console.error(`❌ Error checking folder for candidate ${candidateId}:`, error);
+      setCandidateFolderStatus(prev => ({
+        ...prev,
+        [candidateId]: false
+      }));
+      return false;
+    }
+  };
+
+  // Function to check all candidates' folder status
+  const checkAllCandidatesFolderStatus = async () => {
+    const allCandidates = interviewRounds.flatMap(round => round.candidates);
+    
+    // Log all candidates and their statuses for debugging
+    console.log('🔍 All candidates and their statuses:');
+    allCandidates.forEach(candidate => {
+      console.log(`- ${candidate.name} (ID: ${candidate.candidateId}): ${candidate.status}`);
+    });
+    
+    // Check for candidates that might need folder checking (not just COMPLETED)
+    const candidatesToCheck = allCandidates.filter(candidate => {
+      const status = candidate.status.toUpperCase();
+      return status === 'COMPLETED' || status === 'SELECTED' || status === 'FINISHED' || status === 'DONE';
+    });
+
+    console.log(`📋 Checking folder status for ${candidatesToCheck.length} candidates (out of ${allCandidates.length} total)`);
+    console.log('📋 Candidates to check:', candidatesToCheck.map(c => `${c.name} (${c.status})`));
+
+    for (const candidate of candidatesToCheck) {
+      if (candidate.candidateId) {
+        await checkCandidateFolderStatus(candidate.candidateId);
+        // Add a small delay between requests to avoid overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+  };
+
+  // Function to handle manual folder check refresh
+  const handleFolderCheck = async () => {
+    if (selectedCandidate?.candidateId) {
+      console.log('Manual folder check triggered for:', selectedCandidate.candidateId);
+      await checkCandidateFolderStatus(selectedCandidate.candidateId);
+    }
+  };
+
   useEffect(() => {
     fetchInterviewRounds();
   }, []);
+
+  // Effect to check folder status when interview rounds are loaded
+  useEffect(() => {
+    if (interviewRounds.length > 0) {
+      checkAllCandidatesFolderStatus();
+    }
+  }, [interviewRounds]);
+
+  // Polling effect to periodically check folder status
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      if (interviewRounds.length > 0) {
+        console.log('Polling: Checking candidate folder status...');
+        checkAllCandidatesFolderStatus();
+      }
+    }, 30000); // Poll every 30 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [interviewRounds]);
 
   const handleStatusClick = (candidate, round) => {
     const roundId = round.roundId;
@@ -320,6 +409,8 @@ const InterviewManagement = () => {
         candidateHistory={selectedCandidate || []}
         interviewRounds={interviewRounds}
         onUpdateSuccess={fetchInterviewRounds}
+        candidateFolderStatus={candidateFolderStatus}
+        onFolderCheck={handleFolderCheck}
       />
       {showOverlay && selectedCandidate && (
         <div className="overlay">

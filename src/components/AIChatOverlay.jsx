@@ -17,10 +17,30 @@ const AIChatOverlay = ({
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCopyMessage = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      console.log('Message copied to clipboard');
-      // You can add a visual feedback here if needed
+  const handleCopyMessage = (message) => {
+    let textToCopy = '';
+    
+    if (message.data) {
+      if (message.data.summary) {
+        textToCopy += `Summary:\n${message.data.summary}\n\n`;
+      }
+
+      if (message.data.technicalSkills) {
+        textToCopy += 'Technical Skills:\n';
+        let skills = message.data.technicalSkills;
+        if (typeof skills === 'string') {
+          skills = skills.split(',').map(skill => skill.trim());
+        }
+        if (Array.isArray(skills)) {
+          textToCopy += skills.map(skill => `• ${skill}`).join('\n');
+        } else {
+          textToCopy += skills.toString();
+        }
+      }
+    }
+
+    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+      console.log('Summary and technical skills copied to clipboard');
     }).catch(err => {
       console.error('Failed to copy message: ', err);
     });
@@ -132,7 +152,7 @@ const AIChatOverlay = ({
                     position: 'relative'
                   }}>
                     <button 
-                      onClick={() => handleCopyMessage(message.text)}
+                      onClick={() => handleCopyMessage(message)}
                       style={{
                         background: 'none',
                         border: 'none',

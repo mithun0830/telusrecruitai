@@ -466,6 +466,14 @@ const ManagerCandidates = () => {
         <style>{spinKeyframes}</style>
       <div className="candidates-header">
         <h1>Shortlist Candidates</h1>
+        <button
+          className="ai-job-description-btn"
+          onClick={handleEnableAI}
+          aria-label="Generate AI Job Description"
+        >
+          <span style={{ fontSize: '20px' }}>✨</span>
+          Generate AI Job Description
+        </button>
       </div>
       <div className="candidates-content">
         <div className="filters-section horizontal">

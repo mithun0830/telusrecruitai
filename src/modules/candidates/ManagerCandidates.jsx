@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
@@ -41,10 +41,6 @@ const scrollToRef = (ref) => {
   }
 };
 
-const isFilterSelected = (filters) => {
-  return Boolean(filters.aiSearch.trim());
-};
-
 const loaderStyle = {
   width: '50px',
   height: '50px',
@@ -81,6 +77,7 @@ const ManagerCandidates = () => {
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
+  const textareaRef = useRef(null);
 
   const spinKeyframes = `
     @keyframes spin {
@@ -89,35 +86,22 @@ const ManagerCandidates = () => {
     }
   `;
 
-  const handleGenerateJobDescription = async () => {
-    // Reset all data
-    setJobDescription('');
-    setJobSummary('');
-    setTechnicalSkills('');
-    setSecondarySearch('');
-    setSearchResults([]);
-    setExpandedCandidate(null);
-    setErrorMessage('');
-    setFullJobDescriptionData(null);
-    
-    setIsGeneratingDescription(true);
-    try {
-      const response = await candidateService.generateJobDescription(filters.aiSearch);
-      if (response.success) {
-        setFullJobDescriptionData(response.data);
-        setJobDescription(response.data.jobDescription);
-        setJobSummary(response.data.summary || '');
-        setTechnicalSkills(response.data.technicalSkills || '');
-        setSecondarySearch(`${response.data.summary || ''}\n\nTechnical Skills: ${response.data.technicalSkills || ''}`);
-      } else {
-        throw new Error(response.message || 'Failed to generate job description');
-      }
-    } catch (error) {
-      console.error('Error generating job description:', error);
-      setErrorMessage('Failed to generate job description. Please try again.');
-    } finally {
-      setIsGeneratingDescription(false);
+  const adjustTextareaHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
+  }, []);
+
+  useLayoutEffect(() => {
+    adjustTextareaHeight();
+  }, [adjustTextareaHeight, jobSummary, technicalSkills]);
+
+  const handleGenerateJobDescription = async (data) => {
+    setFullJobDescriptionData(data);
+    // Don't update the input fields directly
+    // Instead, you might want to store this data separately
+    // and use it when the user decides to use it for search
   };
 
   const handleCandidateLockToggle = async (candidate, currentUserId) => {
@@ -156,9 +140,6 @@ const ManagerCandidates = () => {
   const [isCompareViewOpen, setIsCompareViewOpen] = useState(false);
   const currentUserId = useSelector(state => state.auth.user?.id);
 
-  const handleAISearchClick = () => {
-    setErrorMessage('');
-  };
   const {
     filters,
     selectedCandidates,
@@ -374,9 +355,9 @@ const ManagerCandidates = () => {
       e.stopPropagation();
     }
 
-    const searchText = searchValue || filters.aiSearch;
-    if (!searchText.trim()) {
-      setErrorMessage('Transform your job description into a talent magnet. Enter the details and watch our AI find your perfect match!');
+    const searchText = searchValue;
+    if (!searchText?.trim()) {
+      setErrorMessage('Please enter job requirements to search for candidates.');
       return;
     }
 
@@ -488,59 +469,19 @@ const ManagerCandidates = () => {
       </div>
       <div className="candidates-content">
         <div className="filters-section horizontal">
-          <div className="filters-container" style={{ backgroundColor: '#f0f9ff', border: '2px solid #059669' }}>
-            <div className="ai-search-container">
-              <input
-                type="text"
-                placeholder="✨ Enter job requirements for AI-powered search..."
-                className="ai-search-input"
-                value={filters.aiSearch}
-                onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
-                onFocus={() => setErrorMessage('')}
-                style={{ backgroundColor: 'transparent', fontSize: '16px' }}
-              />
-            </div>
-            <div className="search-controls">
-              <button
-                className="search-button"
-                onClick={handleGenerateJobDescription}
-                aria-label="Generate Job Description"
-                disabled={isGeneratingDescription}
-                style={{
-                  backgroundColor: '#059669',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  fontSize: '16px',
-                  color: '#ffffff'
-                }}
-              >
-                {isGeneratingDescription ? (
-                  <span>Generating...</span>
-                ) : (
-                  <>
-                    <span style={{ fontSize: '20px' }}>🤖</span>
-                    AI Generate
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-          {jobSummary && technicalSkills && (
-            <div className="filters-container" style={{ marginTop: '20px', backgroundColor: '#fff', border: '2px solid #059669' }}>
+            <div className="filters-container" style={{ backgroundColor: '#fff', border: '2px solid #059669' }}>
               <div className="ai-search-container">
                 <textarea
-                  placeholder="AI-generated job description..."
+                  ref={textareaRef}
+                  placeholder="Enter job requirements to search for candidates..."
                   className="ai-search-input ai-generated-textarea"
-                  value={`Summary:\n${jobSummary}\nTechnical Skills:\n${technicalSkills}`}
+                  value={jobSummary || technicalSkills ? `Summary:\n${jobSummary}\n\nTechnical Skills:\n${technicalSkills}` : ''}
                   onChange={(e) => {
                     const [newSummary, newSkills] = e.target.value.split('\n\nTechnical Skills:\n');
                     setJobSummary(newSummary.replace('Summary:\n', ''));
                     setTechnicalSkills(newSkills || '');
                     setSecondarySearch(e.target.value);
-                    e.target.style.height = 'auto';
-                    e.target.style.height = `${e.target.scrollHeight}px`;
+                    adjustTextareaHeight();
                   }}
                   onFocus={() => setErrorMessage('')}
                 />
@@ -585,7 +526,6 @@ const ManagerCandidates = () => {
                 </button>
               </div>
             </div>
-          )}
           {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
         <div className={`candidates-container ${isCompareViewOpen ? 'with-compare-view' : ''}`}>
@@ -761,7 +701,12 @@ const ManagerCandidates = () => {
           </Button>
         </Modal.Body>
       </Modal>
-      {showAIChatOverlay && <AIChatOverlay onClose={() => setShowAIChatOverlay(false)} />}
+      {showAIChatOverlay && (
+        <AIChatOverlay 
+          onClose={() => setShowAIChatOverlay(false)}
+          onJobDescriptionGenerated={handleGenerateJobDescription}
+        />
+      )}
       {showAIPopup && (
         <AIJobDescriptionPopup
           onClose={() => setShowAIPopup(false)}

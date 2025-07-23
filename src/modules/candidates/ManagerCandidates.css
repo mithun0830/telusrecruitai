@@ -165,8 +165,8 @@
 .ai-search-input {
   width: 100%;
   box-sizing: border-box;
-  height: 38px;
-  padding: 8px 12px;
+  height: 32px;
+  padding: 6px 12px;
 }
 
 .ai-search-input:focus {
@@ -205,7 +205,7 @@
 
 .ai-search-input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 0;
   font-size: 14px;
@@ -214,6 +214,7 @@
   color: var(--telus-dark-gray);
   scrollbar-width: none;
   -ms-overflow-style: none;
+  height: 32px;
 }
 
 .ai-generated-textarea {

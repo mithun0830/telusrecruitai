@@ -22,7 +22,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.close-button {
+.popup-container .close-button {
   position: absolute;
   right: 16px;
   top: 16px;
@@ -32,6 +32,12 @@
   cursor: pointer;
   color: #6B7280;
   padding: 4px;
+  width: auto;
+  height: auto;
+}
+
+.popup-container .close-button::before {
+  content: '×';
 }
 
 .popup-icon {

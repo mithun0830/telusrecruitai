@@ -5,7 +5,7 @@ const AIJobDescriptionPopup = ({ onClose, onEnable, onMaybeLater }) => {
   return (
     <div className="popup-overlay">
       <div className="popup-container">
-        <button className="close-button" onClick={onClose}>×</button>
+        <button className="close-button" onClick={onClose}></button>
         
         <div className="popup-icon">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">

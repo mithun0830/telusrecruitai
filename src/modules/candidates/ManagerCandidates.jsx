@@ -8,6 +8,8 @@ import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-so
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../components/Loader';
+import AIChatOverlay from '../../components/AIChatOverlay';
+import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -77,6 +79,8 @@ const ManagerCandidates = () => {
   const [jobSummary, setJobSummary] = useState('');
   const [technicalSkills, setTechnicalSkills] = useState('');
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
+  const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
+  const [showAIPopup, setShowAIPopup] = useState(true);
 
   const spinKeyframes = `
     @keyframes spin {
@@ -465,6 +469,15 @@ const ManagerCandidates = () => {
     }
   };
 
+  const handleEnableAI = () => {
+    setShowAIPopup(false);
+    setShowAIChatOverlay(true);
+  };
+
+  const handleMaybeLater = () => {
+    setShowAIPopup(false);
+  };
+
   return (
     <>
       {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
@@ -748,6 +761,14 @@ const ManagerCandidates = () => {
           </Button>
         </Modal.Body>
       </Modal>
+      {showAIChatOverlay && <AIChatOverlay onClose={() => setShowAIChatOverlay(false)} />}
+      {showAIPopup && (
+        <AIJobDescriptionPopup
+          onClose={() => setShowAIPopup(false)}
+          onEnable={handleEnableAI}
+          onMaybeLater={handleMaybeLater}
+        />
+      )}
     </div>
     </>
   );

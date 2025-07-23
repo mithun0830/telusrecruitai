@@ -102,6 +102,9 @@ const AIChatOverlay = ({
 
           console.log('Job description message:', aiMessage);
 
+          // Call onJobDescriptionGenerated with the response data
+          onJobDescriptionGenerated(response.data);
+
           // Update messages state
           setMessages(prevMessages => {
             const newMessages = [...prevMessages, aiMessage];

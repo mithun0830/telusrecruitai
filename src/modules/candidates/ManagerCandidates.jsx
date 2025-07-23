@@ -95,9 +95,11 @@ const ManagerCandidates = () => {
   }, [adjustTextareaHeight]);
 
   const handleGenerateJobDescription = async (data) => {
-    setFullJobDescriptionData(data);
     if (data) {
-      setSecondarySearch(data.description || '');
+      // Store the complete response.data
+      setFullJobDescriptionData(data);
+      // Set the summary in the search field
+      setSecondarySearch(data.summary || '');
       adjustTextareaHeight();
     }
   };

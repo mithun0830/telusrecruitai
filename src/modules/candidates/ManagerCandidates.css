@@ -220,6 +220,8 @@
   flex: 1;
   display: flex;
   min-width: 300px;
+  max-height: 150px;
+  overflow: hidden;
 }
 
 .ai-search-input {
@@ -285,14 +287,27 @@
   font-size: 15px;
   line-height: 1.5;
   height: 150px;
+  max-height: 150px;
   resize: none;
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .ai-generated-textarea::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 

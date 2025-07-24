@@ -1,6 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../../services/api';
 
+export const exchangeOneLoginToken = createAsyncThunk(
+  'auth/exchangeOneLoginToken',
+  async (code, { rejectWithValue }) => {
+    try {
+      const response = await authService.exchangeOneLoginToken(code);
+      if (!response.success) {
+        throw new Error(response.message || 'Token exchange failed');
+      }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const loginUser = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
@@ -98,6 +113,26 @@ const authSlice = createSlice({
         }
       })
       .addCase(initAuth.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(exchangeOneLoginToken.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(exchangeOneLoginToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload) {
+          state.user = action.payload.user;
+          state.token = action.payload.access_token;
+          localStorage.setItem('user', JSON.stringify(action.payload.user));
+          localStorage.setItem('token', action.payload.access_token);
+          if (action.payload.refresh_token) {
+            localStorage.setItem('refreshToken', action.payload.refresh_token);
+          }
+        }
+      })
+      .addCase(exchangeOneLoginToken.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

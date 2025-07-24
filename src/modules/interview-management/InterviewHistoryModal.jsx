@@ -269,13 +269,10 @@ const resetScheduleFields = () => {
                 eventType: "InterviewQuestions",
                 data: {
                   candidateName: candidateHistory.candidateName,
-                  managerEmail: selectedInterviewers,
+                  managerEmails: selectedInterviewers,
                   position: jobTitle,
-                  questions: questionsResponse.data || [
-                    "What is your experience with Java?",
-                    "Describe a challenging project you worked on",
-                    "How do you handle tight deadlines?"
-                  ]
+                  interviewDate: startMeetingTimeStamp,
+                  questions: questionsResponse.data || []
                 }
               });
             } catch (error) {

@@ -64,6 +64,7 @@ const resetScheduleFields = () => {
   const [interviewers, setInterviewers] = useState([]);
   const [loadingInterviewers, setLoadingInterviewers] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [sendQuestionnaire, setSendQuestionnaire] = useState(false);
   const multiselectRef = useRef(null);
 
   useEffect(() => {
@@ -84,7 +85,7 @@ const resetScheduleFields = () => {
   }, [loadingInterviewers]);
 
   useEffect(() => {
-    if (isOpen && candidateHistory) {
+    if (isOpen && candidateHistory && candidateHistory.jobDescription) {
       fetchInterviewers(candidateHistory.jobDescription);
     }
   }, [isOpen, candidateHistory]);
@@ -92,7 +93,7 @@ const resetScheduleFields = () => {
   const fetchInterviewers = async (jobDescription) => {
     setLoadingInterviewers(true);
     try {
-      const response = await candidateService.getMatchingInterviewers("We are seeking experienced Java Developers with 4+ years of expertise., Java,Spring Framework,REST APIs");
+      const response = await candidateService.getMatchingInterviewers(jobDescription?.summary+','+jobDepartment?.technicalSkills);
       if (response.success && Array.isArray(response.data)) {
         setInterviewers(response.data);
       } else {
@@ -139,6 +140,9 @@ const resetScheduleFields = () => {
       return;
     }
     setIsLoading(true);
+    setAvailableSlots([]); // Clear existing slots
+    setShowSlots(false); // Hide slots section
+    setSelectedSlot(null); // Clear selected slot
 
     console.log('Candidate Email:', email);
     console.log('Full candidateHistory:', candidateHistory);
@@ -168,7 +172,6 @@ const resetScheduleFields = () => {
         } else {
           setAvailableSlots(formattedSlots);
           setShowSlots(true);
-          setSelectedSlot(null);
         }
       } else {
         throw new Error('Invalid response format');
@@ -299,8 +302,8 @@ const resetScheduleFields = () => {
   return (
     isOpen && candidateHistory && (
       <>
-        {(isLoading || loadingInterviewers) && <Loader />}
-      <div className="modal-overlay">
+        <Loader isVisible={isLoading || loadingInterviewers} />
+        <div className="modal-overlay">
         <div className="modal-content">
           <div className="modal-left">
             <h2>Interview Details</h2>
@@ -494,11 +497,29 @@ const resetScheduleFields = () => {
                   ))}
                 </div>
               )}
-                  <button 
-                    onClick={handleSchedule} 
-                    className="schedule-button"
-                    disabled={selectedInterviewers.length === 0 || !selectedSlot}
-                  >
+              <div style={{ width: '100%', display: 'flex', alignItems: 'center', marginBottom: '5px' ,marginTop: '10px'  }}>
+                <input
+                  type="checkbox"
+                  checked={sendQuestionnaire}
+                  onChange={(e) => setSendQuestionnaire(e.target.checked)}
+                  style={{ 
+                    width: '16px', 
+                    height: '16px', 
+                    cursor: 'pointer', 
+                    marginRight: '8px',
+                    accentColor: '#059669'
+                  }}
+                />
+                <span style={{ cursor: 'pointer' }} onClick={() => setSendQuestionnaire(!sendQuestionnaire)}>
+                  Send questionnaire to Interviewer
+                </span>
+              </div>
+              <button 
+                onClick={handleSchedule} 
+                className="schedule-button"
+                disabled={selectedInterviewers.length === 0 || !selectedSlot}
+                style={{ marginTop: '10px' }}
+              >
                     <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
                     Schedule Interview
                   </button>

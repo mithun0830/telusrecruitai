@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
-import { candidateService, interviewService } from '../../services/api';
+import { candidateService, interviewService, notificationService } from '../../services/api';
 import Loader from '../../components/Loader';
 import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -257,6 +257,31 @@ const resetScheduleFields = () => {
 
         try {
           await interviewService.updateInterviewStatus(updateStatusBody);
+          console.log('sendQuestionnaire', sendQuestionnaire);
+          // Send questionnaire if checkbox is checked
+          if (sendQuestionnaire) {
+            try {
+              // First generate questions based on job description
+              const questionsResponse = await candidateService.generateQuestions(candidateHistory?.jobDescription?.summary+','+candidateHistory?.jobDescription?.technicalSkills || "");
+              
+              // Then send the notification with generated questions
+              await notificationService.process({
+                eventType: "InterviewQuestions",
+                data: {
+                  candidateName: candidateHistory.candidateName,
+                  managerEmail: selectedInterviewers,
+                  position: jobTitle,
+                  questions: questionsResponse.data || [
+                    "What is your experience with Java?",
+                    "Describe a challenging project you worked on",
+                    "How do you handle tight deadlines?"
+                  ]
+                }
+              });
+            } catch (error) {
+              console.error("Error sending questionnaire:", error);
+            }
+          }
           
           // Refresh the interview management screen
           onUpdateSuccess();

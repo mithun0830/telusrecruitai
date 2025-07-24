@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
-const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
+const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'http://localhost:8084/api';
@@ -172,6 +172,9 @@ export const notificationService = {
   },
   markAsRead: async (notificationId) => {
     return await notificationApi.put(`/notifications/${notificationId}/mark-as-read`);
+  },
+  process: async (data) => {
+    return await notificationApi.post('/notifications/process', data);
   }
 };
 
@@ -322,6 +325,11 @@ export const candidateService = {
     return await ai_api.post('/chat/message', {
       currentResumeId: resumeId,
       message: message
+    });
+  },
+  generateQuestions: async (jobDescription) => {
+    return await ai_api.post('/job-descriptions/generate-questions', {
+      jobDescription: jobDescription
     });
   }
 };

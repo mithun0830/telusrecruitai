@@ -84,15 +84,15 @@ const resetScheduleFields = () => {
   }, [loadingInterviewers]);
 
   useEffect(() => {
-    if (isOpen && candidateHistory && candidateHistory.resumeId) {
-      fetchInterviewers(candidateHistory.resumeId);
+    if (isOpen && candidateHistory && candidateHistory.jobDescription) {
+      fetchInterviewers(candidateHistory.jobDescription);
     }
   }, [isOpen, candidateHistory]);
 
-  const fetchInterviewers = async (resumeId) => {
+  const fetchInterviewers = async (jobDescription) => {
     setLoadingInterviewers(true);
     try {
-      const response = await candidateService.getMatchingInterviewers(resumeId);
+      const response = await candidateService.getMatchingInterviewers(jobDescription);
       if (response.success && Array.isArray(response.data)) {
         setInterviewers(response.data);
       } else {

@@ -312,8 +312,8 @@ export const candidateService = {
     return await ai_api.post('/resume-locks/unlock', requestBody);
   },
 
-  getMatchingInterviewers: async (resumeId) => {
-    return await ai_api.get(`/interviewer-matching/resume/${resumeId}`);
+  getMatchingInterviewers: async (jobDescription) => {
+    return await ai_api.get(`/interviewer-matching/jobDescription/${jobDescription}`);
   },
 
   sendChatMessage: async (resumeId, message) => {

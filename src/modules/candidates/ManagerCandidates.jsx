@@ -98,9 +98,8 @@ const ManagerCandidates = () => {
     if (data) {
       // Store the complete response.data
       setFullJobDescriptionData(data);
-      // Set the summary in the search field
-      setSecondarySearch(data.summary || '');
-      adjustTextareaHeight();
+      // Do not automatically set the summary in the search field
+      // adjustTextareaHeight();
     }
   };
 

@@ -4,7 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
 import { candidateService, interviewService } from '../../services/api';
 import Loader from '../../components/Loader';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle, faRobot } from '@fortawesome/free-solid-svg-icons';
 
@@ -61,7 +61,7 @@ const resetScheduleFields = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
-  const [interviewers, setInterviewers] = useState([]); // Array of {id, email} objects
+  const [interviewers, setInterviewers] = useState([]);
   const [loadingInterviewers, setLoadingInterviewers] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const multiselectRef = useRef(null);
@@ -84,7 +84,7 @@ const resetScheduleFields = () => {
   }, [loadingInterviewers]);
 
   useEffect(() => {
-    if (isOpen && candidateHistory && candidateHistory.jobDescription) {
+    if (isOpen && candidateHistory) {
       fetchInterviewers(candidateHistory.jobDescription);
     }
   }, [isOpen, candidateHistory]);
@@ -92,7 +92,7 @@ const resetScheduleFields = () => {
   const fetchInterviewers = async (jobDescription) => {
     setLoadingInterviewers(true);
     try {
-      const response = await candidateService.getMatchingInterviewers(jobDescription);
+      const response = await candidateService.getMatchingInterviewers("We are seeking experienced Java Developers with 4+ years of expertise., Java,Spring Framework,REST APIs");
       if (response.success && Array.isArray(response.data)) {
         setInterviewers(response.data);
       } else {
@@ -346,21 +346,40 @@ const resetScheduleFields = () => {
                   {isDropdownOpen && (
                     <div className="multiselect-options">
                       {interviewers.map((interviewer, index) => (
-                        <div key={index} className="multiselect-option">
-                          <input
-                            type="checkbox"
-                            value={interviewer.email}
-                            checked={selectedInterviewers.includes(interviewer.email)}
-                            onChange={(e) => {
-                              const email = e.target.value;
-                              setSelectedInterviewers((prev) =>
-                                e.target.checked
-                                  ? [...prev, email]
-                                  : prev.filter((i) => i !== email)
-                              );
-                            }}
-                          />
-                          {interviewer.email}
+                        <div key={index} className="multiselect-option" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                              type="checkbox"
+                              value={interviewer.email}
+                              checked={selectedInterviewers.includes(interviewer.email)}
+                              onChange={(e) => {
+                                const email = e.target.value;
+                                setSelectedInterviewers((prev) =>
+                                  e.target.checked
+                                    ? [...prev, email]
+                                    : prev.filter((i) => i !== email)
+                                );
+                              }}
+                            />
+                            <span>{interviewer.email}</span>
+                          </div>
+                          <OverlayTrigger
+                            placement="right"
+                            overlay={
+                              <Tooltip id={`tooltip-${index}`}>
+                                <div style={{ textAlign: 'left' }}>
+                                  <div><strong>Name:</strong> {interviewer.name || 'N/A'}</div>
+                                  <div><strong>Email:</strong> {interviewer.email}</div>
+                                  <div><strong>Experience:</strong> {interviewer.experienceYears+" years" || 'N/A'}</div>
+                                  <div><strong>Skills:</strong> {interviewer.technicalExpertise?.join(', ') || 'N/A'}</div>
+                                  <div><strong>Match Score:</strong> {interviewer.matchScore || 'N/A'}</div>
+                                  <div><strong>Specializations:</strong> {interviewer.specializations?.join(', ') || 'N/A'}</div>
+                                </div>
+                              </Tooltip>
+                            }
+                          >
+                            <span style={{ cursor: 'help' }}>ℹ️</span>
+                          </OverlayTrigger>
                         </div>
                       ))}
                     </div>

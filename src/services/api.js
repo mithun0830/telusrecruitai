@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
-const INTERVIEW_ROUNDS_API_BASE_URL = 'http://localhost:8084/api';
+const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
 
 
 // Create axios instances with default config
@@ -313,7 +313,9 @@ export const candidateService = {
   },
 
   getMatchingInterviewers: async (jobDescription) => {
-    return await ai_api.get(`/interviewer-matching/jobDescription/${jobDescription}`);
+    return await ai_api.post(`/interviewer-matching/job-description`, {
+      jobDescription: jobDescription
+    });
   },
 
   sendChatMessage: async (resumeId, message) => {

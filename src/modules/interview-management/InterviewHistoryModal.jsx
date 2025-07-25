@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
-import { candidateService, interviewService, aiFeedbackService } from '../../services/api';
+import { candidateService, interviewService, aiFeedbackService, notificationService } from '../../services/api';
 import Loader from '../../components/Loader';
 import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -1342,31 +1342,46 @@ const resetScheduleFields = () => {
 
         try {
           await interviewService.updateInterviewStatus(updateStatusBody);
-          console.log('sendQuestionnaire', sendQuestionnaire);
-          // Send questionnaire if checkbox is checked
-          if (sendQuestionnaire) {
-            try {
-              // First generate questions based on job description
-              const questionsResponse = await candidateService.generateQuestions(candidateHistory?.jobDescription?.summary+','+candidateHistory?.jobDescription?.technicalSkills || "");
-              
-              // Then send the notification with generated questions
-              await notificationService.process({
-                eventType: "InterviewQuestions",
-                data: {
-                  candidateName: candidateHistory.candidateName,
-                  managerEmails: selectedInterviewers,
-                  position: jobTitle,
-                  interviewDate: startMeetingTimeStamp,
-                  questions: questionsResponse.data || []
-                }
-              });
-            } catch (error) {
-              console.error("Error sending questionnaire:", error);
-            }
-          }
           
-          // Refresh the interview management screen
+          // Show success modal and refresh immediately after scheduling
+          setModalType('success');
+          setModalMessage('Interview scheduled successfully!');
+          setShowModal(true);
           onUpdateSuccess();
+          
+          // Send questionnaire silently if checkbox is checked
+          if (sendQuestionnaire) {
+            // Run questionnaire process in background
+            (async () => {
+              try {
+                console.log('🔄 Silently generating questions for job description:', candidateHistory?.jobDescription);
+                
+                const questionsResponse = await candidateService.generateQuestions(
+                  candidateHistory?.jobDescription?.summary + ',' + candidateHistory?.jobDescription?.technicalSkills || ""
+                );
+                console.log('✅ Questions generated silently:', questionsResponse);
+
+                if (questionsResponse.success) {
+                  const notificationData = {
+                    eventType: "InterviewQuestions",
+                    data: {
+                      candidateName: candidateHistory.candidateName,
+                      managerEmails: selectedInterviewers,
+                      position: jobTitle,
+                      interviewDate: startMeetingTimeStamp,
+                      questions: questionsResponse.data || []
+                    }
+                  };
+                  console.log('📤 Silently sending notification with data:', notificationData);
+                  
+                  await notificationService.process(notificationData);
+                  console.log('✅ Notification sent silently');
+                }
+              } catch (error) {
+                console.error("❌ Silent questionnaire process error:", error);
+              }
+            })();
+          }
           
           // Update the history array in the component
           if (history && history.length > 0) {
@@ -1375,7 +1390,7 @@ const resetScheduleFields = () => {
           // Update the latest meeting link state
           setLatestMeetingLink(meetingLink);
           resetScheduleFields();
-          // Show success modal
+          // Show success modal only for interview scheduling
           setModalType('success');
           setModalMessage('Interview scheduled successfully!');
           setShowModal(true);

@@ -1,0 +1,505 @@
+.interview-management {
+  padding: 20px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  width: calc(100vw - 40px);
+  overflow-x: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 16px;
+  position: relative;
+}
+
+.left-controls {
+  display: flex;
+  gap: 16px;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.right-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  position: absolute;
+  right: 16px;
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.sort select {
+  margin-left: 8px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: white;
+  color: #1e293b;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  min-width: 240px;
+}
+
+.search input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.kanban-board {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  width: fit-content;
+  min-width: calc(100% - 32px);
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 320px;
+  max-width: 320px;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-right: 8px;
+}
+
+.kanban-column:last-child {
+  margin-right: 0;
+}
+
+.column-header {
+  margin-bottom: 20px;
+}
+
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.stage-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.stage-count {
+  background-color: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.column-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.candidate-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: move;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.candidate-card.is-dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.candidate-info {
+  display: flex;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+.candidate-info h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.candidate-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.manager-info {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.more-options {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #64748b;
+  padding: 0;
+  line-height: 1;
+}
+
+.score-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.score-section > span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.score-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.score-value span:first-child {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.portfolio-tag {
+  font-size: 12px;
+  color: #6366f1;
+  background-color: #eef2ff;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.urgent-tag {
+  font-size: 12px;
+  color: #4B286D;
+  background-color: #F2F2F2;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.not-urgent-tag {
+  font-size: 12px;
+  color: #66CC00;
+  background-color: #F2F2F2;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  width: 100%;
+}
+
+.loading-text {
+  font-size: 18px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  width: 100%;
+  color: #e53e3e;
+  font-size: 16px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Add FontAwesome icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+/* Overlay styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.overlay-content {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  transform: translateY(20px);
+  animation: slideUp 0.4s ease forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.2s ease, transform 0.2s ease;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  color: #1e293b;
+  transform: scale(1.1);
+  background-color: #f1f5f9;
+}
+
+.feedback-icon {
+  font-size: 48px;
+  color: #4B286D;
+  height: 96px;
+  width: 96px;
+  background-color: rgba(75, 40, 109, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  transition: transform 0.3s ease;
+}
+
+.feedback-icon:hover {
+  transform: scale(1.05);
+  background-color: rgba(75, 40, 109, 0.15);
+}
+
+.overlay-content h2 {
+  color: #1e293b;
+  font-size: 28px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.overlay-content p {
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #4B286D 0%, #66CC00 100%);
+  color: white;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75, 40, 109, 0.3);
+}
+
+.submit-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(75, 40, 109, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  .overlay-content {
+    padding: 30px 20px;
+    width: 95%;
+  }
+  
+  .overlay-content h2 {
+    font-size: 24px;
+  }
+  
+  .feedback-icon {
+    height: 80px;
+    width: 80px;
+    font-size: 40px;
+  }
+  
+  .submit-btn {
+    padding: 12px 28px;
+    font-size: 15px;
+  }
+}
+
+/* Additional styles for overlay content */
+.overlay-content h3 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #1e293b;
+}
+
+.overlay-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.overlay-button {
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.overlay-button-reject {
+  background-color: #DC2626;
+}
+
+.overlay-button-schedule {
+  background-color: #66CC00;
+}
+
+.overlay-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #64748b;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+}
+
+.overlay-close-button:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  transform: scale(1.1);
+}
+
+/* Styles for candidate card elements */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.candidate-status {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: inline-block;
+}

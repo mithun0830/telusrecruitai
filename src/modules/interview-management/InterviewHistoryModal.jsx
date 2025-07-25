@@ -1,0 +1,656 @@
+import React, { useState, useEffect, useRef } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import './InterviewHistoryModal.css';
+import { candidateService, interviewService, notificationService } from '../../services/api';
+import Loader from '../../components/Loader';
+import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle, faRobot } from '@fortawesome/free-solid-svg-icons';
+
+const generateTimeSlots = () => {
+  const slots = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      slots.push(new Date(2023, 0, 1, hour, minute, 0, 0));
+    }
+  }
+  return slots;
+};
+
+const scrollTimeList = (direction) => {
+  const timeList = document.querySelector('.react-datepicker__time-list');
+  if (timeList) {
+    const scrollAmount = direction === 'up' ? -40 : 40;
+    timeList.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+  }
+};
+
+const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRounds, onUpdateSuccess }) => {
+  const handleClose = (success = false, meetingLink = null) => {
+    resetScheduleFields();
+    onClose(success, meetingLink);
+  };
+
+const resetScheduleFields = () => {
+  setSelectedRound('');
+  setSelectedInterviewers([]);
+  setSelectedDateTime(new Date());
+  setDuration('30');
+  setShowSlots(false);
+  setAvailableSlots([]);
+  setSelectedSlot(null);
+  setIsDropdownOpen(false);
+};
+  const [selectedRound, setSelectedRound] = useState('');
+  const [selectedInterviewers, setSelectedInterviewers] = useState([]);
+  
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedInterviewers([]);
+    }
+  }, [isOpen]);
+  const [selectedDateTime, setSelectedDateTime] = useState(new Date());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [duration, setDuration] = useState('30');
+  const [showSlots, setShowSlots] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [latestMeetingLink, setLatestMeetingLink] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [interviewers, setInterviewers] = useState([]);
+  const [loadingInterviewers, setLoadingInterviewers] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [sendQuestionnaire, setSendQuestionnaire] = useState(false);
+  const multiselectRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsLoading(loadingInterviewers);
+  }, [loadingInterviewers]);
+
+  useEffect(() => {
+    if (isOpen && candidateHistory && candidateHistory.jobDescription) {
+      fetchInterviewers(candidateHistory.jobDescription);
+    }
+  }, [isOpen, candidateHistory]);
+
+  const fetchInterviewers = async (jobDescription) => {
+    setLoadingInterviewers(true);
+    try {
+      const response = await candidateService.getMatchingInterviewers(jobDescription?.summary+','+jobDepartment?.technicalSkills);
+      if (response.success && Array.isArray(response.data)) {
+        setInterviewers(response.data);
+      } else {
+        throw new Error('Failed to fetch interviewers');
+      }
+    } catch (error) {
+      console.error('Error fetching interviewers:', error);
+      setInterviewers([]);
+      setModalType('error');
+      setModalMessage('Failed to fetch interviewers. Please try again.');
+      setShowModal(true);
+    } finally {
+      setLoadingInterviewers(false);
+    }
+  };
+
+  if (!isOpen || !candidateHistory) return null;
+
+  const { history, candidateName, jobTitle, jobDepartment, email, resumeId } = candidateHistory;
+
+  console.log('Candidate Info:', { candidateName, jobTitle, jobDepartment, email, resumeId });
+
+  const handleDateTimeSelect = (dateTime) => {
+    setSelectedDateTime(dateTime);
+  };
+
+  const handleCalendarOpen = () => {
+    setIsCalendarOpen(true);
+  };
+
+  const handleCalendarClose = () => {
+    setIsCalendarOpen(false);
+  };
+
+  const handleOkClick = () => {
+    setIsCalendarOpen(false);
+  };
+
+  const handleFindSlots = async () => {
+    if (selectedInterviewers.length === 0 || !selectedDateTime) {
+      setModalType('error');
+      setModalMessage('Please select at least one interviewer and a date/time');
+      setShowModal(true);
+      return;
+    }
+    setIsLoading(true);
+    setAvailableSlots([]); // Clear existing slots
+    setShowSlots(false); // Hide slots section
+    setSelectedSlot(null); // Clear selected slot
+
+    console.log('Candidate Email:', email);
+    console.log('Full candidateHistory:', candidateHistory);
+
+    const requestBody = {
+      emails: selectedInterviewers,
+      dateTime: selectedDateTime.toISOString(),
+      duration: parseInt(duration),
+      title: "Interview",
+      description: "Candidate Interview",
+      attendees: [email]
+    };
+
+    try {
+      const response = await interviewService.getFreeSlots(requestBody);
+      if (Array.isArray(response.data.slots)) {
+        const formattedSlots = response.data.slots.map(slot => {
+          const start = new Date(slot);
+          const end = new Date(start.getTime() + parseInt(duration) * 60000);
+          return `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })} - ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}`;
+        });
+
+        if (formattedSlots.length === 0) {
+          setModalType('error');
+          setModalMessage('No available slots found for the selected time range');
+          setShowModal(true);
+        } else {
+          setAvailableSlots(formattedSlots);
+          setShowSlots(true);
+        }
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Error fetching free slots:', error);
+      setModalType('error');
+      setModalMessage(error.message || 'Failed to fetch available slots. Please try again.');
+      setShowModal(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSlotSelect = (slot) => {
+    setSelectedSlot(slot);
+  };
+
+  const handleSchedule = async () => {
+    if (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot) {
+      setModalType('error');
+      setModalMessage('Please select a round, at least one interviewer, date/time, and a time slot');
+      setShowModal(true);
+      return;
+    }
+    setIsLoading(true);
+
+    // Parse the selected slot to get start time
+    const [startTime] = selectedSlot.split(' - ');
+    const [time, period] = startTime.split(' ');
+    let [hours, minutes] = time.split(':');
+
+    // Convert to 24-hour format if PM
+    hours = parseInt(hours);
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+
+    // Create date in local timezone
+    const selectedDate = new Date(selectedDateTime);
+    selectedDate.setHours(hours, parseInt(minutes), 0, 0);
+
+    // Add offset to convert to UTC
+    const offset = -330; // IST offset in minutes (-5:30)
+    const utcDate = new Date(selectedDate.getTime() - (offset * 60000));
+
+    console.log('Selected Date (IST):', selectedDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    console.log('UTC Date:', utcDate.toISOString());
+
+    const requestBody = {
+      dateTime: selectedDate.toISOString(),
+      duration: parseInt(duration),
+      title: "Interview",
+      description: "Candidate Interview",
+      attendees: [email, ...selectedInterviewers],
+      timeZone: "Asia/Kolkata"
+    };
+
+    try {
+      const response = await interviewService.scheduleMeeting(requestBody);
+      console.log('Schedule Meeting Response:', response);
+      if (response.data?.meetingEvent?.hangoutLink) {
+        const meetingLink = response.data.meetingEvent.hangoutLink;
+        const startMeetingTimeStamp = new Date(response.data.meetingEvent.start.dateTime).toISOString().slice(0, 19);
+        const endMeetingTimeStamp = new Date(response.data.meetingEvent.end.dateTime).toISOString().slice(0, 19);
+
+        // Update interview status
+        const updateStatusBody = {
+          candidateId: candidateHistory.candidateId,
+          roundId: parseInt(selectedRound), // Ensure roundId is sent as a number
+          interviewers: selectedInterviewers.map(email => ({
+            interviewerId: interviewers.find(i => i.email === email)?.interviewerId,
+            interviewerEmail: email
+          })),
+          status: "In progress",
+          meetingLink: meetingLink,
+          startMeetingTimeStamp: startMeetingTimeStamp,
+          endMeetingTimeStamp: endMeetingTimeStamp,
+          feedback: ""
+        };
+
+        try {
+          await interviewService.updateInterviewStatus(updateStatusBody);
+          console.log('sendQuestionnaire', sendQuestionnaire);
+          // Send questionnaire if checkbox is checked
+          if (sendQuestionnaire) {
+            try {
+              // First generate questions based on job description
+              const questionsResponse = await candidateService.generateQuestions(candidateHistory?.jobDescription?.summary+','+candidateHistory?.jobDescription?.technicalSkills || "");
+              
+              // Then send the notification with generated questions
+              await notificationService.process({
+                eventType: "InterviewQuestions",
+                data: {
+                  candidateName: candidateHistory.candidateName,
+                  managerEmails: selectedInterviewers,
+                  position: jobTitle,
+                  interviewDate: startMeetingTimeStamp,
+                  questions: questionsResponse.data || []
+                }
+              });
+            } catch (error) {
+              console.error("Error sending questionnaire:", error);
+            }
+          }
+          
+          // Refresh the interview management screen
+          onUpdateSuccess();
+          
+          // Update the history array in the component
+          if (history && history.length > 0) {
+            history[history.length - 1].meetingLink = meetingLink;
+          }
+          // Update the latest meeting link state
+          setLatestMeetingLink(meetingLink);
+          resetScheduleFields();
+          // Show success modal
+          setModalType('success');
+          setModalMessage('Interview scheduled successfully!');
+          setShowModal(true);
+          // Just update the parent component's state without closing the modal
+          if (onClose) {
+            onClose(true, meetingLink, false); // Pass false to indicate not to close the modal
+          }
+        } catch (updateError) {
+          console.error('Error updating interview status:', updateError);
+          setModalType('error');
+          setModalMessage('Interview scheduled, but failed to update status. Please contact support.');
+          setShowModal(true);
+        }
+      } else {
+        // Show error modal
+        setModalType('error');
+        setModalMessage('Failed to schedule interview. Please try again.');
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error('Error scheduling interview:', error);
+      // Show error modal
+      setModalType('error');
+      setModalMessage(error.message || 'Failed to schedule interview. Please try again.');
+      setShowModal(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isOpen && candidateHistory && (
+      <>
+        <Loader isVisible={isLoading || loadingInterviewers} />
+        <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-left">
+            <h2>Interview Details</h2>
+            {history && history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (
+              <>
+              <div className="schedule-form">
+              <label>
+                Select Interview Round:
+                <select
+                  value={selectedRound}
+                  onChange={(e) => {
+                    setSelectedRound(e.target.value);
+                  }}
+                >
+                  <option value="">Select interview round</option>
+                  {interviewRounds
+                    .filter(round => {
+                      const currentRoundId = history[history.length - 1]?.roundNumber;
+                      return currentRoundId && round.roundId > currentRoundId;
+                    })
+                    .map((round) => (
+                      <option key={round.roundId} value={round.roundId}>
+                        {round.roundName}
+                      </option>
+                    ))
+                  }
+                </select>
+              </label>
+              <label>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                  <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px', color: '#66CC00' }} />
+                  Select Interviewers:
+                </div>
+                <div className="custom-multiselect" ref={multiselectRef}>
+                  <div
+                    className="multiselect-selected"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  >
+                    {selectedInterviewers.length === 0
+                      ? "Select interviewers"
+                      : `${selectedInterviewers.length} interviewer(s) selected`}
+                  </div>
+                  {isDropdownOpen && (
+                    <div className="multiselect-options">
+                      {interviewers.map((interviewer, index) => (
+                        <div key={index} className="multiselect-option" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                              type="checkbox"
+                              value={interviewer.email}
+                              checked={selectedInterviewers.includes(interviewer.email)}
+                              onChange={(e) => {
+                                const email = e.target.value;
+                                setSelectedInterviewers((prev) =>
+                                  e.target.checked
+                                    ? [...prev, email]
+                                    : prev.filter((i) => i !== email)
+                                );
+                              }}
+                            />
+                            <span>{interviewer.email}</span>
+                          </div>
+                          <OverlayTrigger
+                            placement="right"
+                            overlay={
+                              <Tooltip id={`tooltip-${index}`}>
+                                <div style={{ textAlign: 'left' }}>
+                                  <div><strong>Name:</strong> {interviewer.name || 'N/A'}</div>
+                                  <div><strong>Email:</strong> {interviewer.email}</div>
+                                  <div><strong>Experience:</strong> {interviewer.experienceYears+" years" || 'N/A'}</div>
+                                  <div><strong>Skills:</strong> {interviewer.technicalExpertise?.join(', ') || 'N/A'}</div>
+                                  <div><strong>Match Score:</strong> {interviewer.matchScore || 'N/A'}</div>
+                                  <div><strong>Specializations:</strong> {interviewer.specializations?.join(', ') || 'N/A'}</div>
+                                </div>
+                              </Tooltip>
+                            }
+                          >
+                            <span style={{ cursor: 'help' }}>ℹ️</span>
+                          </OverlayTrigger>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </label>
+              {loadingInterviewers && <p>Loading interviewers...</p>}
+              <div className="datetime-duration-container">
+                <div className="datetime-field">
+                  <label>Select Date and Time:</label>
+                  <DatePicker
+                    selected={selectedDateTime}
+                    onChange={handleDateTimeSelect}
+                    showTimeSelect
+                    timeIntervals={15}
+                    dateFormat="MMMM d, yyyy h:mm aa"
+                    minDate={new Date()}
+                    timeZone="Asia/Kolkata"
+                    open={isCalendarOpen}
+                    onCalendarOpen={handleCalendarOpen}
+                    onCalendarClose={handleCalendarClose}
+                    timeCaption="Time"
+                    timeFormat="HH:mm"
+                    placeholderText="Select date and time"
+                    renderCustomHeader={({
+                      date,
+                      decreaseMonth,
+                      increaseMonth,
+                      prevMonthButtonDisabled,
+                      nextMonthButtonDisabled
+                    }) => (
+                      <div className="custom-header">
+                        <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled}>◀</button>
+                        <span className="month-year">
+                          {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button onClick={increaseMonth} disabled={nextMonthButtonDisabled}>▶</button>
+                      </div>
+                    )}
+                    renderCustomTimeSection={({ date }) => (
+                      <div className="time-section">
+                        <div className="time-arrow time-arrow-up" onClick={() => scrollTimeList('up')}>▲</div>
+                        <div className="time-list">
+                          <ul className="react-datepicker__time-list">
+                            {generateTimeSlots().map((time, index) => (
+                              <li
+                                key={index}
+                                className={`react-datepicker__time-list-item ${
+                                  selectedDateTime &&
+                                  time.getHours() === selectedDateTime.getHours() &&
+                                  time.getMinutes() === selectedDateTime.getMinutes()
+                                    ? 'react-datepicker__time-list-item--selected'
+                                    : ''
+                                }`}
+                                onClick={() => {
+                                  const newDate = new Date(selectedDateTime || date);
+                                  newDate.setHours(time.getHours());
+                                  newDate.setMinutes(time.getMinutes());
+                                  handleDateTimeSelect(newDate);
+                                }}
+                              >
+                                {time.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="time-arrow time-arrow-down" onClick={() => scrollTimeList('down')}>▼</div>
+                      </div>
+                    )}
+                    renderCustomFooter={() => (
+                      <div className="custom-footer">
+                        <button onClick={handleOkClick} className="ok-button">
+                          OK
+                        </button>
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="duration-field">
+                  <label>Duration:</label>
+                  <select
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="duration-select"
+                  >
+                    <option value="30">30 mins</option>
+                    <option value="60">60 mins</option>
+                  </select>
+                </div>
+                <button 
+                  className="find-slots-button" 
+                  onClick={handleFindSlots}
+                  disabled={selectedInterviewers.length === 0}
+                >
+                  Find Slots
+                </button>
+              </div>
+              {showSlots && (
+                <div className="available-slots">
+                  {availableSlots.map((slot, index) => (
+                    <button
+                      key={index}
+                      className={`slot-button ${selectedSlot === slot ? 'selected' : ''}`}
+                      onClick={() => handleSlotSelect(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div style={{ width: '100%', display: 'flex', alignItems: 'center', marginBottom: '5px' ,marginTop: '10px'  }}>
+                <input
+                  type="checkbox"
+                  checked={sendQuestionnaire}
+                  onChange={(e) => setSendQuestionnaire(e.target.checked)}
+                  style={{ 
+                    width: '16px', 
+                    height: '16px', 
+                    cursor: 'pointer', 
+                    marginRight: '8px',
+                    accentColor: '#059669'
+                  }}
+                />
+                <span style={{ cursor: 'pointer' }} onClick={() => setSendQuestionnaire(!sendQuestionnaire)}>
+                  Send questionnaire to Interviewer
+                </span>
+              </div>
+              <button 
+                onClick={handleSchedule} 
+                className="schedule-button"
+                disabled={selectedInterviewers.length === 0 || !selectedSlot}
+                style={{ marginTop: '10px' }}
+              >
+                    <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
+                    Schedule Interview
+                  </button>
+                </div>
+              </>
+            ) : (
+              history[history.length - 1].status.toUpperCase() === 'COMPLETED' ? (
+                <div className="candidate-info-modal" style={{ marginTop: '20px' }}>
+                  <h3>Schedule Next Interview</h3>
+                  <p style={{ color: '#666', fontSize: '14px', marginTop: '10px' }}>Feedback for the last interview round is required before scheduling the next interview.</p>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                    <button 
+                      onClick={() => {
+                        const url = `https://my-react-app-865090871947.asia-south1.run.app/?candidate_name=${encodeURIComponent(candidateName)}&round_id=${candidateHistory.roundId}&candidate_id=${candidateHistory.candidateId}`;
+                        window.open(url, '_blank');
+                      }}
+                      className="btn btn-success"
+                      style={{ 
+                        marginTop: '10px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        backgroundColor: '#059669', 
+                        borderColor: '#059669',
+                        marginLeft: 'auto'
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faRobot} />
+                      Generate AI Feedback
+                    </button>
+                  </div>
+                </div>
+              ) : null
+            )}
+          </div>
+          <div className="modal-right">
+            <h2>Interview Process</h2>
+            <div className="candidate-info-modal">
+              <h3>{candidateName || 'Candidate Name Not Available'}</h3>
+              <p>{jobTitle ? `${jobTitle}${jobDepartment ? ` - ${jobDepartment}` : ''}` : 'Job Details Not Available'}</p>
+              {latestMeetingLink && (
+                <p className="timeline-description">
+                  <strong>Meeting Link: </strong>
+                  <a href={latestMeetingLink} target="_blank" rel="noopener noreferrer">
+                    {latestMeetingLink}
+                  </a>
+                </p>
+              )}
+            </div>
+            <div className="interview-timeline">
+              <div className="timeline-line"></div>
+              {history.map((interview, index) => (
+                <div key={index} className="timeline-item">
+                  <div className="timeline-status">
+                    <div className={`status-icon ${interview.status.toLowerCase()}`}>
+                      <i className="fas fa-check"></i>
+                    </div>
+                  </div>
+                    <div className="timeline-content">
+                      <h3>{interview.roundName}</h3>
+                      <div className="status-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <p className="timeline-subtitle" style={{ margin: 0 }}>{interview.status}</p>
+                      </div>
+                      {interview.feedback && (
+                        <p className="timeline-description">
+                          <strong>Interviewer's feedback: </strong>
+                          {interview.feedback}
+                        </p>
+                      )}
+                    </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => handleClose()} className="close-button">×</button>
+        </div>
+      </div>
+        <Modal 
+          show={showModal} 
+          onHide={() => setShowModal(false)} 
+          centered
+          backdrop="static"
+          keyboard={false}
+          className="success-modal"
+        >
+          <Modal.Body className="text-center p-5">
+            <div className="success-icon-wrapper mb-4">
+              <FontAwesomeIcon 
+                icon={modalType === 'success' ? faCheckCircle : faTimesCircle} 
+                className={`success-icon ${modalType === 'error' ? 'text-danger' : ''}`}
+              />
+            </div>
+            <h4 className="success-title mb-3">
+              {modalType === 'success' ? 'Interview Scheduled!' : 'Scheduling Failed'}
+            </h4>
+            <p className="success-message mb-4">{modalMessage}</p>
+            <Button 
+              variant={modalType === 'success' ? 'success' : 'danger'} 
+              onClick={() => setShowModal(false)}
+              className="continue-button"
+            >
+              {modalType === 'success' ? 'Continue' : 'Try Again'}
+            </Button>
+          </Modal.Body>
+        </Modal>
+      </>
+    )
+  );
+};
+
+
+export default InterviewHistoryModal;

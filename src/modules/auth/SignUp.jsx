@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { signupUser, resetSignupState, setError } from '../../store/slices/signupSlice';
+import { Form, Button, Row, Col, Modal } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import telusLogo from '../../assets/telus_logo.svg';
 import '../../styles/variables.css';
 import './Signup.css';
 
 const SignUp = () => {
+  const topRef = React.useRef(null);
   const [formData, setFormData] = useState({
     fullName: '',
     employeeId: '',
@@ -25,12 +29,14 @@ const SignUp = () => {
     rmgPermissions: [],
     profilePicture: null
   });
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const navigate = useNavigate();
-  const { register } = useAuth();
+const dispatch = useDispatch();
+const { isLoading, error, success } = useSelector((state) => state.signup);
+const [showModal, setShowModal] = useState(false);
+const [modalType, setModalType] = useState(''); // 'success' or 'error'
+const [modalMessage, setModalMessage] = useState('');
+const [passwordError, setPasswordError] = useState('');
+const [confirmPasswordError, setConfirmPasswordError] = useState('');
+const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,42 +88,53 @@ const SignUp = () => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-  setError('');
 
   // Check for password validation errors
   if (passwordError || confirmPasswordError) {
-    setError('Please fix the password errors before submitting.');
+    dispatch(setError('Please fix the password errors before submitting.'));
     return;
   }
 
-  setIsLoading(true);
-
-  console.log('Submitting form data:', JSON.stringify(formData));
-
-  try {
-    console.log('Calling register function');
-    const result = await register(formData);
-    console.log('Register function result:', result);
-
-    if (result.success) {
-      console.log('Registration successful, navigating to login');
-      navigate('/login', { state: { message: 'Registration successful. Please log in.' } });
-    } else {
-      console.log('Registration failed:', result.message);
-      setError(result.message || 'Registration failed. Please try again.');
-    }
-  } catch (err) {
-    console.error('Registration error:', err);
-    if (err.response && err.response.data) {
-      console.log('Error response data:', err.response.data);
-      setError(err.response.data.message || 'An error occurred during registration. Please try again.');
-    } else {
-      setError('An error occurred during registration. Please try again.');
-    }
-  } finally {
-    setIsLoading(false);
-  }
+  dispatch(signupUser(formData));
 };
+
+useEffect(() => {
+  if (success) {
+    setModalType('success');
+    setModalMessage('Your account has been successfully registered and is now under approval.');
+    setShowModal(true);
+    // Clear the form data
+    setFormData({
+      fullName: '',
+      employeeId: '',
+      email: '',
+      phoneNumber: '',
+      department: '',
+      designation: '',
+      region: '',
+      costCenter: '',
+      businessUnit: '',
+      reportingManagerEmail: '',
+      role: '',
+      password: '',
+      confirmPassword: '',
+      managerPermissions: [],
+      rmgPermissions: [],
+      profilePicture: null
+    });
+  } else if (error) {
+    setModalType('error');
+    setModalMessage(error);
+    setShowModal(true);
+  }
+}, [success, error]);
+
+useEffect(() => {
+  // Reset signup state when component unmounts
+  return () => {
+    dispatch(resetSignupState());
+  };
+}, [dispatch]);
 
   const renderPermissions = () => {
     if (!formData.role) return null;
@@ -217,6 +234,10 @@ const handleSubmit = async (e) => {
     return null;
   };
 
+  const handleContinue = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="signup-page">
       <div className="signup-container">
@@ -224,13 +245,35 @@ const handleSubmit = async (e) => {
           <img src={telusLogo} alt="Telus Logo" className="telus-logo" />
           <h1>Just a few quick details and you're in. Let's get started.</h1>
         </div>
-        <div className="signup-right">
-          {error && (
-            <Alert variant="danger" className="mb-4">
-              {error}
-            </Alert>
-          )}
+        <div className="signup-right" ref={topRef}>
           <Form onSubmit={handleSubmit}>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Full Name <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Employee ID <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="employeeId"
+                    value={formData.employeeId}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
             <Form.Group className="mb-3">
               <Form.Label>Email ID <span className="required">*</span></Form.Label>
               <Form.Control
@@ -243,97 +286,90 @@ const handleSubmit = async (e) => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Full Name <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Phone Number <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phoneNumber"
+                    placeholder="1+ xxx-xxx-xxxx"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Region <span className="required">*</span></Form.Label>
+                  <Form.Select
+                    name="region"
+                    value={formData.region}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Region</option>
+                    <option value="North America">North America</option>
+                    <option value="Europe">Europe</option>
+                    <option value="Asia Pacific">Asia Pacific</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Employee ID <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="employeeId"
-                value={formData.employeeId}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Department <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Designation <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Phone Number <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="tel"
-                name="phoneNumber"
-                placeholder="1+ xxx-xxx-xxxx"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Department <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Designation <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="designation"
-                value={formData.designation}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Region <span className="required">*</span></Form.Label>
-              <Form.Select
-                name="region"
-                value={formData.region}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Region</option>
-                <option value="North America">North America</option>
-                <option value="Europe">Europe</option>
-                <option value="Asia Pacific">Asia Pacific</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Cost Center <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="text"
-                name="costCenter"
-                value={formData.costCenter}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Business Unit</Form.Label>
-              <Form.Control
-                type="text"
-                name="businessUnit"
-                value={formData.businessUnit}
-                onChange={handleChange}
-              />
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Cost Center <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="costCenter"
+                    value={formData.costCenter}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Business Unit</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="businessUnit"
+                    value={formData.businessUnit}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Form.Group className="mb-3">
               <Form.Label>Reporting Manager Email</Form.Label>
@@ -345,43 +381,34 @@ const handleSubmit = async (e) => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Role <span className="required">*</span></Form.Label>
-              <Form.Select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Role</option>
-                <option value="Manager">Manager</option>
-                <option value="RMG">RMG</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Password <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              {passwordError && <Form.Text className="text-danger">{passwordError}</Form.Text>}
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Confirm Password <span className="required">*</span></Form.Label>
-              <Form.Control
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-              {confirmPasswordError && <Form.Text className="text-danger">{confirmPasswordError}</Form.Text>}
-            </Form.Group>
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Password <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  {passwordError && <Form.Text className="text-danger">{passwordError}</Form.Text>}
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Confirm Password <span className="required">*</span></Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  {confirmPasswordError && <Form.Text className="text-danger">{confirmPasswordError}</Form.Text>}
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Form.Group className="mb-3">
               <Form.Label>Profile Picture (optional)</Form.Label>
@@ -400,6 +427,20 @@ const handleSubmit = async (e) => {
                 }}
                 accept="image/*"
               />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Role <span className="required">*</span></Form.Label>
+              <Form.Select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Role</option>
+                <option value="Manager">Manager</option>
+                <option value="RMG">RMG</option>
+              </Form.Select>
             </Form.Group>
 
             {formData.role && (
@@ -432,6 +473,48 @@ const handleSubmit = async (e) => {
           </Form>
         </div>
       </div>
+
+      <Modal 
+        show={showModal} 
+        onHide={() => modalType === 'error' ? setShowModal(false) : null} 
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="success-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="success-icon-wrapper mb-4">
+            <FontAwesomeIcon 
+              icon={modalType === 'success' ? faCheckCircle : faTimesCircle} 
+              className={`success-icon ${modalType === 'error' ? 'text-danger' : ''}`}
+            />
+          </div>
+          <h4 className="success-title mb-3">
+            {modalType === 'success' ? 'Registration Successful!' : 'Registration Failed'}
+          </h4>
+          <p className="success-message mb-4">{modalMessage}</p>
+          {modalType === 'success' ? (
+            <Button 
+              variant="success" 
+              onClick={handleContinue}
+              className="continue-button"
+            >
+              Continue to Login
+            </Button>
+          ) : (
+            <Button 
+              variant="danger" 
+              onClick={() => {
+                setShowModal(false);
+                topRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="continue-button"
+            >
+              Try Again
+            </Button>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

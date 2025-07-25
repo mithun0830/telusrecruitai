@@ -1,22 +1,60 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Form, Button, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser, clearError, setError, resetAuthState } from '../../store/slices/authSlice';
+import { Form, Button, Modal } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import telusLogo from '../../assets/telus_logo.svg';
 import loginImg from '../../assets/login.png'
 import './Login.css';
 
+const CLIENT_ID = '811abdb0-4b5e-013e-0f7b-7b334b1018e4176721';
+const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/callback`);
+const DOMAIN = 'https://telus-sandbox.onelogin.com';
+const AUTHORIZATION_ENDPOINT = `${DOMAIN}/oidc/2/auth`;
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-const [error, setError] = useState('');
-const [isLoading, setIsLoading] = useState(false);
-const [step, setStep] = useState('email');
-const navigate = useNavigate();
+  const [step, setStep] = useState('email');
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-const clearError = () => setError('');
-const { login } = useAuth();
-const location = useLocation();
+  const { isLoading, error, user } = useSelector((state) => state.auth);
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    dispatch(clearError());
+  };
+
+  useEffect(() => {
+    if (error) {
+      setModalType('error');
+      setModalMessage(error);
+      setShowModal(true);
+    }
+  }, [error]);
+
+  // Reset auth state when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(resetAuthState());
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'Manager') {
+        navigate('/job-openings', { replace: true });
+      } else if (user.role === 'RMG') {
+        navigate('/interviews', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,57 +64,43 @@ const location = useLocation();
       if (email && email.includes('@')) {
         setStep('password');
       } else {
-        setError('Please enter a valid email address');
+        dispatch(setError('Please enter a valid email address'));
       }
     } else {
       // Handle password submission
       if (password) {
-        console.log('Form submitted', { step, email, password }); // Debug log
-
-        setError('');
-        setIsLoading(true);
-
         try {
-          const result = await login(email, password);
-          if (result.success) {
-            const user = result.data.user;
-            const role = user.role;
-
-            let from = location.state?.from?.pathname;
-            if (!from) {
-              if (role === 'Manager') {
-                from = '/mng_dashboard';
-              } else if (role === 'RMG') {
-                from = '/rmg_dashboard';
-              } else {
-                console.error('Unexpected role:', role);
-                setError('Invalid user role');
-                return;
-              }
-            }
-            navigate(from, { replace: true });
-          } else {
-            setError(result.message || 'Invalid email or password');
-          }
+          await dispatch(loginUser({ email, password }));
         } catch (err) {
           console.error('Login error:', err);
-          setError(err.message || 'An error occurred. Please try again.');
-        } finally {
-          setIsLoading(false);
         }
       } else {
-        setError('Please enter your password');
+        dispatch(setError('Please enter your password'));
       }
     }
   };
 
+  const handleOneLoginAuth = () => {
+    try {
+      const state = Math.random().toString(36).substring(7);
+      sessionStorage.setItem('onelogin_state', state);
+      
+      const loginUrl = `${AUTHORIZATION_ENDPOINT}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=openid profile email&state=${state}`;
+      console.log('Redirecting to:', loginUrl);
+      window.location.href = loginUrl;
+    } catch (err) {
+      console.error('OneLogin authentication error:', err);
+      dispatch(setError(`OneLogin authentication failed: ${err.message}`));
+    }
+  };
+
+
   return (
     <div className="login-page">
       <div className="login-container">
-        {/* <div className="login-image"></div> */}
-         <div className="login-image">
-              <img src={loginImg} alt="TELUS Recruiting" />
-            </div>
+        <div className="login-image">
+          <img src={loginImg} alt="TELUS Recruiting" />
+        </div>
         <div className="login-form">
           <div className="login-header">
             <div className="telus-logo">
@@ -84,12 +108,6 @@ const location = useLocation();
             </div>
             <h1 className="login-title">Better hiring,<br />all-together.</h1>
           </div>
-
-          {error && (
-            <Alert variant="danger" className="mb-4">
-              {error}
-            </Alert>
-          )}
 
           <Form onSubmit={handleSubmit}>
             {step === 'email' ? (
@@ -99,23 +117,23 @@ const location = useLocation();
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onClick={clearError}
+                  onClick={handleModalClose}
                   required
                 />
               </Form.Group>
             ) : (
               <>
                 <Form.Group className="mb-3">
-                <Form.Control
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onClick={() => {
-                    setStep('email');
-                    clearError();
-                  }}
-                  style={{ cursor: 'pointer' }}
-                />
+                  <Form.Control
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onClick={() => {
+                      setStep('email');
+                      handleModalClose();
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Control
@@ -123,7 +141,7 @@ const location = useLocation();
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onClick={clearError}
+                    onClick={handleModalClose}
                     required
                     autoFocus
                   />
@@ -135,19 +153,57 @@ const location = useLocation();
               variant="primary"
               type="submit"
               disabled={isLoading}
-              className="w-100"
+              className="w-100 mb-3"
             >
               {isLoading ? 'Logging in...' : (step === 'email' ? 'Next' : 'Sign in')}
             </Button>
 
+            <Button
+              variant="outline-primary"
+              onClick={handleOneLoginAuth}
+              disabled={isLoading}
+              className="w-100 mb-3"
+            >
+              Login with OneLogin
+            </Button>
+
             <div className="text-center">
               <Link to="/signup" className="text-muted">
-                New to TelusRecruitAI? <span>Register now</span>
+                New to TELUS RecuritAI? <span>Register now</span>
               </Link>
             </div>
           </Form>
         </div>
       </div>
+
+      <Modal 
+        show={showModal} 
+        onHide={handleModalClose} 
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="success-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="success-icon-wrapper mb-4">
+            <FontAwesomeIcon 
+              icon={modalType === 'success' ? faCheckCircle : faTimesCircle} 
+              className={`success-icon ${modalType === 'error' ? 'text-danger' : ''}`}
+            />
+          </div>
+          <h4 className="success-title mb-3">
+            {modalType === 'success' ? 'Login Successful!' : 'Login Failed'}
+          </h4>
+          <p className="success-message mb-4">{modalMessage}</p>
+          <Button 
+            variant={modalType === 'success' ? 'success' : 'danger'} 
+            onClick={handleModalClose}
+            className="continue-button"
+          >
+            {modalType === 'success' ? 'Continue' : 'Try Again'}
+          </Button>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

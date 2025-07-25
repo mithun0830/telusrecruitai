@@ -1,36 +1,25 @@
-# Use an official Node runtime as the parent image
-FROM node:16-slim
+# Build stage
+FROM node:18-alpine as builder
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Define build arguments
-ARG REACT_APP_API_BASE_URL
-ARG REACT_APP_NOTIFICATION_BASE_URL
-ARG REACT_APP_AI_SEARCH_BASE_URL
-
-# Set environment variables with default values that can be overridden
-ENV REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
-ENV REACT_APP_NOTIFICATION_BASE_URL=${REACT_APP_NOTIFICATION_BASE_URL}
-ENV REACT_APP_AI_SEARCH_BASE_URL=${REACT_APP_AI_SEARCH_BASE_URL}
-
-# Print environment variables during build (for debugging)
-RUN echo "API_BASE_URL: $REACT_APP_API_BASE_URL" && \
-    echo "NOTIFICATION_BASE_URL: $REACT_APP_NOTIFICATION_BASE_URL" && \
-    echo "AI_SEARCH_BASE_URL: $REACT_APP_AI_SEARCH_BASE_URL"
-
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
+<<<<<<< HEAD
 # Copy the rest of the application code
+=======
+# Copy source code
+>>>>>>> stagging
 COPY . .
 
 # Build the application
 RUN npm run build
 
+<<<<<<< HEAD
 # Install serve to run the application
 RUN npm install -g serve
 
@@ -39,3 +28,21 @@ EXPOSE 3001
 
 # Define the command to run the app
 CMD ["serve", "-s", "build", "-l", "3001"]
+=======
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy built assets from builder stage
+COPY --from=builder /app/build ./build
+
+# Copy server files and package.json
+COPY server.js package.json ./
+
+# Install production dependencies
+RUN npm install --only=production
+
+# Start the server
+CMD ["node", "server.js"]
+>>>>>>> stagging

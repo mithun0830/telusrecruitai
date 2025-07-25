@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUsers, 
@@ -6,46 +6,63 @@ import {
   faClipboardCheck, 
   faChartLine 
 } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useSelector } from 'react-redux';
+import { managerService } from '../../services/api';
 import './MngDashboard.css';
 
 const RmgDashboard = () => {
-  const { user } = useAuth();
+  const user = useSelector((state) => state.auth.user);
+  const [managerData, setManagerData] = useState({
+    totalManagers: 0,
+    activeManagers: 0,
+    pendingManagers: 0
+  });
+
+  useEffect(() => {
+    const fetchManagerData = async () => {
+      try {
+        const response = await managerService.getManagerStats();
+        if (response.success) {
+          setManagerData(response.data);
+        } else {
+          console.error('Error fetching manager data:', response.message);
+        }
+      } catch (error) {
+        console.error('Error fetching manager data:', error);
+      }
+    };
+
+    fetchManagerData();
+  }, []);
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Hello {user?.username}</h1>
+        <h1>RMG Dashboard</h1>
       </div>
       <div className="dashboard-content">
         <div className="dashboard-summary">
           <div className="summary-card">
             <FontAwesomeIcon icon={faUsers} className="summary-icon" />
             <div className="summary-details">
-              <h3>Active Candidates</h3>
-              <p className="summary-value">25</p>
+              <h3>Total Managers</h3>
+              <p className="summary-value">{managerData.totalManagers}</p>
             </div>
           </div>
           <div className="summary-card">
             <FontAwesomeIcon icon={faBriefcase} className="summary-icon" />
             <div className="summary-details">
-              <h3>Filled Positions</h3>
-              <p className="summary-value">8</p>
+              <h3>Active Managers</h3>
+              <p className="summary-value">{managerData.activeManagers}</p>
             </div>
           </div>
           <div className="summary-card">
             <FontAwesomeIcon icon={faClipboardCheck} className="summary-icon" />
             <div className="summary-details">
-              <h3>Interviews Scheduled</h3>
-              <p className="summary-value">12</p>
+              <h3>Pending Managers</h3>
+              <p className="summary-value">{managerData.pendingManagers}</p>
             </div>
           </div>
-        </div>
-        <div className="team-performance">
-          <div className="d-flex align-items-center mb-3">
-            <FontAwesomeIcon icon={faChartLine} className="summary-icon" />
-            <h2>Recruitment Progress</h2>
-          </div>
-          <p className="text-muted">Recruitment metrics and progress chart will be displayed here</p>
         </div>
       </div>
     </div>

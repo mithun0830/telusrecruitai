@@ -1,53 +1,340 @@
-.notification-list {
-  max-height: 600px;
-  overflow-y: auto;
+:root {
+  --telus-purple: #059669;
+  --telus-green: #10B981;
+  --telus-light-purple: #D1FAE5;
+  --telus-white: #FFFFFF;
+  --telus-light-gray: #F3F4F6;
+  --telus-dark-gray: #1F2937;
+  --telus-hover-bg: #ECFDF5;
 }
 
-.notification-item {
-  transition: background-color 0.2s;
+/* .notifications-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--telus-light-gray);
+  color: var(--telus-dark-gray);
+}
+
+.notifications-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 24px;
+  background-color: var(--telus-white);
+  border-bottom: 1px solid var(--telus-light-purple);
+}
+
+.notifications-header h1 {
+  color: var(--telus-purple);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+} */
+
+.notifications-page {
+  padding: 24px;
+  background-color: var(--telus-light-gray);
+  min-height: 100vh;
+}
+
+.notifications-header h1 {
+  color: var(--telus-purple);
+  font-size: 24px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.5px;
+}
+
+.notifications-content {
+  flex-grow: 1;
+  display: flex;
+  padding: 16px;
+  gap: 16px;
+  flex-direction: column;
+  background-color: var(--telus-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-filter-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  min-height: 40px;
+}
+
+.search-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+}
+
+.filter-container {
+  flex: 1;
+  display: flex;
+}
+
+/* ✅ Fixed Search Input with Green Border */
+.search-input {
+  width: 100% !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  border: 2px solid #059669 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  background-color: white !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+  line-height: 36px !important;
+  background-image: none !important;
+}
+
+.search-input:focus {
+  outline: none !important;
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 2px rgba(246, 248, 248, 0.2) !important;
+}
+
+/* Search Icon */
+.search-icon-wrapper {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.search-icon-wrapper:hover {
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+.search-icon {
+  color: #059669 !important;
+  font-size: 14px;
+}
+
+.search-icon-wrapper:hover .search-icon {
+  color: #047857 !important;
+}
+
+/* ✅ Fixed Filter Dropdown Styling */
+.filter-select {
+  width: 100% !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  border: 2px solid #059669 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  background-color: white !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  box-sizing: border-box !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 1rem !important;
+  padding-right: 2.5rem !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-select:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2) !important;
+  outline: none !important;
+}
+
+.filter-select::-ms-expand {
+  display: none;
+}
+
+.notifications-list {
+  flex-grow: 1;
+  padding: 16px;
+  background-color: var(--telus-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.notifications-table-container {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -16px;
+  padding: 0 16px;
+}
+
+.notifications-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--telus-light-purple);
+}
+
+.notifications-list-header h2 {
+  font-size: 20px;
+  margin: 0;
+  color: var(--telus-purple);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.notification-count {
+  color: var(--telus-white);
+  font-size: 14px;
+  font-weight: 600;
+  background-color: var(--telus-purple);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.notifications-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.notifications-table th {
+  font-weight: 600;
+  color: var(--telus-purple);
+  padding: 12px 8px;
+  text-align: left;
+  background-color: transparent;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.notifications-table th:first-child {
+  width: 10%;
+  padding-left: 16px;
+}
+
+.notifications-table th:nth-child(2) {
+  width: 60%;
+}
+
+.notifications-table th:last-child {
+  width: 30%;
+  padding-right: 16px;
+}
+
+.notifications-table td {
+  padding: 12px 8px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.notifications-table td:first-child {
+  padding-left: 16px;
+}
+
+.notifications-table td:last-child {
+  padding-right: 16px;
+}
+
+.notifications-table tbody tr {
+  background-color: var(--telus-white);
+  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.05);
+  border-radius: 6px;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.notification-item:hover {
-  background-color: #f8f9fa;
+.notifications-table tbody tr.unread {
+  background-color: var(--telus-light-purple);
+}
+
+.notifications-table tbody tr:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.15);
 }
 
-.notification-content {
-  flex: 1;
+.notifications-table tbody tr td:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
-.notification-content p {
-  color: #333;
-  margin-bottom: 0.25rem;
-  flex: 1;
-  padding-right: 10px;
+.notifications-table tbody tr td:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
-.notification-content small {
-  color: #6c757d;
-  white-space: nowrap;
+.no-notifications-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--telus-purple);
+  font-size: 16px;
+  padding: 40px 0;
 }
 
-.notification-item:last-child {
-  border-bottom: none !important;
+.no-notifications-message svg {
+  margin-bottom: 16px;
 }
 
-/* Custom scrollbar for notification list */
-.notification-list::-webkit-scrollbar {
-  width: 6px;
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
 }
 
-.notification-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.loader {
+  border: 3px solid var(--telus-light-purple);
+  border-top: 3px solid var(--telus-purple);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
 }
 
-.notification-list::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.notification-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
+mark {
+  background-color: rgba(5, 150, 105, 0.2);
+  color: var(--telus-dark-gray);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+@media screen and (max-width: 768px) {
+  .search-filter-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-container,
+  .filter-container {
+    width: 100%;
+  }
+
+  .notifications-table th,
+  .notifications-table td {
+    padding: 10px 5px;
+    font-size: 12px;
+  }
 }

@@ -41,6 +41,7 @@
   flex-direction: row;
   gap: 30px;
   position: relative;
+  font-family: "Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif;
 }
 
 .modal-left {
@@ -531,7 +532,7 @@
 }
 
 .react-datepicker {
-  font-family: inherit;
+  font-family: "Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif;
   border: 1px solid #ddd;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: absolute;
@@ -1097,4 +1098,10 @@
 .continue-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Spinning animation for polling indicator */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

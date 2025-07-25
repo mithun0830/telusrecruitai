@@ -6,6 +6,8 @@ const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-so
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
+const AI_FEEDBACK_BASE_URL = 'http://localhost:3001/api';
+
 
 // Create axios instances with default config
 const api = axios.create({
@@ -38,6 +40,13 @@ const googleApi = axios.create({
 
 const interviewApi = axios.create({
   baseURL: INTERVIEW_ROUNDS_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const aiFeedbackApi = axios.create({
+  baseURL: AI_FEEDBACK_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -160,10 +169,12 @@ const addResponseInterceptor = (axiosInstance) => {
 addTokenInterceptor(api);
 addTokenInterceptor(ai_api);
 addTokenInterceptor(notificationApi);
+// Note: aiFeedbackApi doesn't need token interceptor as it's localhost
 
 addResponseInterceptor(api);
 addResponseInterceptor(ai_api);
 addResponseInterceptor(notificationApi);
+addResponseInterceptor(aiFeedbackApi);
 
 // Notification service
 export const notificationService = {
@@ -369,6 +380,49 @@ export const interviewService = {
   updateInterviewStatus: async (requestBody) => {
     return await interviewApi.put('/interviews/update-status', requestBody);
   },
+};
+
+// AI Feedback service for Google Drive integration
+export const aiFeedbackService = {
+  // Check if candidate folder exists in Google Drive
+  checkCandidateFolder: async (candidateEmail) => {
+    return await aiFeedbackApi.get(`/check-candidate-folder/${candidateEmail}`);
+  },
+
+  // Generate feedback for candidate from Google Drive files
+  generateFeedbackForCandidate: async (candidateEmail, metadata = {}) => {
+    return await aiFeedbackApi.post('/generate-feedback-for-candidate', {
+      candidateEmail,
+      metadata
+    });
+  },
+
+  // Get questions asked by interviewer for candidate
+  getQuestionsAsked: async (candidateEmail) => {
+    return await aiFeedbackApi.post(`/get-questions-asked/${candidateEmail}`);
+  },
+
+  // Get JD relevance analysis for candidate
+  getJdRelevance: async (candidateEmail) => {
+    return await aiFeedbackApi.post('/get-jd-relevance', {
+      candidateEmail
+    });
+  },
+
+  // Get feedback history
+  getFeedbackHistory: async () => {
+    return await aiFeedbackApi.get('/feedback-history');
+  },
+
+  // Delete specific feedback
+  deleteFeedback: async (feedbackIndex) => {
+    return await aiFeedbackApi.delete(`/delete-feedback/${feedbackIndex}`);
+  },
+
+  // Save feedback
+  saveFeedback: async (feedbackData) => {
+    return await aiFeedbackApi.post('/save-feedback', feedbackData);
+  }
 };
 
 

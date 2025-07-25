@@ -1,7 +1,10 @@
 import axios from 'axios';
+import { clearAllCookies } from '../utils/cookieUtils';
 
-const ONELOGIN_URL = 'https://telusrecruitai.onelogin.com';
-const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
+const ONELOGIN_DOMAIN = 'https://telus-sandbox.onelogin.com';
+const ONELOGIN_LOGOUT_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
+const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
+const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
@@ -138,9 +141,12 @@ const getAccessToken = () => {
 const setAccessToken = (token) => localStorage.setItem('token', token);
 const getRefreshToken = () => localStorage.getItem('refreshToken');
 const setRefreshToken = (token) => localStorage.setItem('refreshToken', token);
+const setIdToken = (token) => localStorage.setItem('id_token', token);
+const getIdToken = () => localStorage.getItem('id_token');
 const removeTokens = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('id_token');
 };
 
 // Request interceptors for adding token to requests
@@ -206,45 +212,35 @@ export const userService = {
 
 // Auth service
 export const authService = {
-  register: async (userData) => {
-    const requestData = {
-      username: userData.fullName,
-      fullName: userData.fullName,
-      employeeId: userData.employeeId,
-      email: userData.email,
-      phoneNumber: userData.phoneNumber,
-      department: userData.department,
-      designation: userData.designation,
-      region: userData.region,
-      costCenter: userData.costCenter,
-      businessUnit: userData.businessUnit,
-      reportingManagerEmail: userData.reportingManagerEmail,
-      roleName: userData.role,
-      password: userData.password,
-      confirmPassword: userData.confirmPassword,
-      permissionNames: userData.managerPermissions,
-      profilePicture: userData.profilePicture,
-    };
-
-    return await api.post('/auth/register', requestData);
-  },
-
   exchangeOneLoginToken: async (code) => {
     const response = await api.post('/auth/exchange', { code: code });
-    return response;
-  },
-
-  login: async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
-    if (response.success) {
-      setAccessToken(response.data.token);
-      setRefreshToken(response.data.refreshToken);
+    if (response.success && response.data.id_token) {
+      setIdToken(response.data.id_token);
+      if (response.data.token) {
+        setAccessToken(response.data.token);
+      }
+      if (response.data.refreshToken) {
+        setRefreshToken(response.data.refreshToken);
+      }
     }
     return response;
   },
 
   logout: () => {
+    const idToken = getIdToken();
+    const redirectUri = encodeURIComponent(`${window.location.origin}/login?force_login=true`);
+    
+    // Remove all tokens and cookies
     removeTokens();
+    clearAllCookies();
+    
+    // Redirect to OneLogin logout URL if we have an id_token
+    if (idToken) {
+      window.location.href = `${ONELOGIN_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${redirectUri}&prompt=login`;
+    } else {
+      // If no id_token, just redirect to login page with force_login parameter
+      window.location.href = `${window.location.origin}/login?force_login=true`;
+    }
   },
 
   refreshToken: async () => {

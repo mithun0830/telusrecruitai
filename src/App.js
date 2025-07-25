@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { initAuth } from './store/slices/authSlice';
 import Login from './modules/auth/Login';
 import SignUp from './modules/auth/SignUp';
+import Callback from './modules/auth/Callback';
 import Landing from './modules/landing/Landing';
 import RmgDashboard from './modules/dashboard/RmgDashboard';
 import MngDashboard from './modules/dashboard/MngDashboard';
@@ -31,6 +32,7 @@ function App() {
         <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/callback" element={<Callback />} />
         <Route path="/rmg_dashboard" element={
           <ProtectedRoute allowedRoles={['RMG']}>
             <Layout><RmgDashboard /></Layout>

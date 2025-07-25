@@ -1,23 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError, setError, resetAuthState } from '../../store/slices/authSlice';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Modal } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import telusLogo from '../../assets/telus_logo.svg';
 import loginImg from '../../assets/login.png'
 import './Login.css';
+
+const CLIENT_ID = '811abdb0-4b5e-013e-0f7b-7b334b1018e4176721';
+const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/callback`);
+const DOMAIN = 'https://telus-sandbox.onelogin.com';
+const AUTHORIZATION_ENDPOINT = `${DOMAIN}/oidc/2/auth`;
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [step, setStep] = useState('email');
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useDispatch();
 
   const { isLoading, error, user } = useSelector((state) => state.auth);
 
-  const handleClearError = () => dispatch(clearError());
+  const handleModalClose = () => {
+    setShowModal(false);
+    dispatch(clearError());
+  };
+
+  useEffect(() => {
+    if (error) {
+      setModalType('error');
+      setModalMessage(error);
+      setShowModal(true);
+    }
+  }, [error]);
 
   // Reset auth state when component unmounts
   useEffect(() => {
@@ -60,10 +80,24 @@ const Login = () => {
     }
   };
 
+  const handleOneLoginAuth = () => {
+    try {
+      const state = Math.random().toString(36).substring(7);
+      sessionStorage.setItem('onelogin_state', state);
+      
+      const loginUrl = `${AUTHORIZATION_ENDPOINT}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=openid profile email&state=${state}`;
+      console.log('Redirecting to:', loginUrl);
+      window.location.href = loginUrl;
+    } catch (err) {
+      console.error('OneLogin authentication error:', err);
+      dispatch(setError(`OneLogin authentication failed: ${err.message}`));
+    }
+  };
+
+
   return (
     <div className="login-page">
       <div className="login-container">
-        {/* <div className="login-image"></div> */}
         <div className="login-image">
           <img src={loginImg} alt="TELUS Recruiting" />
         </div>
@@ -75,12 +109,6 @@ const Login = () => {
             <h1 className="login-title">Better hiring,<br />all-together.</h1>
           </div>
 
-          {error && (
-            <Alert variant="danger" className="mb-4">
-              {error}
-            </Alert>
-          )}
-
           <Form onSubmit={handleSubmit}>
             {step === 'email' ? (
               <Form.Group className="mb-3">
@@ -89,7 +117,7 @@ const Login = () => {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onClick={handleClearError}
+                  onClick={handleModalClose}
                   required
                 />
               </Form.Group>
@@ -102,7 +130,7 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onClick={() => {
                       setStep('email');
-                      handleClearError();
+                      handleModalClose();
                     }}
                     style={{ cursor: 'pointer' }}
                   />
@@ -113,7 +141,7 @@ const Login = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onClick={handleClearError}
+                    onClick={handleModalClose}
                     required
                     autoFocus
                   />
@@ -125,9 +153,18 @@ const Login = () => {
               variant="primary"
               type="submit"
               disabled={isLoading}
-              className="w-100"
+              className="w-100 mb-3"
             >
               {isLoading ? 'Logging in...' : (step === 'email' ? 'Next' : 'Sign in')}
+            </Button>
+
+            <Button
+              variant="outline-primary"
+              onClick={handleOneLoginAuth}
+              disabled={isLoading}
+              className="w-100 mb-3"
+            >
+              Login with OneLogin
             </Button>
 
             <div className="text-center">
@@ -138,6 +175,35 @@ const Login = () => {
           </Form>
         </div>
       </div>
+
+      <Modal 
+        show={showModal} 
+        onHide={handleModalClose} 
+        centered
+        backdrop="static"
+        keyboard={false}
+        className="success-modal"
+      >
+        <Modal.Body className="text-center p-5">
+          <div className="success-icon-wrapper mb-4">
+            <FontAwesomeIcon 
+              icon={modalType === 'success' ? faCheckCircle : faTimesCircle} 
+              className={`success-icon ${modalType === 'error' ? 'text-danger' : ''}`}
+            />
+          </div>
+          <h4 className="success-title mb-3">
+            {modalType === 'success' ? 'Login Successful!' : 'Login Failed'}
+          </h4>
+          <p className="success-message mb-4">{modalMessage}</p>
+          <Button 
+            variant={modalType === 'success' ? 'success' : 'danger'} 
+            onClick={handleModalClose}
+            className="continue-button"
+          >
+            {modalType === 'success' ? 'Continue' : 'Try Again'}
+          </Button>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

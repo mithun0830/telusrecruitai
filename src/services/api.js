@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
-const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
+const API_BASE_URL = 'http://localhost:1998/api';
+const ONELOGIN_URL = 'https://telusrecruitai.onelogin.com';
+const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
@@ -55,8 +56,8 @@ const handleAxiosError = (error) => {
 
   console.error('API Error:', error.response);
   const { data } = error.response;
-    console.error('data:', data);
-const { statusCode } = data;
+  console.error('data:', data);
+  const { statusCode } = data;
 
   console.error('statusCode Error:', statusCode);
 
@@ -90,7 +91,7 @@ const { statusCode } = data;
       return Promise.reject({
         success: false,
         message: errorMessage || 'Dulplicate entry or conflict'
-    });
+      });
     case 422:
       return Promise.reject({
         success: false,
@@ -172,6 +173,9 @@ export const notificationService = {
   },
   markAsRead: async (notificationId) => {
     return await notificationApi.put(`/notifications/${notificationId}/mark-as-read`);
+  },
+  process: async (data) => {
+    return await notificationApi.post('/notifications/process', data);
   }
 };
 
@@ -211,8 +215,13 @@ export const authService = {
       permissionNames: userData.managerPermissions,
       profilePicture: userData.profilePicture,
     };
-    
+
     return await api.post('/auth/register', requestData);
+  },
+
+  exchangeOneLoginToken: async (code) => {
+    const response = await api.post('/auth/exchange', { code: code });
+    return response;
   },
 
   login: async (email, password) => {
@@ -312,14 +321,21 @@ export const candidateService = {
     return await ai_api.post('/resume-locks/unlock', requestBody);
   },
 
-  getMatchingInterviewers: async (resumeId) => {
-    return await ai_api.get(`/interviewer-matching/resume/${resumeId}`);
+  getMatchingInterviewers: async (jobDescription) => {
+    return await ai_api.post(`/interviewer-matching/job-description`, {
+      jobDescription: jobDescription
+    });
   },
 
   sendChatMessage: async (resumeId, message) => {
     return await ai_api.post('/chat/message', {
       currentResumeId: resumeId,
       message: message
+    });
+  },
+  generateQuestions: async (jobDescription) => {
+    return await ai_api.post('/job-descriptions/generate-questions', {
+      jobDescription: jobDescription
     });
   }
 };

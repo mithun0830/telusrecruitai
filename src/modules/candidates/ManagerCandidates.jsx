@@ -70,10 +70,7 @@ const ManagerCandidates = () => {
   const [showShortlistModal, setShowShortlistModal] = useState(false);
   const [shortlistMessage, setShortlistMessage] = useState('');
   const [shortlistSuccess, setShortlistSuccess] = useState(false);
-  const [jobDescription, setJobDescription] = useState('');
   const [secondarySearch, setSecondarySearch] = useState('');
-  const [jobSummary, setJobSummary] = useState('');
-  const [technicalSkills, setTechnicalSkills] = useState('');
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
@@ -95,13 +92,15 @@ const ManagerCandidates = () => {
 
   useLayoutEffect(() => {
     adjustTextareaHeight();
-  }, [adjustTextareaHeight, jobSummary, technicalSkills]);
+  }, [adjustTextareaHeight]);
 
   const handleGenerateJobDescription = async (data) => {
-    setFullJobDescriptionData(data);
-    // Don't update the input fields directly
-    // Instead, you might want to store this data separately
-    // and use it when the user decides to use it for search
+    if (data) {
+      // Store the complete response.data
+      setFullJobDescriptionData(data);
+      // Do not automatically set the summary in the search field
+      // adjustTextareaHeight();
+    }
   };
 
   const handleCandidateLockToggle = async (candidate, currentUserId) => {
@@ -483,11 +482,8 @@ const ManagerCandidates = () => {
                   ref={textareaRef}
                   placeholder="Enter job requirements to search for candidates..."
                   className="ai-search-input ai-generated-textarea"
-                  value={jobSummary || technicalSkills ? `Summary:\n${jobSummary}\n\nTechnical Skills:\n${technicalSkills}` : ''}
+                  value={secondarySearch}
                   onChange={(e) => {
-                    const [newSummary, newSkills] = e.target.value.split('\n\nTechnical Skills:\n');
-                    setJobSummary(newSummary.replace('Summary:\n', ''));
-                    setTechnicalSkills(newSkills || '');
                     setSecondarySearch(e.target.value);
                     adjustTextareaHeight();
                   }}

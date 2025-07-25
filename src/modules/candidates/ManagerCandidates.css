@@ -220,8 +220,8 @@
   flex: 1;
   display: flex;
   min-width: 300px;
-  max-height: 150px;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
 }
 
 .ai-search-input {
@@ -280,34 +280,36 @@
 }
 
 .ai-generated-textarea {
-  background-color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 15px;
-  line-height: 1.5;
-  height: 150px;
-  max-height: 150px;
-  resize: none;
-  overflow-y: auto;
+  background-color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  resize: none !important;
+  overflow-y: scroll !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--telus-purple) #f1f1f1 !important;
+  max-height: 120px !important;
 }
 
 .ai-generated-textarea::-webkit-scrollbar {
-  width: 8px;
+  width: 8px !important;
+  display: block !important;
 }
 
 .ai-generated-textarea::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  background: #f1f1f1 !important;
+  border-radius: 4px !important;
 }
 
 .ai-generated-textarea::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: var(--telus-purple) !important;
+  border-radius: 4px !important;
 }
 
 .ai-generated-textarea::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #047857 !important;
 }
 
 

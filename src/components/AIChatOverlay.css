@@ -139,31 +139,59 @@
   position: relative;
 }
 
-.message.ai button {
+.message.ai::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message.ai::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 12px;
+}
+
+.message.ai::-webkit-scrollbar-thumb {
+  background: #00A86B;
+  border-radius: 12px;
+}
+
+.message.ai::-webkit-scrollbar-thumb:hover {
+  background: #008C5A;
+}
+
+.copy-button {
   opacity: 0.7;
   transition: all 0.2s;
   color: #6B7280;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   padding: 4px 8px;
   border-radius: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
 }
 
-.message.ai button:hover {
+.copy-button:hover {
   opacity: 1;
   background-color: #f3f4f6;
 }
 
-.message.ai button:active {
+.copy-button:active {
   transform: scale(0.95);
 }
 
-.message.ai button[title] {
+.copy-button.copied {
+  background-color: #00A86B;
+  color: white;
+}
+
+.copy-button[title] {
   position: relative;
 }
 
-.message.ai button[title]:hover::after {
+.copy-button[title]:hover::after {
   content: attr(title);
   position: absolute;
   bottom: 100%;
@@ -190,74 +218,120 @@
   color: white !important;
 }
 
-.message.ai .loader {
+.dancing-loader {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   padding: 4px;
 }
 
-.message.ai .loader span {
-  width: 8px;
-  height: 8px;
-  background-color: #e5e7eb;
+.dancing-loader span {
+  width: 6px;
+  height: 6px;
+  background-color: #00A86B;
   border-radius: 50%;
   display: inline-block;
+  animation: dancing 1s infinite;
 }
 
-.message.ai .loader span:nth-child(1) {
-  background-color: #1f2937;
+.dancing-loader span:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
-.message.ai .loader span:nth-child(2) {
-  background-color: #9ca3af;
+.dancing-loader span:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
-.message.ai .loader span:nth-child(3) {
-  background-color: #e5e7eb;
+@keyframes dancing {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-6px);
+  }
+  75% {
+    transform: translateY(6px);
+  }
 }
 
 .chat-input {
   padding: 20px;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   background-color: white;
   border-top: 1px solid #e5e7eb;
+  align-items: center;
 }
 
-.chat-input input {
+.chat-input textarea {
   flex-grow: 1;
-  padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 13px !important;
-  outline: none;
-  transition: border-color 0.2s;
-  color: #1f2937;
-}
-
-.chat-input input::placeholder {
-  color: #9ca3af;
-}
-
-.chat-input input:focus {
-  border-color: #00A86B;
-}
-
-.chat-input button {
-  padding: 8px 16px;
-  background-color: #00A86B;
-  color: white;
+  padding: 12px;
   border: none;
-  border-radius: 8px;
-  font-size: 13px !important;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  border-radius: 24px;
+  font-size: 14px !important;
+  outline: none;
+  transition: all 0.2s;
+  color: #1f2937;
+  background-color: #f8f9fa;
+  resize: none;
+  height: 60px;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
-.chat-input button:hover {
-  background-color: #008C5A;
+.chat-input textarea::placeholder {
+  color: #6B7280;
+}
+
+.chat-input textarea:focus {
+  background-color: #f3f4f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chat-input textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-input textarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 12px;
+}
+
+.chat-input textarea::-webkit-scrollbar-thumb {
+  background: #00A86B;
+  border-radius: 12px;
+}
+
+.chat-input textarea::-webkit-scrollbar-thumb:hover {
+  background: #008C5A;
+}
+
+.chat-input-button {
+  width: 40px;
+  height: 40px;
+  padding: 8px !important;
+  background-color: transparent !important;
+  color: #6B7280 !important;
+  border: none;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chat-input-button:hover {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+}
+
+.chat-input-button:last-child {
+  color: #00A86B !important;
+}
+
+.chat-input-button:last-child:hover {
+  background-color: #e6f7f1 !important;
 }
 
 /* Custom scrollbar */

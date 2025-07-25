@@ -464,7 +464,7 @@ const ManagerCandidates = () => {
       <div className="candidates-page">
         <style>{spinKeyframes}</style>
       <div className="candidates-header">
-        <h1>Shortlist Candidates</h1>
+        <h1>Candidate Search</h1>
         <button
           className="ai-job-description-btn"
           onClick={handleEnableAI}

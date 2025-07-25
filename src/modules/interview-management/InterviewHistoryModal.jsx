@@ -1320,7 +1320,13 @@ const resetScheduleFields = () => {
     try {
       const response = await interviewService.scheduleMeeting(requestBody);
       console.log('Schedule Meeting Response:', response);
-      if (response.data?.meetingEvent?.hangoutLink) {
+      if (!response.data?.meetingEvent) {
+        setModalType('error');
+        setModalMessage('Failed to schedule interview. No meeting data received.');
+        setShowModal(true);
+        return;
+      }
+      if (response.data?.meetingEvent) {
         const meetingLink = response.data.meetingEvent.hangoutLink;
         const startMeetingTimeStamp = new Date(response.data.meetingEvent.start.dateTime).toISOString().slice(0, 19);
         const endMeetingTimeStamp = new Date(response.data.meetingEvent.end.dateTime).toISOString().slice(0, 19);
@@ -1636,12 +1642,12 @@ const resetScheduleFields = () => {
                   Send questionnaire to Interviewer
                 </span>
               </div>
-              <button 
-                onClick={handleSchedule} 
-                className="schedule-button"
-                disabled={selectedInterviewers.length === 0 || !selectedSlot}
-                style={{ marginTop: '10px' }}
-              >
+  <button 
+    onClick={handleSchedule} 
+    className="schedule-button"
+    disabled={selectedInterviewers.length === 0 || !selectedSlot || isLoading}
+    style={{ marginTop: '10px' }}
+  >
                     <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
                     Schedule Interview
                   </button>

@@ -9,6 +9,12 @@ const CopyIcon = () => (
   </svg>
 );
 
+const TickIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20,6 9,17 4,12"></polyline>
+  </svg>
+);
+
 const AIChatOverlay = ({ 
   onClose,
   onJobDescriptionGenerated
@@ -16,8 +22,9 @@ const AIChatOverlay = ({
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState(null);
 
-  const handleCopyMessage = (message) => {
+  const handleCopyMessage = (message, messageIndex) => {
     let textToCopy = '';
     
     if (message.data) {
@@ -41,6 +48,13 @@ const AIChatOverlay = ({
 
     navigator.clipboard.writeText(textToCopy.trim()).then(() => {
       console.log('Summary and technical skills copied to clipboard');
+      // Set the copied state for this message
+      setCopiedMessageIndex(messageIndex);
+      
+      // Reset back to copy icon after 5 seconds
+      setTimeout(() => {
+        setCopiedMessageIndex(null);
+      }, 5000);
     }).catch(err => {
       console.error('Failed to copy message: ', err);
     });
@@ -152,7 +166,7 @@ const AIChatOverlay = ({
                     position: 'relative'
                   }}>
                     <button 
-                      onClick={() => handleCopyMessage(message)}
+                      onClick={() => handleCopyMessage(message, index)}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -160,11 +174,12 @@ const AIChatOverlay = ({
                         padding: '4px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        color: copiedMessageIndex === index ? '#00A86B' : 'inherit'
                       }}
-                      title="Copy message"
+                      title={copiedMessageIndex === index ? "Copied!" : "Copy message"}
                     >
-                      <CopyIcon />
+                      {copiedMessageIndex === index ? <TickIcon /> : <CopyIcon />}
                     </button>
                   </div>
                 )}
@@ -178,14 +193,53 @@ const AIChatOverlay = ({
           )}
         </div>
         <div className="chat-input">
+          <button className="input-action-btn plus-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Type your message here..."
+            placeholder="Ask anything"
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
-          <button onClick={handleSendMessage}>Send</button>
+          
+          {inputMessage.trim() && (
+            <button className="input-action-btn attach-btn" onClick={handleSendMessage} disabled={isLoading}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 12L8 4M8 4L5 7M8 4L11 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+          
+          <button className="input-action-btn tools-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 8H14M8 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+            </svg>
+            <span>Tools</span>
+          </button>
+          
+          <button className="input-action-btn mic-btn" disabled={isLoading}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1C7.17 1 6.5 1.67 6.5 2.5V8C6.5 8.83 7.17 9.5 8 9.5C8.83 9.5 9.5 8.83 9.5 8V2.5C9.5 1.67 8.83 1 8 1Z" fill="currentColor"/>
+              <path d="M4.5 6.5V8C4.5 10.21 6.29 12 8.5 12H7.5C9.71 12 11.5 10.21 11.5 8V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M8 12V15M8 15H6M8 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+          
+          <button className="input-action-btn audio-viz-btn" onClick={handleSendMessage} disabled={inputMessage.trim() === '' || isLoading}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="6" width="2" height="4" fill="currentColor" rx="1"/>
+              <rect x="4" y="4" width="2" height="8" fill="currentColor" rx="1"/>
+              <rect x="7" y="2" width="2" height="12" fill="currentColor" rx="1"/>
+              <rect x="10" y="5" width="2" height="6" fill="currentColor" rx="1"/>
+              <rect x="13" y="7" width="2" height="2" fill="currentColor" rx="1"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>

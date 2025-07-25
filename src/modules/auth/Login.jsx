@@ -9,9 +9,9 @@ import telusLogo from '../../assets/telus_logo.svg';
 import loginImg from '../../assets/login.png'
 import './Login.css';
 
-const CLIENT_ID = 'a3222460-4a99-013e-14ba-0d5aef30bcb1250692';
+const CLIENT_ID = '811abdb0-4b5e-013e-0f7b-7b334b1018e4176721';
 const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/callback`);
-const DOMAIN = 'https://telusrecruitai.onelogin.com';
+const DOMAIN = 'https://telus-sandbox.onelogin.com';
 const AUTHORIZATION_ENDPOINT = `${DOMAIN}/oidc/2/auth`;
 
 const Login = () => {

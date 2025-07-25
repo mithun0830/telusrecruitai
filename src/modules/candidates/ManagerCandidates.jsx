@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
@@ -7,6 +7,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import Loader from '../../components/Loader';
+import AIChatOverlay from '../../components/AIChatOverlay';
+import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -38,10 +41,6 @@ const scrollToRef = (ref) => {
   }
 };
 
-const isFilterSelected = (filters) => {
-  return Boolean(filters.aiSearch.trim());
-};
-
 const loaderStyle = {
   width: '50px',
   height: '50px',
@@ -71,6 +70,11 @@ const ManagerCandidates = () => {
   const [showShortlistModal, setShowShortlistModal] = useState(false);
   const [shortlistMessage, setShortlistMessage] = useState('');
   const [shortlistSuccess, setShortlistSuccess] = useState(false);
+  const [secondarySearch, setSecondarySearch] = useState('');
+  const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
+  const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
+  const [showAIPopup, setShowAIPopup] = useState(true);
+  const textareaRef = useRef(null);
 
   const spinKeyframes = `
     @keyframes spin {
@@ -78,6 +82,26 @@ const ManagerCandidates = () => {
       to { transform: rotate(360deg); }
     }
   `;
+
+  const adjustTextareaHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    adjustTextareaHeight();
+  }, [adjustTextareaHeight]);
+
+  const handleGenerateJobDescription = async (data) => {
+    if (data) {
+      // Store the complete response.data
+      setFullJobDescriptionData(data);
+      // Do not automatically set the summary in the search field
+      // adjustTextareaHeight();
+    }
+  };
 
   const handleCandidateLockToggle = async (candidate, currentUserId) => {
     try {
@@ -115,9 +139,6 @@ const ManagerCandidates = () => {
   const [isCompareViewOpen, setIsCompareViewOpen] = useState(false);
   const currentUserId = useSelector(state => state.auth.user?.id);
 
-  const handleAISearchClick = () => {
-    setErrorMessage('');
-  };
   const {
     filters,
     selectedCandidates,
@@ -309,27 +330,42 @@ const ManagerCandidates = () => {
   };
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isShortlisting, setIsShortlisting] = useState(false);
+
+  const setLoading = useCallback((isLoading) => {
+    document.documentElement.classList.toggle('loading', isLoading);
+    document.body.classList.toggle('loading', isLoading);
+  }, []);
+
+  useEffect(() => {
+    const isLoading = isGeneratingDescription || isSearching || isShortlisting;
+    setLoading(isLoading);
+    return () => setLoading(false);
+  }, [isGeneratingDescription, isSearching, isShortlisting, setLoading]);
   const [errorMessage, setErrorMessage] = useState('');
   const [currentSearchValue, setCurrentSearchValue] = useState('');
 
-  const handleSearchClick = async (e) => {
+  const handleSearchClick = async (e, searchValue = null) => {
     // Prevent any event bubbling
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    if (!isFilterSelected(filters)) {
-      setErrorMessage('Transform your job description into a talent magnet. Enter the details and watch our AI find your perfect match!');
+    const searchText = searchValue;
+    if (!searchText?.trim()) {
+      setErrorMessage('Please enter job requirements to search for candidates.');
       return;
     }
 
     setErrorMessage('');
-    setIsLoading(true);
+    setIsSearching(true);
     setExpandedCandidate(null); // Reset expanded view
     setSearchResults([]);
 
-    const searchString = filters.aiSearch.trim();
+    const searchString = searchText.trim();
     setCurrentSearchValue(searchString); // Save the search value
     console.log("searchString", searchString)
     try {
@@ -359,7 +395,7 @@ const ManagerCandidates = () => {
       console.error('Error during search:', error);
       setErrorMessage('An error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -379,6 +415,7 @@ const ManagerCandidates = () => {
   };
 
   const handleShortlistClick = async () => {
+    setIsShortlisting(true);
     const formattedCandidates = getFormattedCandidateData();
     if (formattedCandidates.length === 0) {
       setShortlistMessage('Please select at least one candidate to shortlist.');
@@ -389,7 +426,8 @@ const ManagerCandidates = () => {
 
     const payload = {
       managerId: currentUserId,
-      candidates: formattedCandidates
+      candidates: formattedCandidates,
+      jobDescription: fullJobDescriptionData
     };
 
     try {
@@ -405,53 +443,93 @@ const ManagerCandidates = () => {
       console.error('Error shortlisting candidates:', error);
       setShortlistMessage('An error occurred while shortlisting candidates. Please try again.');
       setShortlistSuccess(false);
+    } finally {
+      setIsShortlisting(false);
+      setShowShortlistModal(true);
     }
-    setShowShortlistModal(true);
+  };
+
+  const handleEnableAI = () => {
+    setShowAIPopup(false);
+    setShowAIChatOverlay(true);
+  };
+
+  const handleMaybeLater = () => {
+    setShowAIPopup(false);
   };
 
   return (
-    <div className="candidates-page">
-      <style>{spinKeyframes}</style>
+    <>
+      {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
+      <div className="candidates-page">
+        <style>{spinKeyframes}</style>
       <div className="candidates-header">
         <h1>Shortlist Candidates</h1>
+        <button
+          className="ai-job-description-btn"
+          onClick={handleEnableAI}
+          aria-label="Generate AI Job Description"
+        >
+          <span style={{ fontSize: '20px' }}>✨</span>
+          Generate AI Job Description
+        </button>
       </div>
       <div className="candidates-content">
         <div className="filters-section horizontal">
-          <div className="filters-container">
-            <div className="ai-search-container">
-              <input
-                type="text"
-                placeholder="Search Candidate: E.g., Data Engineers with 4+ years..."
-                className="ai-search-input"
-                value={filters.aiSearch}
-                onChange={(e) => handleFilterChange('aiSearch', e.target.value)}
-                onFocus={() => setErrorMessage('')}
-              />
+            <div className="filters-container" style={{ backgroundColor: '#fff', border: '2px solid #059669' }}>
+              <div className="ai-search-container">
+                <textarea
+                  ref={textareaRef}
+                  placeholder="Enter job requirements to search for candidates..."
+                  className="ai-search-input ai-generated-textarea"
+                  value={secondarySearch}
+                  onChange={(e) => {
+                    setSecondarySearch(e.target.value);
+                    adjustTextareaHeight();
+                  }}
+                  onFocus={() => setErrorMessage('')}
+                />
+              </div>
+              <div className="search-controls">
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
+                >
+                  <div className="external-search-checkbox">
+                    <input
+                      type="checkbox"
+                      id="externalSearch"
+                      checked={filters.externalSearch || false}
+                      onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
+                    />
+                    <label htmlFor="externalSearch"></label>
+                  </div>
+                </OverlayTrigger>
+                <button
+                  className="search-button"
+                  onClick={() => handleSearchClick(null, secondarySearch)}
+                  aria-label="Search candidates"
+                  disabled={isSearching}
+                  style={{
+                    backgroundColor: '#059669',
+                    padding: '10px 24px',
+                    fontSize: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  {isSearching ? (
+                    <span>Searching...</span>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: '20px' }}>🔍</span>
+                      Search
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <div className="search-controls">
-              <OverlayTrigger
-                placement="top"
-                overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
-              >
-                <div className="external-search-checkbox">
-                  <input
-                    type="checkbox"
-                    id="externalSearch"
-                    checked={filters.externalSearch || false}
-                    onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
-                  />
-                  <label htmlFor="externalSearch"></label>
-                </div>
-              </OverlayTrigger>
-              <button
-                className="search-button"
-                onClick={handleSearchClick}
-                aria-label="Search candidates"
-              >
-                Search
-              </button>
-            </div>
-          </div>
           {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
         <div className={`candidates-container ${isCompareViewOpen ? 'with-compare-view' : ''}`}>
@@ -463,12 +541,7 @@ const ManagerCandidates = () => {
                 </div>
               </div>
               <div className="candidates-table-container">
-                {isLoading ? (
-                  <div style={loaderContainerStyle}>
-                    <div style={loaderStyle}></div>
-                    <span style={loaderTextStyle}>Searching for candidates...</span>
-                  </div>
-                ) : searchResults.length > 0 ? (
+                {searchResults.length > 0 ? (
                   <div className="candidates-grid">
                     {searchResults.map((candidate) => (
                       <div key={candidate.resume.id} className="candidate-card">
@@ -586,9 +659,9 @@ const ManagerCandidates = () => {
                   <button
                     className="btn-action secondary"
                     onClick={handleShortlistClick}
-                    disabled={searchResults.length === 0}
+                    disabled={searchResults.length === 0 || isShortlisting}
                   >
-                    Shortlist
+                    {isShortlisting ? 'Shortlisting...' : 'Shortlist'}
                   </button>
                 </div>
               </div>
@@ -604,34 +677,6 @@ const ManagerCandidates = () => {
           )}
         </div>
       </div>
-
-      {/* <Modal
-        show={showShortlistModal}
-        onHide={() => setShowShortlistModal(false)}
-        centered
-        backdrop="static"
-        keyboard={false}
-        className="shortlist-modal"
-      >
-        <Modal.Body className="text-center p-5">
-          <div className="shortlist-icon-wrapper mb-4">
-            <FontAwesomeIcon
-              icon={shortlistSuccess ? faCheck : faTimesCircle}
-              className={`shortlist-icon ${shortlistSuccess ? 'text-success' : 'text-danger'}`}
-            />
-          </div>
-          <h4 className="shortlist-title mb-3">{shortlistSuccess ? 'Success' : 'Operation Failed'}</h4>
-          <p className="shortlist-message mb-4">{shortlistMessage}</p>
-          <Button
-            variant={shortlistSuccess ? 'success' : 'danger'}
-            onClick={() => setShowShortlistModal(false)}
-            className="continue-button"
-          >
-            Close
-          </Button>
-        </Modal.Body>
-      </Modal> */}
-
       <Modal
         show={showShortlistModal}
         onHide={() => setShowShortlistModal(false)}
@@ -660,7 +705,21 @@ const ManagerCandidates = () => {
           </Button>
         </Modal.Body>
       </Modal>
+      {showAIChatOverlay && (
+        <AIChatOverlay 
+          onClose={() => setShowAIChatOverlay(false)}
+          onJobDescriptionGenerated={handleGenerateJobDescription}
+        />
+      )}
+      {showAIPopup && (
+        <AIJobDescriptionPopup
+          onClose={() => setShowAIPopup(false)}
+          onEnable={handleEnableAI}
+          onMaybeLater={handleMaybeLater}
+        />
+      )}
     </div>
+    </>
   );
 };
 

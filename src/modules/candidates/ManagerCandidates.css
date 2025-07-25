@@ -25,6 +25,36 @@
   background-color: var(--telus-white);
   border-bottom: 2px solid var(--telus-light-purple);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+}
+
+.candidates-header .ai-job-description-btn {
+  background-color: var(--telus-purple);
+  color: var(--telus-white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
+.candidates-header .ai-job-description-btn:hover {
+  background-color: #047857;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+}
+
+.candidates-header .ai-job-description-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
 .telus-logo {
@@ -98,6 +128,36 @@
   box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
+.ai-job-description-btn {
+  background-color: var(--telus-purple);
+  color: var(--telus-white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+  margin-left: 10px;
+}
+
+.ai-job-description-btn:hover {
+  background-color: #047857;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+}
+
+.ai-job-description-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
 .search-controls {
   display: flex;
   align-items: center;
@@ -160,13 +220,15 @@
   flex: 1;
   display: flex;
   min-width: 300px;
+  max-height: 150px;
+  overflow: hidden;
 }
 
 .ai-search-input {
   width: 100%;
   box-sizing: border-box;
-  height: 38px;
-  padding: 8px 12px;
+  height: 32px;
+  padding: 6px 12px;
 }
 
 .ai-search-input:focus {
@@ -205,13 +267,52 @@
 
 .ai-search-input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 0;
   font-size: 14px;
   transition: all 0.3s ease;
   background-color: var(--telus-white);
   color: var(--telus-dark-gray);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  height: 32px;
+}
+
+.ai-generated-textarea {
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  height: 150px;
+  max-height: 150px;
+  resize: none;
+  overflow-y: auto;
+}
+
+.ai-generated-textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+.ai-search-input::-webkit-scrollbar {
+  display: none;
 }
 
 .ai-search-input::placeholder {
@@ -227,6 +328,17 @@
 
 .ai-search-input:hover {
   background-color: transparent;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.ai-search-input::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ai-search-input {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 .candidates-container {

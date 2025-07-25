@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
-import { candidateService, interviewService } from '../../services/api';
+import { candidateService, interviewService, notificationService } from '../../services/api';
 import Loader from '../../components/Loader';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle, faRobot } from '@fortawesome/free-solid-svg-icons';
 
@@ -32,17 +32,24 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
     onClose(success, meetingLink);
   };
 
-  const resetScheduleFields = () => {
-    setSelectedRound('');
-    setSelectedInterviewer('');
-    setSelectedDateTime(new Date());
-    setDuration('30');
-    setShowSlots(false);
-    setAvailableSlots([]);
-    setSelectedSlot(null);
-  };
+const resetScheduleFields = () => {
+  setSelectedRound('');
+  setSelectedInterviewers([]);
+  setSelectedDateTime(new Date());
+  setDuration('30');
+  setShowSlots(false);
+  setAvailableSlots([]);
+  setSelectedSlot(null);
+  setIsDropdownOpen(false);
+};
   const [selectedRound, setSelectedRound] = useState('');
-  const [selectedInterviewer, setSelectedInterviewer] = useState('');
+  const [selectedInterviewers, setSelectedInterviewers] = useState([]);
+  
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedInterviewers([]);
+    }
+  }, [isOpen]);
   const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [duration, setDuration] = useState('30');
@@ -54,25 +61,41 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
-  const [interviewers, setInterviewers] = useState([]); // Array of {id, email} objects
+  const [interviewers, setInterviewers] = useState([]);
   const [loadingInterviewers, setLoadingInterviewers] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [sendQuestionnaire, setSendQuestionnaire] = useState(false);
+  const multiselectRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setIsLoading(loadingInterviewers);
   }, [loadingInterviewers]);
 
   useEffect(() => {
-    if (isOpen && candidateHistory && candidateHistory.resumeId) {
-      fetchInterviewers(candidateHistory.resumeId);
+    if (isOpen && candidateHistory && candidateHistory.jobDescription) {
+      fetchInterviewers(candidateHistory.jobDescription);
     }
   }, [isOpen, candidateHistory]);
 
-  const fetchInterviewers = async (resumeId) => {
+  const fetchInterviewers = async (jobDescription) => {
     setLoadingInterviewers(true);
     try {
-      const response = await candidateService.getMatchingInterviewers(resumeId);
+      const response = await candidateService.getMatchingInterviewers(jobDescription?.summary+','+jobDepartment?.technicalSkills);
       if (response.success && Array.isArray(response.data)) {
-        setInterviewers(response.data); // Store full interviewer objects
+        setInterviewers(response.data);
       } else {
         throw new Error('Failed to fetch interviewers');
       }
@@ -110,19 +133,22 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   };
 
   const handleFindSlots = async () => {
-    if (!selectedInterviewer || !selectedDateTime) {
+    if (selectedInterviewers.length === 0 || !selectedDateTime) {
       setModalType('error');
-      setModalMessage('Please select an interviewer and a date/time');
+      setModalMessage('Please select at least one interviewer and a date/time');
       setShowModal(true);
       return;
     }
     setIsLoading(true);
+    setAvailableSlots([]); // Clear existing slots
+    setShowSlots(false); // Hide slots section
+    setSelectedSlot(null); // Clear selected slot
 
     console.log('Candidate Email:', email);
     console.log('Full candidateHistory:', candidateHistory);
 
     const requestBody = {
-      email: selectedInterviewer,
+      emails: selectedInterviewers,
       dateTime: selectedDateTime.toISOString(),
       duration: parseInt(duration),
       title: "Interview",
@@ -146,7 +172,6 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
         } else {
           setAvailableSlots(formattedSlots);
           setShowSlots(true);
-          setSelectedSlot(null);
         }
       } else {
         throw new Error('Invalid response format');
@@ -166,9 +191,9 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   };
 
   const handleSchedule = async () => {
-    if (!selectedRound || !selectedInterviewer || !selectedDateTime || !selectedSlot) {
+    if (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot) {
       setModalType('error');
-      setModalMessage('Please select a round, interviewer, date/time, and a time slot');
+      setModalMessage('Please select a round, at least one interviewer, date/time, and a time slot');
       setShowModal(true);
       return;
     }
@@ -203,7 +228,7 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
       duration: parseInt(duration),
       title: "Interview",
       description: "Candidate Interview",
-      attendees: [email, selectedInterviewer],
+      attendees: [email, ...selectedInterviewers],
       timeZone: "Asia/Kolkata"
     };
 
@@ -219,16 +244,41 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
         const updateStatusBody = {
           candidateId: candidateHistory.candidateId,
           roundId: parseInt(selectedRound), // Ensure roundId is sent as a number
-          interviewerId: interviewers.find(i => i.email === selectedInterviewer)?.interviewerId,
-          interviewerEmail: selectedInterviewer,
+          interviewers: selectedInterviewers.map(email => ({
+            interviewerId: interviewers.find(i => i.email === email)?.interviewerId,
+            interviewerEmail: email
+          })),
           status: "In progress",
           meetingLink: meetingLink,
           startMeetingTimeStamp: startMeetingTimeStamp,
-          endMeetingTimeStamp: endMeetingTimeStamp
+          endMeetingTimeStamp: endMeetingTimeStamp,
+          feedback: ""
         };
 
         try {
           await interviewService.updateInterviewStatus(updateStatusBody);
+          console.log('sendQuestionnaire', sendQuestionnaire);
+          // Send questionnaire if checkbox is checked
+          if (sendQuestionnaire) {
+            try {
+              // First generate questions based on job description
+              const questionsResponse = await candidateService.generateQuestions(candidateHistory?.jobDescription?.summary+','+candidateHistory?.jobDescription?.technicalSkills || "");
+              
+              // Then send the notification with generated questions
+              await notificationService.process({
+                eventType: "InterviewQuestions",
+                data: {
+                  candidateName: candidateHistory.candidateName,
+                  managerEmails: selectedInterviewers,
+                  position: jobTitle,
+                  interviewDate: startMeetingTimeStamp,
+                  questions: questionsResponse.data || []
+                }
+              });
+            } catch (error) {
+              console.error("Error sending questionnaire:", error);
+            }
+          }
           
           // Refresh the interview management screen
           onUpdateSuccess();
@@ -274,8 +324,8 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
   return (
     isOpen && candidateHistory && (
       <>
-        {(isLoading || loadingInterviewers) && <Loader />}
-      <div className="modal-overlay">
+        <Loader isVisible={isLoading || loadingInterviewers} />
+        <div className="modal-overlay">
         <div className="modal-content">
           <div className="modal-left">
             <h2>Interview Details</h2>
@@ -307,18 +357,59 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
               <label>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                   <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px', color: '#66CC00' }} />
-                  Select Interviewer:
+                  Select Interviewers:
                 </div>
-                <select
-                  value={selectedInterviewer}
-                  onChange={(e) => setSelectedInterviewer(e.target.value)}
-                  disabled={loadingInterviewers}
-                >
-                  <option value="">Select an interviewer</option>
-                  {interviewers.map((interviewer, index) => (
-                    <option key={index} value={interviewer.email}>{interviewer.email}</option>
-                  ))}
-                </select>
+                <div className="custom-multiselect" ref={multiselectRef}>
+                  <div
+                    className="multiselect-selected"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  >
+                    {selectedInterviewers.length === 0
+                      ? "Select interviewers"
+                      : `${selectedInterviewers.length} interviewer(s) selected`}
+                  </div>
+                  {isDropdownOpen && (
+                    <div className="multiselect-options">
+                      {interviewers.map((interviewer, index) => (
+                        <div key={index} className="multiselect-option" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                              type="checkbox"
+                              value={interviewer.email}
+                              checked={selectedInterviewers.includes(interviewer.email)}
+                              onChange={(e) => {
+                                const email = e.target.value;
+                                setSelectedInterviewers((prev) =>
+                                  e.target.checked
+                                    ? [...prev, email]
+                                    : prev.filter((i) => i !== email)
+                                );
+                              }}
+                            />
+                            <span>{interviewer.email}</span>
+                          </div>
+                          <OverlayTrigger
+                            placement="right"
+                            overlay={
+                              <Tooltip id={`tooltip-${index}`}>
+                                <div style={{ textAlign: 'left' }}>
+                                  <div><strong>Name:</strong> {interviewer.name || 'N/A'}</div>
+                                  <div><strong>Email:</strong> {interviewer.email}</div>
+                                  <div><strong>Experience:</strong> {interviewer.experienceYears+" years" || 'N/A'}</div>
+                                  <div><strong>Skills:</strong> {interviewer.technicalExpertise?.join(', ') || 'N/A'}</div>
+                                  <div><strong>Match Score:</strong> {interviewer.matchScore || 'N/A'}</div>
+                                  <div><strong>Specializations:</strong> {interviewer.specializations?.join(', ') || 'N/A'}</div>
+                                </div>
+                              </Tooltip>
+                            }
+                          >
+                            <span style={{ cursor: 'help' }}>ℹ️</span>
+                          </OverlayTrigger>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </label>
               {loadingInterviewers && <p>Loading interviewers...</p>}
               <div className="datetime-duration-container">
@@ -407,7 +498,13 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                     <option value="60">60 mins</option>
                   </select>
                 </div>
-                <button className="find-slots-button" onClick={handleFindSlots}>Find Slots</button>
+                <button 
+                  className="find-slots-button" 
+                  onClick={handleFindSlots}
+                  disabled={selectedInterviewers.length === 0}
+                >
+                  Find Slots
+                </button>
               </div>
               {showSlots && (
                 <div className="available-slots">
@@ -422,7 +519,29 @@ const InterviewHistoryModal = ({ isOpen, onClose, candidateHistory, interviewRou
                   ))}
                 </div>
               )}
-                  <button onClick={handleSchedule} className="schedule-button">
+              <div style={{ width: '100%', display: 'flex', alignItems: 'center', marginBottom: '5px' ,marginTop: '10px'  }}>
+                <input
+                  type="checkbox"
+                  checked={sendQuestionnaire}
+                  onChange={(e) => setSendQuestionnaire(e.target.checked)}
+                  style={{ 
+                    width: '16px', 
+                    height: '16px', 
+                    cursor: 'pointer', 
+                    marginRight: '8px',
+                    accentColor: '#059669'
+                  }}
+                />
+                <span style={{ cursor: 'pointer' }} onClick={() => setSendQuestionnaire(!sendQuestionnaire)}>
+                  Send questionnaire to Interviewer
+                </span>
+              </div>
+              <button 
+                onClick={handleSchedule} 
+                className="schedule-button"
+                disabled={selectedInterviewers.length === 0 || !selectedSlot}
+                style={{ marginTop: '10px' }}
+              >
                     <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
                     Schedule Interview
                   </button>

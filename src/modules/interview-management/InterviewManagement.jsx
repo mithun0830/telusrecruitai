@@ -186,7 +186,8 @@ const InterviewManagement = () => {
         currentRoundId: candidate.currentRoundId,
         resumeId: candidate.resumeId || '',
         status: candidate.status.toUpperCase(),
-        roundId: roundId
+        roundId: roundId,
+        jobDescription: candidate.jobDescription || ''
       });
       setShowOverlay(true);
     } else if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED') {
@@ -200,7 +201,8 @@ const InterviewManagement = () => {
         currentRoundId: candidate.currentRoundId,
         resumeId: candidate.resumeId || '',
         status: candidate.status.toUpperCase(),
-        roundId: roundId
+        roundId: roundId,
+        jobDescription: candidate.jobDescription || ''
       });
       setIsModalOpen(true);
     }

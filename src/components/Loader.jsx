@@ -1,7 +1,9 @@
 import React from 'react';
 import './Loader.css';
 
-const Loader = () => {
+const Loader = ({ isVisible }) => {
+  if (!isVisible) return null;
+  
   return (
     <div className="loader-container">
       <div className="loader">

@@ -369,15 +369,27 @@ export const interviewService = {
 // AI Feedback service for Google Drive integration
 export const aiFeedbackService = {
   // Check if candidate folder exists in Google Drive
-  checkCandidateFolder: async (candidateId) => {
-    return await aiFeedbackApi.get(`/check-candidate-folder/${candidateId}`);
+  checkCandidateFolder: async (candidateEmail) => {
+    return await aiFeedbackApi.get(`/check-candidate-folder/${candidateEmail}`);
   },
 
   // Generate feedback for candidate from Google Drive files
-  generateFeedbackForCandidate: async (candidateId, metadata = {}) => {
+  generateFeedbackForCandidate: async (candidateEmail, metadata = {}) => {
     return await aiFeedbackApi.post('/generate-feedback-for-candidate', {
-      candidateId,
+      candidateEmail,
       metadata
+    });
+  },
+
+  // Get questions asked by interviewer for candidate
+  getQuestionsAsked: async (candidateEmail) => {
+    return await aiFeedbackApi.post(`/get-questions-asked/${candidateEmail}`);
+  },
+
+  // Get JD relevance analysis for candidate
+  getJdRelevance: async (candidateEmail) => {
+    return await aiFeedbackApi.post('/get-jd-relevance', {
+      candidateEmail
     });
   },
 

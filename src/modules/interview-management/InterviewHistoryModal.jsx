@@ -68,6 +68,21 @@ const resetScheduleFields = () => {
   // Store feedback per candidate ID to persist across modal opens/closes
   const [candidateFeedbackCache, setCandidateFeedbackCache] = useState({});
   
+  // Questions Asked related state
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [questionsData, setQuestionsData] = useState(null);
+  const [showQuestions, setShowQuestions] = useState(false);
+  const [questionsCache, setQuestionsCache] = useState({});
+  
+  // JD Relevance related state
+  const [isLoadingRelevance, setIsLoadingRelevance] = useState(false);
+  const [relevanceData, setRelevanceData] = useState(null);
+  const [showRelevance, setShowRelevance] = useState(false);
+  const [relevanceCache, setRelevanceCache] = useState({});
+  
+  // Track if AI feedback has been generated at least once for this candidate
+  const [hasGeneratedFeedback, setHasGeneratedFeedback] = useState(false);
+  
   // Polling related state
   const [isPolling, setIsPolling] = useState(false);
   const [candidateFolderExists, setCandidateFolderExists] = useState(false);
@@ -78,27 +93,50 @@ const resetScheduleFields = () => {
     if (isOpen) {
       setSelectedInterviewers([]);
       
+      // Use email as the primary identifier for caching and polling
+      const candidateEmail = candidateHistory?.email;
+      
       // Load cached feedback for this candidate if it exists
-      if (candidateHistory?.candidateId && candidateFeedbackCache[candidateHistory.candidateId]) {
-        setAiFeedback(candidateFeedbackCache[candidateHistory.candidateId]);
+      if (candidateEmail && candidateFeedbackCache[candidateEmail]) {
+        setAiFeedback(candidateFeedbackCache[candidateEmail]);
         setShowAiFeedback(false); // Start collapsed
+        setHasGeneratedFeedback(true); // Mark as generated if cached feedback exists
       } else {
         // Clear AI feedback when modal opens for a different candidate with no cache
         setAiFeedback(null);
         setShowAiFeedback(false);
+        setHasGeneratedFeedback(false);
+      }
+
+      // Load cached questions for this candidate if it exists
+      if (candidateEmail && questionsCache[candidateEmail]) {
+        setQuestionsData(questionsCache[candidateEmail]);
+        setShowQuestions(false); // Start collapsed
+      } else {
+        setQuestionsData(null);
+        setShowQuestions(false);
+      }
+
+      // Load cached relevance data for this candidate if it exists
+      if (candidateEmail && relevanceCache[candidateEmail]) {
+        setRelevanceData(relevanceCache[candidateEmail]);
+        setShowRelevance(false); // Start collapsed
+      } else {
+        setRelevanceData(null);
+        setShowRelevance(false);
       }
 
       // Check if we've already found the folder for this candidate
-      if (candidateHistory?.candidateId && hasStoppedPolling.has(candidateHistory.candidateId)) {
+      if (candidateEmail && hasStoppedPolling.has(candidateEmail)) {
         // We've already found the folder for this candidate, enable the button
-        console.log('✅ Folder already found for candidate:', candidateHistory.candidateId);
+        console.log('✅ Folder already found for candidate email:', candidateEmail);
         setCandidateFolderExists(true);
         setIsPolling(false);
-      } else if (candidateHistory?.candidateId) {
+      } else if (candidateEmail) {
         // Start polling for candidate folder if not already found
-        console.log('🔄 Starting fresh polling for candidate:', candidateHistory.candidateId);
+        console.log('🔄 Starting fresh polling for candidate email:', candidateEmail);
         setCandidateFolderExists(false);
-        startPollingForCandidateFolder(candidateHistory.candidateId);
+        startPollingForCandidateFolder(candidateEmail);
       }
     } else {
       // Clean up polling when modal closes
@@ -109,7 +147,7 @@ const resetScheduleFields = () => {
     return () => {
       stopPolling();
     };
-  }, [isOpen, candidateHistory?.candidateId, candidateFeedbackCache, hasStoppedPolling]);
+  }, [isOpen, candidateHistory?.email, candidateFeedbackCache, hasStoppedPolling]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -233,9 +271,11 @@ const resetScheduleFields = () => {
 
   // AI Feedback generation function
   const handleGenerateAIFeedback = async () => {
-    if (!candidateHistory.candidateId) {
+    const candidateEmail = candidateHistory?.email;
+    
+    if (!candidateEmail) {
       setModalType('error');
-      setModalMessage('Candidate ID not found. Cannot generate feedback.');
+      setModalMessage('Candidate email not found. Cannot generate feedback.');
       setShowModal(true);
       return;
     }
@@ -248,21 +288,25 @@ const resetScheduleFields = () => {
     }
 
     setIsGeneratingFeedback(true);
-    console.log('🤖 Generating AI feedback for candidate:', candidateHistory.candidateId);
+    console.log('🤖 Generating AI feedback for candidate email:', candidateEmail);
 
     try {
-      const response = await aiFeedbackService.generateFeedbackForCandidate(candidateHistory.candidateId);
+      const response = await aiFeedbackService.generateFeedbackForCandidate(candidateEmail);
       console.log('🤖 AI Feedback Response:', response);
 
       if (response.success && response.data) {
-        // Cache the feedback for this candidate
+        // Cache the feedback for this candidate using email
         setCandidateFeedbackCache(prev => ({
           ...prev,
-          [candidateHistory.candidateId]: response.data
+          [candidateEmail]: response.data
         }));
         
         setAiFeedback(response.data);
         setShowAiFeedback(true);
+        
+        // Mark that feedback has been generated for this candidate
+        setHasGeneratedFeedback(true);
+        
         setModalType('success');
         setModalMessage('AI feedback generated successfully!');
         setShowModal(true);
@@ -276,6 +320,92 @@ const resetScheduleFields = () => {
       setShowModal(true);
     } finally {
       setIsGeneratingFeedback(false);
+    }
+  };
+
+  // Questions Asked function
+  const handleGetQuestionsAsked = async () => {
+    const candidateEmail = candidateHistory?.email;
+    
+    if (!candidateEmail) {
+      setModalType('error');
+      setModalMessage('Candidate email not found. Cannot get questions.');
+      setShowModal(true);
+      return;
+    }
+
+    setIsLoadingQuestions(true);
+    console.log('❓ Getting questions asked for candidate email:', candidateEmail);
+
+    try {
+      const response = await aiFeedbackService.getQuestionsAsked(candidateEmail);
+      console.log('❓ Questions Response:', response);
+
+      if (response.success && response.data) {
+        // Cache the questions for this candidate using email
+        setQuestionsCache(prev => ({
+          ...prev,
+          [candidateEmail]: response.data
+        }));
+        
+        setQuestionsData(response.data);
+        setShowQuestions(true);
+        setModalType('success');
+        setModalMessage('Questions retrieved successfully!');
+        setShowModal(true);
+      } else {
+        throw new Error(response.message || 'Failed to get questions');
+      }
+    } catch (error) {
+      console.error('❌ Error getting questions:', error);
+      setModalType('error');
+      setModalMessage(error.message || 'Failed to get questions. Please try again.');
+      setShowModal(true);
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
+
+  // JD Relevance function
+  const handleGetJdRelevance = async () => {
+    const candidateEmail = candidateHistory?.email;
+    
+    if (!candidateEmail) {
+      setModalType('error');
+      setModalMessage('Candidate email not found. Cannot get JD relevance.');
+      setShowModal(true);
+      return;
+    }
+
+    setIsLoadingRelevance(true);
+    console.log('📊 Getting JD relevance for candidate email:', candidateEmail);
+
+    try {
+      const response = await aiFeedbackService.getJdRelevance(candidateEmail);
+      console.log('📊 JD Relevance Response:', response);
+
+      if (response.success && response.data) {
+        // Cache the relevance data for this candidate using email
+        setRelevanceCache(prev => ({
+          ...prev,
+          [candidateEmail]: response.data
+        }));
+        
+        setRelevanceData(response.data);
+        setShowRelevance(true);
+        setModalType('success');
+        setModalMessage('JD relevance analysis retrieved successfully!');
+        setShowModal(true);
+      } else {
+        throw new Error(response.message || 'Failed to get JD relevance');
+      }
+    } catch (error) {
+      console.error('❌ Error getting JD relevance:', error);
+      setModalType('error');
+      setModalMessage(error.message || 'Failed to get JD relevance. Please try again.');
+      setShowModal(true);
+    } finally {
+      setIsLoadingRelevance(false);
     }
   };
 
@@ -350,6 +480,482 @@ const resetScheduleFields = () => {
         .join('; ');
     }
     return String(value);
+  };
+
+  // Function to render questions in a segregated format
+  const renderQuestionsData = (questionsData) => {
+    console.log('🎨 Rendering questions data:', questionsData);
+    
+    if (!questionsData) {
+      return <div>No questions available</div>;
+    }
+
+    // Handle different response formats from the API
+    let questionsArray = null;
+    
+    // If questionsData is an object with a nested structure, extract the actual questions
+    if (typeof questionsData === 'object' && questionsData !== null) {
+      // Check if it has questionsAsked array (new format)
+      if (questionsData.questionsAsked && Array.isArray(questionsData.questionsAsked)) {
+        questionsArray = questionsData.questionsAsked;
+        console.log('📝 Found questionsAsked array:', questionsArray);
+      }
+      // Check if it's wrapped in response structure
+      else if (questionsData.questions) {
+        questionsArray = questionsData.questions;
+      } else if (questionsData.data) {
+        questionsArray = questionsData.data;
+      } else if (questionsData.result) {
+        questionsArray = questionsData.result;
+      }
+    }
+
+    // If we found a questions array, render it directly
+    if (questionsArray && Array.isArray(questionsArray)) {
+      console.log('📝 Rendering questions array with', questionsArray.length, 'questions');
+      
+      return (
+        <div style={{ fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif' }}>
+          {questionsArray.map((questionObj, index) => {
+            const questionText = questionObj.question || '';
+            const category = questionObj.category || 'general';
+            const difficulty = questionObj.difficulty || 'medium';
+            const timestamp = questionObj.timestamp_context || '';
+
+            // Color coding for categories
+            const getCategoryColor = (cat) => {
+              switch (cat.toLowerCase()) {
+                case 'technical': return '#3b82f6';
+                case 'behavioral': return '#8b5cf6';
+                case 'experience': return '#10b981';
+                case 'general': return '#6b7280';
+                default: return '#6b7280';
+              }
+            };
+
+            // Color coding for difficulty
+            const getDifficultyColor = (diff) => {
+              switch (diff.toLowerCase()) {
+                case 'easy': return '#10b981';
+                case 'medium': return '#f59e0b';
+                case 'hard': return '#ef4444';
+                default: return '#f59e0b';
+              }
+            };
+
+            return (
+              <div
+                key={index}
+                style={{
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '16px',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                  border: `2px solid ${getCategoryColor(category)}20`
+                }}
+              >
+                {/* Question Header */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '12px',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ 
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#1f2937'
+                    }}>
+                      Q{index + 1}
+                    </span>
+                    <span style={{
+                      backgroundColor: getCategoryColor(category),
+                      color: 'white',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'capitalize'
+                    }}>
+                      {category}
+                    </span>
+                    <span style={{
+                      backgroundColor: getDifficultyColor(difficulty),
+                      color: 'white',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'capitalize'
+                    }}>
+                      {difficulty}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Question Text */}
+                <div style={{
+                  background: 'rgba(255,255,255,0.8)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  marginBottom: timestamp ? '12px' : '0'
+                }}>
+                  <p style={{
+                    margin: 0,
+                    lineHeight: '1.6',
+                    fontSize: '15px',
+                    color: '#374151',
+                    fontWeight: '500'
+                  }}>
+                    "{questionText}"
+                  </p>
+                </div>
+
+                {/* Timestamp Context */}
+                {timestamp && (
+                  <div style={{
+                    background: 'rgba(59, 130, 246, 0.1)',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    borderLeft: '3px solid #3b82f6'
+                  }}>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '13px',
+                      color: '#1e40af',
+                      fontStyle: 'italic'
+                    }}>
+                      <strong>Context:</strong> {timestamp}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // Fallback to string parsing for old format
+    let questionsText = questionsData;
+    
+    // If it's still a string, try to parse it as JSON
+    if (typeof questionsText === 'string') {
+      try {
+        questionsText = JSON.parse(questionsText);
+        console.log('📝 Parsed JSON questions:', questionsText);
+      } catch (e) {
+        // If parsing fails, treat as plain text and try to parse manually
+        console.log('📝 Treating as plain text, attempting manual parsing');
+        
+        // Use a more robust regex to parse the questions format
+        const questionRegex = /Question:\s*([^;]+);\s*Category:\s*([^;]+);\s*Difficulty:\s*([^;]+);\s*Timestamp context:\s*([^,]*?)(?:,\s*Question:|$)/g;
+        
+        // If the above doesn't work, try a simpler approach by splitting on ", Question:"
+        if (!questionRegex.test(questionsText)) {
+          console.log('📝 Regex failed, trying split approach');
+          const questionParts = questionsText.split(', Question:');
+          
+          // Add "Question:" back to the beginning of each part (except the first)
+          const formattedParts = questionParts.map((part, index) => {
+            if (index === 0) {
+              return part; // First part already has "Question:"
+            } else {
+              return 'Question: ' + part; // Add "Question:" back to other parts
+            }
+          });
+          
+          console.log('📝 Split parts:', formattedParts);
+          
+          const questions = [];
+          formattedParts.forEach(part => {
+            // Parse each part using a simpler regex
+            const match = part.match(/Question:\s*([^;]+);\s*Category:\s*([^;]+);\s*Difficulty:\s*([^;]+);\s*Timestamp context:\s*(.+)/);
+            if (match) {
+              questions.push({
+                text: match[1]?.trim() || '',
+                category: match[2]?.trim() || 'general',
+                difficulty: match[3]?.trim() || 'medium',
+                timestamp: match[4]?.trim() || ''
+              });
+            }
+          });
+          
+          console.log('📝 Parsed questions from split:', questions);
+          
+          if (questions.length > 0) {
+            return (
+              <div style={{ fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif' }}>
+                {questions.map((question, index) => {
+                  const { text: questionText, category, difficulty, timestamp } = question;
+
+                  // Color coding for categories
+                  const getCategoryColor = (cat) => {
+                    switch (cat.toLowerCase()) {
+                      case 'technical': return '#3b82f6';
+                      case 'behavioral': return '#8b5cf6';
+                      case 'experience': return '#10b981';
+                      case 'general': return '#6b7280';
+                      default: return '#6b7280';
+                    }
+                  };
+
+                  // Color coding for difficulty
+                  const getDifficultyColor = (diff) => {
+                    switch (diff.toLowerCase()) {
+                      case 'easy': return '#10b981';
+                      case 'medium': return '#f59e0b';
+                      case 'hard': return '#ef4444';
+                      default: return '#f59e0b';
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        marginBottom: '16px',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                        border: `2px solid ${getCategoryColor(category)}20`
+                      }}
+                    >
+                      {/* Question Header */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '12px',
+                        flexWrap: 'wrap',
+                        gap: '8px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ 
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#1f2937'
+                          }}>
+                            Q{index + 1}
+                          </span>
+                          <span style={{
+                            backgroundColor: getCategoryColor(category),
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            textTransform: 'capitalize'
+                          }}>
+                            {category}
+                          </span>
+                          <span style={{
+                            backgroundColor: getDifficultyColor(difficulty),
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            textTransform: 'capitalize'
+                          }}>
+                            {difficulty}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Question Text */}
+                      <div style={{
+                        background: 'rgba(255,255,255,0.8)',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        marginBottom: timestamp ? '12px' : '0'
+                      }}>
+                        <p style={{
+                          margin: 0,
+                          lineHeight: '1.6',
+                          fontSize: '15px',
+                          color: '#374151',
+                          fontWeight: '500'
+                        }}>
+                          "{questionText}"
+                        </p>
+                      </div>
+
+                      {/* Timestamp Context */}
+                      {timestamp && (
+                        <div style={{
+                          background: 'rgba(59, 130, 246, 0.1)',
+                          borderRadius: '6px',
+                          padding: '8px 12px',
+                          borderLeft: '3px solid #3b82f6'
+                        }}>
+                          <p style={{
+                            margin: 0,
+                            fontSize: '13px',
+                            color: '#1e40af',
+                            fontStyle: 'italic'
+                          }}>
+                            <strong>Context:</strong> {timestamp}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          }
+        }
+        
+        // Reset regex for the original approach
+        questionRegex.lastIndex = 0;
+        const questions = [];
+        let match;
+        
+        while ((match = questionRegex.exec(questionsText)) !== null) {
+          questions.push({
+            text: match[1]?.trim() || '',
+            category: match[2]?.trim() || 'general',
+            difficulty: match[3]?.trim() || 'medium',
+            timestamp: match[4]?.trim() || ''
+          });
+        }
+        
+        console.log('📝 Parsed questions:', questions);
+        
+        if (questions.length > 0) {
+          return (
+            <div style={{ fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif' }}>
+              {questions.map((question, index) => {
+                const { text: questionText, category, difficulty, timestamp } = question;
+
+                // Color coding for categories
+                const getCategoryColor = (cat) => {
+                  switch (cat.toLowerCase()) {
+                    case 'technical': return '#3b82f6';
+                    case 'behavioral': return '#8b5cf6';
+                    case 'experience': return '#10b981';
+                    case 'general': return '#6b7280';
+                    default: return '#6b7280';
+                  }
+                };
+
+                // Color coding for difficulty
+                const getDifficultyColor = (diff) => {
+                  switch (diff.toLowerCase()) {
+                    case 'easy': return '#10b981';
+                    case 'medium': return '#f59e0b';
+                    case 'hard': return '#ef4444';
+                    default: return '#f59e0b';
+                  }
+                };
+
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      marginBottom: '16px',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                      border: `2px solid ${getCategoryColor(category)}20`
+                    }}
+                  >
+                    {/* Question Header */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '12px',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ 
+                          fontSize: '18px',
+                          fontWeight: '700',
+                          color: '#1f2937'
+                        }}>
+                          Q{index + 1}
+                        </span>
+                        <span style={{
+                          backgroundColor: getCategoryColor(category),
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          textTransform: 'capitalize'
+                        }}>
+                          {category}
+                        </span>
+                        <span style={{
+                          backgroundColor: getDifficultyColor(difficulty),
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          textTransform: 'capitalize'
+                        }}>
+                          {difficulty}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Question Text */}
+                    <div style={{
+                      background: 'rgba(255,255,255,0.8)',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      marginBottom: timestamp ? '12px' : '0'
+                    }}>
+                      <p style={{
+                        margin: 0,
+                        lineHeight: '1.6',
+                        fontSize: '15px',
+                        color: '#374151',
+                        fontWeight: '500'
+                      }}>
+                        "{questionText}"
+                      </p>
+                    </div>
+
+                    {/* Timestamp Context */}
+                    {timestamp && (
+                      <div style={{
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        borderRadius: '6px',
+                        padding: '8px 12px',
+                        borderLeft: '3px solid #3b82f6'
+                      }}>
+                        <p style={{
+                          margin: 0,
+                          fontSize: '13px',
+                          color: '#1e40af',
+                          fontStyle: 'italic'
+                        }}>
+                          <strong>Context:</strong> {timestamp}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        }
+      }
+    }
+
+    // If it's an array or object, use the original renderAIFeedback function
+    return renderAIFeedback(questionsData);
   };
 
   // Function to render AI feedback in a beautiful format
@@ -1059,6 +1665,159 @@ const resetScheduleFields = () => {
                       {showAiFeedback && (
                         <div style={{ padding: '20px', backgroundColor: '#fff', maxHeight: '400px', overflowY: 'auto' }}>
                           {renderAIFeedback(aiFeedback)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Questions Asked and JD Relevance Buttons - Only show if feedback has been generated */}
+                  {hasGeneratedFeedback && (
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={handleGetQuestionsAsked}
+                        disabled={isLoadingQuestions}
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '10px',
+                          padding: '12px 20px',
+                          background: isLoadingQuestions 
+                            ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' 
+                            : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+                          cursor: isLoadingQuestions ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isLoadingQuestions 
+                            ? 'none' 
+                            : '0 2px 4px rgba(59, 130, 246, 0.2)',
+                          transform: isLoadingQuestions ? 'none' : 'translateY(0)',
+                          opacity: isLoadingQuestions ? 0.7 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isLoadingQuestions) {
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isLoadingQuestions) {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
+                          }
+                        }}
+                      >
+                        <span style={{ fontSize: '16px' }}>❓</span>
+                        {isLoadingQuestions ? 'Analyzing Questions...' : 'Questions Asked'}
+                      </button>
+
+                      <button 
+                        onClick={handleGetJdRelevance}
+                        disabled={isLoadingRelevance}
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '10px',
+                          padding: '12px 20px',
+                          background: isLoadingRelevance 
+                            ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' 
+                            : 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+                          cursor: isLoadingRelevance ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isLoadingRelevance 
+                            ? 'none' 
+                            : '0 2px 4px rgba(8, 145, 178, 0.2)',
+                          transform: isLoadingRelevance ? 'none' : 'translateY(0)',
+                          opacity: isLoadingRelevance ? 0.7 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isLoadingRelevance) {
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 4px 8px rgba(8, 145, 178, 0.3)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isLoadingRelevance) {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 4px rgba(8, 145, 178, 0.2)';
+                          }
+                        }}
+                      >
+                        <span style={{ fontSize: '16px' }}>📊</span>
+                        {isLoadingRelevance ? 'Analyzing Relevance...' : 'Relevance with JD'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Questions Asked Results - Collapsible Dropdown */}
+                  {questionsData && (
+                    <div style={{ marginTop: '15px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div 
+                        style={{ 
+                          backgroundColor: '#e3f2fd', 
+                          padding: '12px', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          borderBottom: showQuestions ? '1px solid #ddd' : 'none'
+                        }}
+                        onClick={() => setShowQuestions(!showQuestions)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>❓</span>
+                          <strong>Questions Asked by Interviewer</strong>
+                        </div>
+                        <span style={{ fontSize: '14px' }}>
+                          {showQuestions ? '▼' : '▶'}
+                        </span>
+                      </div>
+                      
+                      {showQuestions && (
+                        <div style={{ padding: '20px', backgroundColor: '#fff', maxHeight: '400px', overflowY: 'auto' }}>
+                          {renderQuestionsData(questionsData)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* JD Relevance Results - Collapsible Dropdown */}
+                  {relevanceData && (
+                    <div style={{ marginTop: '15px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div 
+                        style={{ 
+                          backgroundColor: '#e0f7fa', 
+                          padding: '12px', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          borderBottom: showRelevance ? '1px solid #ddd' : 'none'
+                        }}
+                        onClick={() => setShowRelevance(!showRelevance)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>📊</span>
+                          <strong>JD Relevance Analysis</strong>
+                        </div>
+                        <span style={{ fontSize: '14px' }}>
+                          {showRelevance ? '▼' : '▶'}
+                        </span>
+                      </div>
+                      
+                      {showRelevance && (
+                        <div style={{ padding: '20px', backgroundColor: '#fff', maxHeight: '400px', overflowY: 'auto' }}>
+                          {renderAIFeedback(relevanceData)}
                         </div>
                       )}
                     </div>

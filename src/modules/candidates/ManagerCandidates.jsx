@@ -333,6 +333,53 @@ const ManagerCandidates = () => {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isShortlisting, setIsShortlisting] = useState(false);
+  const [showSearchSlideshow, setShowSearchSlideshow] = useState(false);
+  const [currentSearchSlide, setCurrentSearchSlide] = useState(0);
+
+  // Search slideshow data - dynamically filtered based on external search setting
+  const getSearchSlides = () => {
+    const baseSlides = [
+      {
+        title: "🔍 Searching for Candidates",
+        description: "Please be patient while we search for the best candidates for you",
+        content: "We're analyzing your job requirements and searching through our comprehensive database to find candidates that match your specific needs."
+      },
+      {
+        title: "🏢 Searching Local Database",
+        description: "Scanning our internal candidate database for perfect matches",
+        content: "Our AI is evaluating candidates from our local database, analyzing their skills, experience, and qualifications to find the best fits for your position."
+      }
+    ];
+
+    // Only add internet sources slide if external search is enabled
+    if (filters.externalSearch) {
+      baseSlides.push({
+        title: "🌐 Searching Internet Sources",
+        description: "Expanding search to external platforms and job boards",
+        content: "We're now searching external sources and professional networks to find additional qualified candidates who might be the perfect fit for your role."
+      });
+    }
+
+    baseSlides.push({
+      title: "⚡ Finalizing Results",
+      description: "Almost done! We're compiling and ranking your candidate matches",
+      content: "Our system is now ranking all found candidates based on their match score, experience level, and relevance to your job requirements. Thank you for your patience!"
+    });
+
+    return baseSlides;
+  };
+
+  const searchSlides = getSearchSlides();
+
+  // Auto-advance search slideshow
+  useEffect(() => {
+    if (showSearchSlideshow) {
+      const interval = setInterval(() => {
+        setCurrentSearchSlide((prev) => (prev + 1) % searchSlides.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [showSearchSlideshow, searchSlides.length]);
 
   const setLoading = useCallback((isLoading) => {
     document.documentElement.classList.toggle('loading', isLoading);
@@ -362,6 +409,8 @@ const ManagerCandidates = () => {
 
     setErrorMessage('');
     setIsSearching(true);
+    setShowSearchSlideshow(true);
+    setCurrentSearchSlide(0);
     setExpandedCandidate(null); // Reset expanded view
     setSearchResults([]);
 
@@ -396,6 +445,7 @@ const ManagerCandidates = () => {
       setErrorMessage('An error occurred. Please try again.');
     } finally {
       setIsSearching(false);
+      setShowSearchSlideshow(false);
     }
   };
 
@@ -464,7 +514,7 @@ const ManagerCandidates = () => {
       <div className="candidates-page">
         <style>{spinKeyframes}</style>
       <div className="candidates-header">
-        <h1>Shortlist Candidates</h1>
+        <h1>Candidates Search</h1>
         <button
           className="ai-job-description-btn"
           onClick={handleEnableAI}
@@ -659,7 +709,7 @@ const ManagerCandidates = () => {
                   <button
                     className="btn-action secondary"
                     onClick={handleShortlistClick}
-                    disabled={searchResults.length === 0 || isShortlisting}
+                    disabled={searchResults.length === 0 || isShortlisting || searchResults.filter(c => c.locked && c.managerId === currentUserId).length === 0}
                   >
                     {isShortlisting ? 'Shortlisting...' : 'Shortlist'}
                   </button>
@@ -717,6 +767,29 @@ const ManagerCandidates = () => {
           onEnable={handleEnableAI}
           onMaybeLater={handleMaybeLater}
         />
+      )}
+      
+      {/* Search slideshow overlay on top of loader */}
+      {showSearchSlideshow && isSearching && (
+        <div className="slideshow-overlay">
+          <div className="slideshow-container">
+            <div className="slideshow-slide">
+              <h3>{searchSlides[currentSearchSlide].title}</h3>
+              <p className="slide-description">{searchSlides[currentSearchSlide].description}</p>
+              <p className="slide-content">{searchSlides[currentSearchSlide].content}</p>
+              
+              <div className="slide-indicators">
+                {searchSlides.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`indicator ${index === currentSearchSlide ? 'active' : ''}`}
+                    onClick={() => setCurrentSearchSlide(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
     </>

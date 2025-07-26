@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:1998/api';
 const ONELOGIN_URL = 'https://telusrecruitai.onelogin.com';
-const NOTIFICATION_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
+const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
+
 
 
 // Create axios instances with default config

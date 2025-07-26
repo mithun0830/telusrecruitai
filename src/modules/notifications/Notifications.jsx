@@ -127,7 +127,7 @@ const Notifications = () => {
           <div className="notifications-list-header">
             <h2>Notifications <span className="notification-count">{filteredNotifications.length}</span></h2>
           </div>
-          <div className="notifications-table-container">
+          <div className="notifications-grid-container">
             {loading ? (
               <div className="loader-container">
                 <div className="loader"></div>
@@ -136,31 +136,48 @@ const Notifications = () => {
             ) : error ? (
               <Alert variant="danger">{error}</Alert>
             ) : (
-              <table className="notifications-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Message</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredNotifications.map((notification) => (
-                    <tr
-                      key={notification.id}
-                      className={`notification-row ${notification.is_read ? 'read' : 'unread'}`}
-                      onClick={() => handleNotificationClick(notification.id)}
-                    >
-                      <td>{notification.id}</td>
-                      <td>{highlightMatch(notification.message, activeSearchTerm)}</td>
-                      <td>{new Intl.DateTimeFormat('en-IN', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      }).format(new Date(notification.created_at))}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="notifications-grid">
+                {filteredNotifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`notification-card ${notification.is_read ? 'read' : 'unread'}`}
+                    onClick={() => handleNotificationClick(notification.id)}
+                  >
+                    <div className="notification-card-header">
+                      <div className="notification-id">
+                        <span className="id-label">ID</span>
+                        <span className="id-value">{notification.id}</span>
+                      </div>
+                      <div className="notification-status">
+                        {!notification.is_read && <div className="unread-indicator"></div>}
+                      </div>
+                    </div>
+                    <div className="notification-card-body">
+                      <div className="notification-message">
+                        {highlightMatch(notification.message, activeSearchTerm)}
+                      </div>
+                    </div>
+                    <div className="notification-card-footer">
+                      <div className="notification-date">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8 2V6M16 2V6M3 10H21M5 4H19C20.1046 4 21 4.89543 21 6V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6C3 4.89543 3.89543 4 5 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span>{new Intl.DateTimeFormat('en-IN', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        }).format(new Date(notification.created_at))}</span>
+                      </div>
+                      <div className="notification-type">
+                        {notification.type && (
+                          <span className={`type-badge ${notification.type.toLowerCase()}`}>
+                            {notification.type}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             {!loading && filteredNotifications.length === 0 && (
               <div className="no-notifications-message">

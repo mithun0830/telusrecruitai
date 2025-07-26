@@ -613,7 +613,58 @@ const AIChatOverlay = ({
                           justifyContent: 'center',
                           color: copiedMessageIndex === index ? '#00A86B' : 'inherit'
                         }}
-                        title={copiedMessageIndex === index ? "Copied!" : "Copy message"}
+                        onMouseEnter={(e) => {
+                          // Create custom tooltip
+                          const tooltip = document.createElement('div');
+                          tooltip.className = 'custom-tooltip';
+                          tooltip.textContent = "Copy Message";
+                          tooltip.style.cssText = `
+                            position: fixed;
+                            background-color: #000000;
+                            color: #ffffff;
+                            padding: 6px 10px;
+                            border-radius: 4px;
+                            font-size: 11px;
+                            white-space: nowrap;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                            z-index: 10001;
+                            pointer-events: none;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                          `;
+                          
+                          // Position tooltip close to the icon
+                          const rect = e.target.getBoundingClientRect();
+                          tooltip.style.top = (rect.top - 30) + 'px';
+                          tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                          tooltip.style.transform = 'translateX(-50%)';
+                          
+                          // Add to body
+                          document.body.appendChild(tooltip);
+                          e.target._tooltip = tooltip;
+                        }}
+                        onMouseLeave={(e) => {
+                          // Remove custom tooltip with better error handling
+                          if (e.target._tooltip && e.target._tooltip.parentNode) {
+                            try {
+                              e.target._tooltip.parentNode.removeChild(e.target._tooltip);
+                            } catch (error) {
+                              console.log('Tooltip removal error:', error);
+                            }
+                            e.target._tooltip = null;
+                          }
+                          
+                          // Cleanup any lingering tooltips
+                          const existingTooltips = document.querySelectorAll('.custom-tooltip');
+                          existingTooltips.forEach(tooltip => {
+                            if (tooltip.parentNode) {
+                              try {
+                                tooltip.parentNode.removeChild(tooltip);
+                              } catch (error) {
+                                console.log('Tooltip cleanup error:', error);
+                              }
+                            }
+                          });
+                        }}
                       >
                         {copiedMessageIndex === index ? <TickIcon /> : <CopyIcon />}
                       </button>
@@ -636,7 +687,60 @@ const AIChatOverlay = ({
               className="input-action-btn plus-btn" 
               onClick={handlePlusButtonClick}
               disabled={isLoading || isFileUploading}
-              title="Upload job description file"
+              onMouseEnter={(e) => {
+                // Create custom tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                tooltip.textContent = "Upload job description file";
+                tooltip.style.cssText = `
+                  position: fixed;
+                  background-color: #000000;
+                  color: #ffffff;
+                  padding: 8px 12px;
+                  border-radius: 6px;
+                  font-size: 12px;
+                  white-space: nowrap;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                  z-index: 10001;
+                  pointer-events: none;
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  max-width: 300px;
+                  word-wrap: break-word;
+                `;
+                
+                // Position tooltip above and centered
+                const rect = e.target.getBoundingClientRect();
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                
+                // Add to body
+                document.body.appendChild(tooltip);
+                e.target._tooltip = tooltip;
+              }}
+              onMouseLeave={(e) => {
+                // Remove custom tooltip with better error handling
+                if (e.target._tooltip && e.target._tooltip.parentNode) {
+                  try {
+                    e.target._tooltip.parentNode.removeChild(e.target._tooltip);
+                  } catch (error) {
+                    console.log('Tooltip removal error:', error);
+                  }
+                  e.target._tooltip = null;
+                }
+                
+                // Cleanup any lingering tooltips
+                const existingTooltips = document.querySelectorAll('.custom-tooltip');
+                existingTooltips.forEach(tooltip => {
+                  if (tooltip.parentNode) {
+                    try {
+                      tooltip.parentNode.removeChild(tooltip);
+                    } catch (error) {
+                      console.log('Tooltip cleanup error:', error);
+                    }
+                  }
+                });
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -661,7 +765,63 @@ const AIChatOverlay = ({
             />
             
             {inputMessage.trim() && (
-              <button className="input-action-btn attach-btn" onClick={handleUpArrowClick} disabled={isLoading || slideshowLoading}>
+              <button 
+                className="input-action-btn attach-btn" 
+                onClick={handleUpArrowClick} 
+                disabled={isLoading || slideshowLoading}
+                onMouseEnter={(e) => {
+                  // Create custom tooltip
+                  const tooltip = document.createElement('div');
+                  tooltip.className = 'custom-tooltip';
+                  tooltip.textContent = "Send";
+                  tooltip.style.cssText = `
+                    position: fixed;
+                    background-color: #000000;
+                    color: #ffffff;
+                    padding: 6px 10px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    white-space: nowrap;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                    z-index: 10001;
+                    pointer-events: none;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  `;
+                  
+                  // Position tooltip above and centered
+                  const rect = e.target.getBoundingClientRect();
+                  tooltip.style.top = (rect.top - 30) + 'px';
+                  tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                  tooltip.style.transform = 'translateX(-50%)';
+                  
+                  // Add to body
+                  document.body.appendChild(tooltip);
+                  e.target._tooltip = tooltip;
+                }}
+                onMouseLeave={(e) => {
+                  // Remove custom tooltip with better error handling
+                  if (e.target._tooltip && e.target._tooltip.parentNode) {
+                    try {
+                      e.target._tooltip.parentNode.removeChild(e.target._tooltip);
+                    } catch (error) {
+                      console.log('Tooltip removal error:', error);
+                    }
+                    e.target._tooltip = null;
+                  }
+                  
+                  // Cleanup any lingering tooltips
+                  const existingTooltips = document.querySelectorAll('.custom-tooltip');
+                  existingTooltips.forEach(tooltip => {
+                    if (tooltip.parentNode) {
+                      try {
+                        tooltip.parentNode.removeChild(tooltip);
+                      } catch (error) {
+                        console.log('Tooltip cleanup error:', error);
+                      }
+                    }
+                  });
+                }}
+              >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 12L8 4M8 4L5 7M8 4L11 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -680,7 +840,59 @@ const AIChatOverlay = ({
               className={`input-action-btn mic-btn ${isRecording ? 'recording' : ''}`} 
               onClick={handleMicButtonClick}
               disabled={isLoading}
-              title={isRecording ? "Stop recording" : "Start voice recording"}
+              onMouseEnter={(e) => {
+                // Create custom tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                tooltip.textContent = isRecording ? "Stop recording" : "Start voice recording";
+                tooltip.style.cssText = `
+                  position: fixed;
+                  background-color: #000000;
+                  color: #ffffff;
+                  padding: 8px 12px;
+                  border-radius: 6px;
+                  font-size: 12px;
+                  white-space: nowrap;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                  z-index: 10001;
+                  pointer-events: none;
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  max-width: 300px;
+                  word-wrap: break-word;
+                `;
+                
+                // Position tooltip
+                const rect = e.target.getBoundingClientRect();
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.left = (rect.right + 10) + 'px';
+                
+                // Add to body
+                document.body.appendChild(tooltip);
+                e.target._tooltip = tooltip;
+              }}
+              onMouseLeave={(e) => {
+                // Remove custom tooltip with better error handling
+                if (e.target._tooltip && e.target._tooltip.parentNode) {
+                  try {
+                    e.target._tooltip.parentNode.removeChild(e.target._tooltip);
+                  } catch (error) {
+                    console.log('Tooltip removal error:', error);
+                  }
+                  e.target._tooltip = null;
+                }
+                
+                // Cleanup any lingering tooltips
+                const existingTooltips = document.querySelectorAll('.custom-tooltip');
+                existingTooltips.forEach(tooltip => {
+                  if (tooltip.parentNode) {
+                    try {
+                      tooltip.parentNode.removeChild(tooltip);
+                    } catch (error) {
+                      console.log('Tooltip cleanup error:', error);
+                    }
+                  }
+                });
+              }}
             >
               {isRecording ? (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

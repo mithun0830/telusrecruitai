@@ -619,30 +619,19 @@ const ManagerCandidates = () => {
                             </div>
                           </div>
                           <div className="card-actions">
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
-                                  {lockErrorState.message}
-                                </Tooltip>
-                              }
-                              show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
-                            >
-                              <div className="lock-toggle">
-                                <input
-                                  type="checkbox"
-                                  checked={candidate.locked}
-                                  onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-                                />
-                                <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-                                  <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
-                                </span>
-                              </div>
-                            </OverlayTrigger>
+                            <div className="lock-toggle">
+                              <input
+                                type="checkbox"
+                                checked={candidate.locked}
+                                onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
+                              />
+                              <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+                                <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+                              </span>
+                            </div>
                             <div className="dropdown">
                               <button
                                 className="btn-more"
-                                title="More options"
                                 onClick={() => handleMoreOptionsClick(candidate.resume.id)}
                               >
                                 ⋮

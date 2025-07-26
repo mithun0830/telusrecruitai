@@ -173,13 +173,50 @@
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  padding: 4px 8px;
-  background-color: #1f2937;
-  color: white;
-  font-size: 11px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 12px;
+  border-radius: 6px;
   white-space: nowrap;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+/* Default black tooltip for all buttons */
+button[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+button[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
 }
 
 .message.user {
@@ -277,6 +314,29 @@
 
 .plus-btn {
   padding: 6px;
+  position: relative;
+}
+
+/* Custom black tooltip for plus button */
+.plus-btn[data-tooltip] {
+  position: relative;
+}
+
+.plus-btn[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
 }
 
 .tools-btn {
@@ -292,7 +352,10 @@
 .mic-btn {
   padding: 6px;
   transition: all 0.3s ease;
+  position: relative;
 }
+
+/* Mic button tooltip is handled by JavaScript - no CSS tooltip needed */
 
 .mic-btn.recording {
   color: #DC2626;

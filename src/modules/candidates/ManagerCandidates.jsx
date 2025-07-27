@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from
 import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
-import { authService, candidateService, interviewService } from '../../services/api';
+import { authService, candidateService, interviewService, managerService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
@@ -74,6 +74,7 @@ const ManagerCandidates = () => {
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
+  const [managers, setManagers] = useState([]);
   const textareaRef = useRef(null);
 
   const spinKeyframes = `
@@ -93,6 +94,24 @@ const ManagerCandidates = () => {
   useLayoutEffect(() => {
     adjustTextareaHeight();
   }, [adjustTextareaHeight]);
+
+  // Fetch managers data on component mount
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const response = await managerService.getAllManagers();
+        if (response.success) {
+          setManagers(response.data);
+          
+        }
+      } catch (error) {
+        console.error('Error fetching managers:', error);
+      }
+    };
+
+    fetchManagers();
+  }, []);
+
 
   const handleGenerateJobDescription = async (data) => {
     if (data) {
@@ -123,14 +142,30 @@ const ManagerCandidates = () => {
       }
     } catch (error) {
       console.error('Error updating candidate lock status:', error);
+      console.error('Full error object:', error);
+      
       let errorMessage;
-      if (error.message.includes('locked')) {
+      const errorText = error.message?.toLowerCase() || '';
+      
+      // Check for various lock-related error patterns
+      if (errorText.includes('locked') || 
+          errorText.includes('already') || 
+          errorText.includes('another manager') ||
+          errorText.includes('conflict') ||
+          errorText.includes('duplicate') ||
+          error.message?.includes('409')) {
         errorMessage = 'This candidate is already locked by another manager. You cannot modify it.';
+      } else if (errorText.includes('permission') || errorText.includes('forbidden')) {
+        errorMessage = 'You do not have permission to lock/unlock this candidate.';
+      } else if (errorText.includes('network') || errorText.includes('connection')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         errorMessage = error.message || 'An unexpected error occurred. Please try again.';
       }
+      
+      console.log('Showing tooltip with message:', errorMessage);
       setLockErrorState({ show: true, message: errorMessage, candidateId: candidate.resume.id });
-      setTimeout(() => setLockErrorState({ show: false, message: '', candidateId: null }), 3000); // Hide tooltip after 3 seconds
+      setTimeout(() => setLockErrorState({ show: false, message: '', candidateId: null }), 5000); // Show tooltip for 5 seconds
     }
   };
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -619,16 +654,26 @@ const ManagerCandidates = () => {
                             </div>
                           </div>
                           <div className="card-actions">
-                            <div className="lock-toggle">
-                              <input
-                                type="checkbox"
-                                checked={candidate.locked}
-                                onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-                              />
-                              <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-                                <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
-                              </span>
-                            </div>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={
+                                <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
+                                  {lockErrorState.message}
+                                </Tooltip>
+                              }
+                              show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
+                            >
+                              <div className="lock-toggle">
+                                <input
+                                  type="checkbox"
+                                  checked={candidate.locked}
+                                  onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
+                                />
+                                <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
+                                  <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
+                                </span>
+                              </div>
+                            </OverlayTrigger>
                             <div className="dropdown">
                               <button
                                 className="btn-more"
@@ -653,6 +698,14 @@ const ManagerCandidates = () => {
                             <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
                             <div>Experience: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
                             <div>Score: {candidate.score}%</div>
+                            {candidate.locked && candidate.managerId && (
+                              <div style={{ color: '#059669', fontWeight: '500' }}>
+                                Shortlisted by: 
+                                <span style={{ marginLeft: '4px' }}>
+                                  {candidate.managerId}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <div className="source-section">
                             <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
@@ -780,6 +833,7 @@ const ManagerCandidates = () => {
           </div>
         </div>
       )}
+
     </div>
     </>
   );

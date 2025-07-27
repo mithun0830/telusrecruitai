@@ -583,7 +583,7 @@ const AIChatOverlay = ({
             <h2>AI Job Description Assistant</h2>
             <button className="close-button" onClick={onClose}>×</button>
           </div>
-          <div className="chat-messages">
+          <div className="chat-messages" style={{ position: 'relative' }}>
             {console.log('Rendering messages:', messages)}
             {messages.map((message, index) => (
               <div 
@@ -677,8 +677,23 @@ const AIChatOverlay = ({
                 </div>
               </div>
             ))}
+            
+            {/* Centered AI thinking loader */}
             {isLoading && (
-              <div className="message ai" style={{ padding: '8px 12px', minHeight: 'auto' }}>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                padding: '12px 20px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                zIndex: 1000
+              }}>
                 <div className="spinner-loader">
                   <div className="spinner"></div>
                   <span style={{ marginLeft: '8px', fontSize: '13px', color: '#6B7280' }}>AI is thinking...</span>

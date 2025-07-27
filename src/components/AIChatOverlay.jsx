@@ -642,29 +642,33 @@ const AIChatOverlay = ({
                           document.body.appendChild(tooltip);
                           e.target._tooltip = tooltip;
                         }}
-                        onMouseLeave={(e) => {
-                          // Remove custom tooltip with better error handling
-                          if (e.target._tooltip && e.target._tooltip.parentNode) {
-                            try {
-                              e.target._tooltip.parentNode.removeChild(e.target._tooltip);
-                            } catch (error) {
-                              console.log('Tooltip removal error:', error);
-                            }
-                            e.target._tooltip = null;
-                          }
-                          
-                          // Cleanup any lingering tooltips
-                          const existingTooltips = document.querySelectorAll('.custom-tooltip');
-                          existingTooltips.forEach(tooltip => {
-                            if (tooltip.parentNode) {
-                              try {
-                                tooltip.parentNode.removeChild(tooltip);
-                              } catch (error) {
-                                console.log('Tooltip cleanup error:', error);
-                              }
-                            }
-                          });
-                        }}
+                onMouseLeave={(e) => {
+                  // Remove custom tooltip with better error handling
+                  if (e.target._tooltip) {
+                    try {
+                      if (e.target._tooltip.parentNode) {
+                        e.target._tooltip.parentNode.removeChild(e.target._tooltip);
+                      }
+                    } catch (error) {
+                      console.log('Tooltip removal error:', error);
+                    }
+                    e.target._tooltip = null;
+                  }
+                  
+                  // Cleanup any lingering tooltips with a small delay to ensure proper cleanup
+                  setTimeout(() => {
+                    const existingTooltips = document.querySelectorAll('.custom-tooltip');
+                    existingTooltips.forEach(tooltip => {
+                      try {
+                        if (tooltip && tooltip.parentNode) {
+                          tooltip.parentNode.removeChild(tooltip);
+                        }
+                      } catch (error) {
+                        console.log('Tooltip cleanup error:', error);
+                      }
+                    });
+                  }, 10);
+                }}
                       >
                         {copiedMessageIndex === index ? <TickIcon /> : <CopyIcon />}
                       </button>
@@ -770,9 +774,20 @@ const AIChatOverlay = ({
                 onClick={handleUpArrowClick} 
                 disabled={isLoading || slideshowLoading}
                 onMouseEnter={(e) => {
+                  // First, remove any existing tooltips
+                  document.querySelectorAll('.custom-tooltip').forEach(tooltip => {
+                    try {
+                      if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                      }
+                    } catch (error) {
+                      console.log('Cleanup error:', error);
+                    }
+                  });
+
                   // Create custom tooltip
                   const tooltip = document.createElement('div');
-                  tooltip.className = 'custom-tooltip';
+                  tooltip.className = 'custom-tooltip send-tooltip';
                   tooltip.textContent = "Send";
                   tooltip.style.cssText = `
                     position: fixed;
@@ -796,28 +811,40 @@ const AIChatOverlay = ({
                   
                   // Add to body
                   document.body.appendChild(tooltip);
-                  e.target._tooltip = tooltip;
+                  e.target._sendTooltip = tooltip;
                 }}
-                onMouseLeave={(e) => {
-                  // Remove custom tooltip with better error handling
-                  if (e.target._tooltip && e.target._tooltip.parentNode) {
+                onMouseLeave={() => {
+                  // Aggressive cleanup - remove all send tooltips immediately
+                  document.querySelectorAll('.send-tooltip').forEach(tooltip => {
                     try {
-                      e.target._tooltip.parentNode.removeChild(e.target._tooltip);
-                    } catch (error) {
-                      console.log('Tooltip removal error:', error);
-                    }
-                    e.target._tooltip = null;
-                  }
-                  
-                  // Cleanup any lingering tooltips
-                  const existingTooltips = document.querySelectorAll('.custom-tooltip');
-                  existingTooltips.forEach(tooltip => {
-                    if (tooltip.parentNode) {
-                      try {
+                      if (tooltip.parentNode) {
                         tooltip.parentNode.removeChild(tooltip);
-                      } catch (error) {
-                        console.log('Tooltip cleanup error:', error);
                       }
+                    } catch (error) {
+                      console.log('Send tooltip cleanup error:', error);
+                    }
+                  });
+                  
+                  // Also remove all custom tooltips as fallback
+                  document.querySelectorAll('.custom-tooltip').forEach(tooltip => {
+                    try {
+                      if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                      }
+                    } catch (error) {
+                      console.log('General tooltip cleanup error:', error);
+                    }
+                  });
+                }}
+                onMouseOut={() => {
+                  // Additional cleanup on mouseout
+                  document.querySelectorAll('.send-tooltip, .custom-tooltip').forEach(tooltip => {
+                    try {
+                      if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                      }
+                    } catch (error) {
+                      console.log('Mouseout cleanup error:', error);
                     }
                   });
                 }}

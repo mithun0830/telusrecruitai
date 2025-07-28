@@ -9,7 +9,7 @@ const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-so
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
-const AI_FEEDBACK_BASE_URL = 'http://localhost:3001/api';
+const AI_FEEDBACK_BASE_URL = 'http://34.42.182.48:80/api';
 
 
 // Create axios instances with default config

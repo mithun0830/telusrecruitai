@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from
 import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import useManagerCandidates from './useManagerCandidates';
-import { authService, candidateService, interviewService } from '../../services/api';
+import { authService, candidateService, interviewService, managerService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
@@ -74,6 +74,7 @@ const ManagerCandidates = () => {
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
+  const [managers, setManagers] = useState([]);
   const textareaRef = useRef(null);
 
   const spinKeyframes = `
@@ -93,6 +94,24 @@ const ManagerCandidates = () => {
   useLayoutEffect(() => {
     adjustTextareaHeight();
   }, [adjustTextareaHeight]);
+
+  // Fetch managers data on component mount
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const response = await managerService.getAllManagers();
+        if (response.success) {
+          setManagers(response.data);
+          
+        }
+      } catch (error) {
+        console.error('Error fetching managers:', error);
+      }
+    };
+
+    fetchManagers();
+  }, []);
+
 
   const handleGenerateJobDescription = async (data) => {
     if (data) {
@@ -123,14 +142,30 @@ const ManagerCandidates = () => {
       }
     } catch (error) {
       console.error('Error updating candidate lock status:', error);
+      console.error('Full error object:', error);
+      
       let errorMessage;
-      if (error.message.includes('locked')) {
+      const errorText = error.message?.toLowerCase() || '';
+      
+      // Check for various lock-related error patterns
+      if (errorText.includes('locked') || 
+          errorText.includes('already') || 
+          errorText.includes('another manager') ||
+          errorText.includes('conflict') ||
+          errorText.includes('duplicate') ||
+          error.message?.includes('409')) {
         errorMessage = 'This candidate is already locked by another manager. You cannot modify it.';
+      } else if (errorText.includes('permission') || errorText.includes('forbidden')) {
+        errorMessage = 'You do not have permission to lock/unlock this candidate.';
+      } else if (errorText.includes('network') || errorText.includes('connection')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         errorMessage = error.message || 'An unexpected error occurred. Please try again.';
       }
+      
+      console.log('Showing tooltip with message:', errorMessage);
       setLockErrorState({ show: true, message: errorMessage, candidateId: candidate.resume.id });
-      setTimeout(() => setLockErrorState({ show: false, message: '', candidateId: null }), 3000); // Hide tooltip after 3 seconds
+      setTimeout(() => setLockErrorState({ show: false, message: '', candidateId: null }), 5000); // Show tooltip for 5 seconds
     }
   };
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -333,6 +368,89 @@ const ManagerCandidates = () => {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isShortlisting, setIsShortlisting] = useState(false);
+  const [showSearchSlideshow, setShowSearchSlideshow] = useState(false);
+  const [currentSearchSlide, setCurrentSearchSlide] = useState(0);
+  const [showShortlistSlideshow, setShowShortlistSlideshow] = useState(false);
+  const [currentShortlistSlide, setCurrentShortlistSlide] = useState(0);
+
+  // Search slideshow data - dynamically filtered based on external search setting
+  const getSearchSlides = () => {
+    const baseSlides = [
+      {
+        title: "🔍 Searching for Candidates",
+        description: "Please be patient while we search for the best candidates for you",
+        content: "We're analyzing your job requirements and searching through our comprehensive database to find candidates that match your specific needs."
+      },
+      {
+        title: "🏢 Searching Local Database",
+        description: "Scanning our internal candidate database for perfect matches",
+        content: "Our AI is evaluating candidates from our local database, analyzing their skills, experience, and qualifications to find the best fits for your position."
+      }
+    ];
+
+    // Only add internet sources slide if external search is enabled
+    if (filters.externalSearch) {
+      baseSlides.push({
+        title: "🌐 Searching Internet Sources",
+        description: "Expanding search to external platforms and job boards",
+        content: "We're now searching external sources and professional networks to find additional qualified candidates who might be the perfect fit for your role."
+      });
+    }
+
+    baseSlides.push({
+      title: "⚡ Finalizing Results",
+      description: "Almost done! We're compiling and ranking your candidate matches",
+      content: "Our system is now ranking all found candidates based on their match score, experience level, and relevance to your job requirements. Thank you for your patience!"
+    });
+
+    return baseSlides;
+  };
+
+  const searchSlides = getSearchSlides();
+
+  // Shortlist slideshow data
+  const shortlistSlides = [
+    {
+      title: "📋 Processing Shortlist",
+      description: "Preparing your selected candidates for the next stage",
+      content: "We're organizing your selected candidates and preparing their profiles for the shortlisting process. This includes validating their information and ensuring all data is complete."
+    },
+    {
+      title: "🔄 Updating Candidate Status",
+      description: "Marking candidates as shortlisted in the system",
+      content: "Our system is updating the status of your selected candidates to 'Shortlisted' and notifying relevant stakeholders about the progression to the next interview stage."
+    },
+    {
+      title: "📧 Sending Notifications",
+      description: "Notifying team members and candidates about the shortlisting",
+      content: "We're sending automated notifications to your team members and preparing communication templates for the shortlisted candidates about their next steps."
+    },
+    {
+      title: "✅ Finalizing Shortlist",
+      description: "Almost done! Completing the shortlisting process",
+      content: "We're finalizing the shortlist, updating all relevant records, and preparing the candidate pipeline for the interview scheduling phase. Thank you for your patience!"
+    }
+  ];
+
+  // Auto-advance search slideshow
+  useEffect(() => {
+    if (showSearchSlideshow) {
+      const interval = setInterval(() => {
+        setCurrentSearchSlide((prev) => (prev + 1) % searchSlides.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [showSearchSlideshow, searchSlides.length]);
+
+  // Auto-advance shortlist slideshow
+  useEffect(() => {
+    if (showShortlistSlideshow) {
+      const interval = setInterval(() => {
+        setCurrentShortlistSlide((prev) => (prev + 1) % shortlistSlides.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [showShortlistSlideshow, shortlistSlides.length]);
 
   const setLoading = useCallback((isLoading) => {
     document.documentElement.classList.toggle('loading', isLoading);
@@ -362,6 +480,8 @@ const ManagerCandidates = () => {
 
     setErrorMessage('');
     setIsSearching(true);
+    setShowSearchSlideshow(true);
+    setCurrentSearchSlide(0);
     setExpandedCandidate(null); // Reset expanded view
     setSearchResults([]);
 
@@ -396,6 +516,7 @@ const ManagerCandidates = () => {
       setErrorMessage('An error occurred. Please try again.');
     } finally {
       setIsSearching(false);
+      setShowSearchSlideshow(false);
     }
   };
 
@@ -416,10 +537,15 @@ const ManagerCandidates = () => {
 
   const handleShortlistClick = async () => {
     setIsShortlisting(true);
+    setShowShortlistSlideshow(true);
+    setCurrentShortlistSlide(0);
+    
     const formattedCandidates = getFormattedCandidateData();
     if (formattedCandidates.length === 0) {
       setShortlistMessage('Please select at least one candidate to shortlist.');
       setShortlistSuccess(false);
+      setIsShortlisting(false);
+      setShowShortlistSlideshow(false);
       setShowShortlistModal(true);
       return;
     }
@@ -431,9 +557,14 @@ const ManagerCandidates = () => {
     };
 
     try {
-      const response = await interviewService.shortlistCandidates(payload);
+      // Add minimum 5-second delay to ensure slideshow displays properly
+      const [response] = await Promise.all([
+        interviewService.shortlistCandidates(payload),
+        new Promise(resolve => setTimeout(resolve, 5000)) // 5-second minimum delay
+      ]);
+      
       if (response) {
-        setShortlistMessage('Candidates have been successfully shortlisted.');
+        setShortlistMessage('Candidates have been successfully shortlisted. Please contact HR for further processing and scheduling!');
         setShortlistSuccess(true);
       } else {
         setShortlistMessage('Failed to shortlist candidates. Please try again.');
@@ -443,8 +574,12 @@ const ManagerCandidates = () => {
       console.error('Error shortlisting candidates:', error);
       setShortlistMessage('An error occurred while shortlisting candidates. Please try again.');
       setShortlistSuccess(false);
+      
+      // Ensure minimum delay even on error
+      await new Promise(resolve => setTimeout(resolve, 5000));
     } finally {
       setIsShortlisting(false);
+      setShowShortlistSlideshow(false);
       setShowShortlistModal(true);
     }
   };
@@ -464,7 +599,7 @@ const ManagerCandidates = () => {
       <div className="candidates-page">
         <style>{spinKeyframes}</style>
       <div className="candidates-header">
-        <h1>Candidate Search</h1>
+        <h1>Candidates Search</h1>
         <button
           className="ai-job-description-btn"
           onClick={handleEnableAI}
@@ -592,7 +727,6 @@ const ManagerCandidates = () => {
                             <div className="dropdown">
                               <button
                                 className="btn-more"
-                                title="More options"
                                 onClick={() => handleMoreOptionsClick(candidate.resume.id)}
                               >
                                 ⋮
@@ -614,6 +748,14 @@ const ManagerCandidates = () => {
                             <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
                             <div>Experience: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
                             <div>Score: {candidate.score}%</div>
+                            {candidate.locked && candidate.managerId && (
+                              <div style={{ color: '#059669', fontWeight: '500' }}>
+                                Shortlisted by: 
+                                <span style={{ marginLeft: '4px' }}>
+                                  {candidate.managerId}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <div className="source-section">
                             <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
@@ -659,7 +801,7 @@ const ManagerCandidates = () => {
                   <button
                     className="btn-action secondary"
                     onClick={handleShortlistClick}
-                    disabled={searchResults.length === 0 || isShortlisting}
+                    disabled={searchResults.length === 0 || isShortlisting || searchResults.filter(c => c.locked && c.managerId === currentUserId).length === 0}
                   >
                     {isShortlisting ? 'Shortlisting...' : 'Shortlist'}
                   </button>
@@ -684,12 +826,13 @@ const ManagerCandidates = () => {
         backdrop="static"
         keyboard={false}
         className="success-modal"
+        size="lg"
       >
         <Modal.Body className="text-center p-5">
           <div className="success-icon-wrapper mb-4">
             <FontAwesomeIcon
-              icon={shortlistSuccess === 'success' ? faCheck : faTimesCircle}
-              className={`success-icon ${shortlistSuccess ? '' : 'text-danger'}`}
+              icon={faCheck}
+              className="success-icon text-success"
             />
           </div>
           <h4 className="success-title mb-3">
@@ -718,6 +861,53 @@ const ManagerCandidates = () => {
           onMaybeLater={handleMaybeLater}
         />
       )}
+      
+      {/* Search slideshow overlay on top of loader */}
+      {showSearchSlideshow && isSearching && (
+        <div className="slideshow-overlay">
+          <div className="slideshow-container">
+            <div className="slideshow-slide">
+              <h3>{searchSlides[currentSearchSlide].title}</h3>
+              <p className="slide-description">{searchSlides[currentSearchSlide].description}</p>
+              <p className="slide-content">{searchSlides[currentSearchSlide].content}</p>
+              
+              <div className="slide-indicators">
+                {searchSlides.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`indicator ${index === currentSearchSlide ? 'active' : ''}`}
+                    onClick={() => setCurrentSearchSlide(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shortlist slideshow overlay on top of loader */}
+      {showShortlistSlideshow && isShortlisting && (
+        <div className="slideshow-overlay">
+          <div className="slideshow-container">
+            <div className="slideshow-slide">
+              <h3>{shortlistSlides[currentShortlistSlide].title}</h3>
+              <p className="slide-description">{shortlistSlides[currentShortlistSlide].description}</p>
+              <p className="slide-content">{shortlistSlides[currentShortlistSlide].content}</p>
+              
+              <div className="slide-indicators">
+                {shortlistSlides.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`indicator ${index === currentShortlistSlide ? 'active' : ''}`}
+                    onClick={() => setCurrentShortlistSlide(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
     </>
   );

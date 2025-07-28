@@ -274,9 +274,35 @@
   transition: all 0.3s ease;
   background-color: var(--telus-white);
   color: var(--telus-dark-gray);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  height: 32px;
+  min-height: 60px;
+  max-height: 120px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: normal;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  resize: vertical;
+  scrollbar-width: thin;
+  scrollbar-color: var(--telus-purple) var(--telus-light-gray);
+}
+
+.ai-search-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-search-input::-webkit-scrollbar-track {
+  background: var(--telus-light-gray);
+  border-radius: 3px;
+}
+
+.ai-search-input::-webkit-scrollbar-thumb {
+  background: var(--telus-purple);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.ai-search-input::-webkit-scrollbar-thumb:hover {
+  background: #047857;
 }
 
 .ai-generated-textarea {
@@ -312,10 +338,21 @@
   background: #047857 !important;
 }
 
-
-.ai-search-input::-webkit-scrollbar {
-  display: none;
+.ai-generated-textarea::-webkit-scrollbar-track {
+  background: var(--telus-light-gray);
+  border-radius: 4px;
 }
+
+.ai-generated-textarea::-webkit-scrollbar-thumb {
+  background: var(--telus-purple);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.ai-generated-textarea::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
 
 .ai-search-input::placeholder {
   color: var(--telus-dark-gray);
@@ -330,17 +367,6 @@
 
 .ai-search-input:hover {
   background-color: transparent;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.ai-search-input::-webkit-scrollbar {
-  display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.ai-search-input {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
 }
 
 .candidates-container {

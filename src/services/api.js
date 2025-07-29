@@ -4,12 +4,12 @@ import { clearAllCookies } from '../utils/cookieUtils';
 const ONELOGIN_DOMAIN = 'https://telus-sandbox.onelogin.com';
 const ONELOGIN_LOGOUT_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
 const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
-const API_BASE_URL = 'http://localhost:1998/api';
+const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
-const AI_FEEDBACK_BASE_URL = 'http://34.42.182.48:80/api';
+const AI_FEEDBACK_BASE_URL = 'https://feedback-api-865090871947.us-central1.run.app/api';
 
 
 // Create axios instances with default config
@@ -378,6 +378,10 @@ export const interviewService = {
 
   updateInterviewStatus: async (requestBody) => {
     return await interviewApi.put('/interviews/update-status', requestBody);
+  },
+
+  saveFeedback: async (feedbackData) => {
+    return await interviewApi.put('/interviews/update-status', feedbackData);
   },
 };
 

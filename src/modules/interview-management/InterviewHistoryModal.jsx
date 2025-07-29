@@ -307,10 +307,6 @@ const resetScheduleFields = () => {
         
         // Mark that feedback has been generated for this candidate
         setHasGeneratedFeedback(true);
-        
-        setModalType('success');
-        setModalMessage('AI feedback generated successfully!');
-        setShowModal(true);
       } else {
         throw new Error(response.message || 'Failed to generate AI feedback');
       }
@@ -351,9 +347,6 @@ const resetScheduleFields = () => {
         
         setQuestionsData(response.data);
         setShowQuestions(true);
-        setModalType('success');
-        setModalMessage('Questions retrieved successfully!');
-        setShowModal(true);
       } else {
         throw new Error(response.message || 'Failed to get questions');
       }
@@ -367,43 +360,44 @@ const resetScheduleFields = () => {
     }
   };
 
-  // JD Relevance function
-  const handleGetJdRelevance = async () => {
+  // Save Feedback function
+  const handleSaveFeedback = async () => {
     const candidateEmail = candidateHistory?.email;
     
-    if (!candidateEmail) {
+    if (!candidateEmail || !aiFeedback) {
       setModalType('error');
-      setModalMessage('Candidate email not found. Cannot get JD relevance.');
+      setModalMessage('Candidate email or AI feedback not found. Cannot save feedback.');
       setShowModal(true);
       return;
     }
 
     setIsLoadingRelevance(true);
-    console.log('📊 Getting JD relevance for candidate email:', candidateEmail);
+    console.log('💾 Saving feedback for candidate email:', candidateEmail);
 
     try {
-      const response = await aiFeedbackService.getJdRelevance(candidateEmail);
-      console.log('📊 JD Relevance Response:', response);
+const feedbackData = {
+  candidateId: candidateHistory.candidateId,
+  roundId: history[history.length - 1].roundNumber,
+  status: aiFeedback.feedback.result === 'pass' ? 'Selected' : 'Rejected',
+  feedback: aiFeedback.feedback.next_steps
+};
 
-      if (response.success && response.data) {
-        // Cache the relevance data for this candidate using email
-        setRelevanceCache(prev => ({
-          ...prev,
-          [candidateEmail]: response.data
-        }));
-        
-        setRelevanceData(response.data);
-        setShowRelevance(true);
+      console.log('💾 Feedback data being sent:', feedbackData);
+
+      const response = await interviewService.saveFeedback(feedbackData);
+      console.log('💾 Save Feedback Response:', response);
+
+      if (response.success) {
         setModalType('success');
-        setModalMessage('JD relevance analysis retrieved successfully!');
+        setModalMessage('Feedback Saved Successfully');
         setShowModal(true);
       } else {
-        throw new Error(response.message || 'Failed to get JD relevance');
+        throw new Error(response.message || 'Failed to save feedback');
       }
     } catch (error) {
-      console.error('❌ Error getting JD relevance:', error);
+      console.error('❌ Error saving feedback:', error);
       setModalType('error');
-      setModalMessage(error.message || 'Failed to get JD relevance. Please try again.');
+      setModalMessage('Error in saving AI Feedback');
       setShowModal(true);
     } finally {
       setIsLoadingRelevance(false);
@@ -1723,7 +1717,7 @@ const resetScheduleFields = () => {
                   
                   {/* AI Feedback Results - Collapsible Dropdown */}
                   {aiFeedback && (
-                    <div style={{ marginTop: '15px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', marginTop: '15px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', width: '100%' }}>
                       <div 
                         style={{ 
                           backgroundColor: '#f8f9fa', 
@@ -1740,9 +1734,30 @@ const resetScheduleFields = () => {
                           <FontAwesomeIcon icon={faRobot} style={{ color: '#059669' }} />
                           <strong>AI Generated Feedback</strong>
                         </div>
-                        <span style={{ fontSize: '14px' }}>
-                          {showAiFeedback ? '▼' : '▶'}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          {aiFeedback?.feedback?.result && (
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px 12px',
+                              borderRadius: '16px',
+                              backgroundColor: aiFeedback.feedback.result === 'pass' ? '#10b981' : '#ef4444',
+                              color: 'white',
+                              fontSize: '14px',
+                              fontWeight: '600'
+                            }}>
+                              <FontAwesomeIcon 
+                                icon={aiFeedback.feedback.result === 'pass' ? faCheckCircle : faTimesCircle} 
+                                style={{ marginRight: '4px' }}
+                              />
+                              {aiFeedback.feedback.result === 'pass' ? 'Selected' : 'Rejected'}
+                            </div>
+                          )}
+                          <span style={{ fontSize: '14px' }}>
+                            {showAiFeedback ? '▼' : '▶'}
+                          </span>
+                        </div>
                       </div>
                       
                       {showAiFeedback && (
@@ -1799,8 +1814,8 @@ const resetScheduleFields = () => {
                       </button>
 
                       <button 
-                        onClick={handleGetJdRelevance}
-                        disabled={isLoadingRelevance}
+                        onClick={handleSaveFeedback}
+                        disabled={isLoadingRelevance || !aiFeedback}
                         style={{ 
                           display: 'flex', 
                           alignItems: 'center', 
@@ -1815,29 +1830,29 @@ const resetScheduleFields = () => {
                           fontSize: '14px',
                           fontWeight: '600',
                           fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
-                          cursor: isLoadingRelevance ? 'not-allowed' : 'pointer',
+                          cursor: (isLoadingRelevance || !aiFeedback) ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s ease',
                           boxShadow: isLoadingRelevance 
                             ? 'none' 
                             : '0 2px 4px rgba(8, 145, 178, 0.2)',
                           transform: isLoadingRelevance ? 'none' : 'translateY(0)',
-                          opacity: isLoadingRelevance ? 0.7 : 1
+                          opacity: (isLoadingRelevance || !aiFeedback) ? 0.7 : 1
                         }}
                         onMouseEnter={(e) => {
-                          if (!isLoadingRelevance) {
+                          if (!isLoadingRelevance && aiFeedback) {
                             e.target.style.transform = 'translateY(-1px)';
                             e.target.style.boxShadow = '0 4px 8px rgba(8, 145, 178, 0.3)';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (!isLoadingRelevance) {
+                          if (!isLoadingRelevance && aiFeedback) {
                             e.target.style.transform = 'translateY(0)';
                             e.target.style.boxShadow = '0 2px 4px rgba(8, 145, 178, 0.2)';
                           }
                         }}
                       >
-                        <span style={{ fontSize: '16px' }}>📊</span>
-                        {isLoadingRelevance ? 'Analyzing Relevance...' : 'Relevance with JD'}
+                        <span style={{ fontSize: '16px' }}>💾</span>
+                        {isLoadingRelevance ? 'Saving Feedback...' : 'Save Feedback'}
                       </button>
                     </div>
                   )}

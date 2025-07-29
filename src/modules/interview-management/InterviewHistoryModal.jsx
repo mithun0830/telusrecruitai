@@ -52,6 +52,7 @@ const resetScheduleFields = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [latestMeetingLink, setLatestMeetingLink] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFindingSlotsLoading, setIsFindingSlotsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
@@ -89,6 +90,12 @@ const resetScheduleFields = () => {
   const [candidateFolderExists, setCandidateFolderExists] = useState(false);
   const [pollingIntervalId, setPollingIntervalId] = useState(null);
   const [hasStoppedPolling, setHasStoppedPolling] = useState(new Set()); // Track candidates for which polling has stopped
+  
+  // Use refs for immediate state tracking to prevent race conditions
+  const pollingIntervalRef = useRef(null);
+  const isPollingRef = useRef(false);
+  const hasStoppedPollingRef = useRef(new Set());
+  const candidateFolderExistsRef = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -131,11 +138,22 @@ const resetScheduleFields = () => {
       if (candidateEmail && hasStoppedPolling.has(candidateEmail)) {
         // We've already found the folder for this candidate, enable the button
         console.log('✅ Folder already found for candidate email:', candidateEmail);
+        
+        // Update refs to match state
+        candidateFolderExistsRef.current = true;
+        hasStoppedPollingRef.current = new Set([...hasStoppedPollingRef.current, candidateEmail]);
+        isPollingRef.current = false;
+        
         setCandidateFolderExists(true);
         setIsPolling(false);
       } else if (candidateEmail) {
         // Start polling for candidate folder if not already found
         console.log('🔄 Starting fresh polling for candidate email:', candidateEmail);
+        
+        // Reset refs for new polling
+        candidateFolderExistsRef.current = false;
+        isPollingRef.current = false;
+        
         setCandidateFolderExists(false);
         startPollingForCandidateFolder(candidateEmail);
       }
@@ -149,6 +167,19 @@ const resetScheduleFields = () => {
       stopPolling();
     };
   }, [isOpen, candidateHistory?.email, candidateFeedbackCache, hasStoppedPolling]);
+
+  // Sync refs with state changes
+  useEffect(() => {
+    hasStoppedPollingRef.current = hasStoppedPolling;
+  }, [hasStoppedPolling]);
+
+  useEffect(() => {
+    candidateFolderExistsRef.current = candidateFolderExists;
+  }, [candidateFolderExists]);
+
+  useEffect(() => {
+    isPollingRef.current = isPolling;
+  }, [isPolling]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -193,24 +224,63 @@ const resetScheduleFields = () => {
     }
   };
 
-  // Polling functions
+  // Polling functions with robust race condition prevention
   const startPollingForCandidateFolder = async (candidateId) => {
     console.log('🔄 Starting polling for candidate folder:', candidateId);
+    
+    // Update refs immediately
+    isPollingRef.current = true;
+    candidateFolderExistsRef.current = false;
+    
+    // Update state
     setIsPolling(true);
     setCandidateFolderExists(false);
 
     // Check immediately first
     await checkCandidateFolder(candidateId);
 
-    // Set up polling interval (every 10 seconds)
-    const intervalId = setInterval(async () => {
-      await checkCandidateFolder(candidateId);
-    }, 10000);
+    // Only set up polling interval if folder wasn't found and we haven't stopped polling
+    if (!hasStoppedPollingRef.current.has(candidateId) && !candidateFolderExistsRef.current) {
+      console.log('🔄 Setting up polling interval for candidate:', candidateId);
+      
+      // Set up polling interval (every 10 seconds)
+      const intervalId = setInterval(async () => {
+        // Robust check using refs to prevent race conditions
+        if (hasStoppedPollingRef.current.has(candidateId) || candidateFolderExistsRef.current || !isPollingRef.current) {
+          console.log('🛑 Stopping interval due to ref checks - hasStoppedPolling:', hasStoppedPollingRef.current.has(candidateId), 'folderExists:', candidateFolderExistsRef.current, 'isPolling:', isPollingRef.current);
+          clearInterval(intervalId);
+          pollingIntervalRef.current = null;
+          setPollingIntervalId(null);
+          isPollingRef.current = false;
+          setIsPolling(false);
+          return;
+        }
+        
+        console.log('🔄 Polling check for candidate:', candidateId);
+        await checkCandidateFolder(candidateId);
+      }, 10000);
 
-    setPollingIntervalId(intervalId);
+      // Store interval in both ref and state
+      pollingIntervalRef.current = intervalId;
+      setPollingIntervalId(intervalId);
+    } else {
+      console.log('🛑 Not setting up interval - already stopped or folder exists');
+    }
   };
 
   const checkCandidateFolder = async (candidateId) => {
+    // Check refs first for immediate state
+    if (hasStoppedPollingRef.current.has(candidateId) || candidateFolderExistsRef.current) {
+      console.log('🛑 Polling already stopped for candidate (ref check):', candidateId);
+      return;
+    }
+
+    // Also check state as backup
+    if (hasStoppedPolling.has(candidateId)) {
+      console.log('🛑 Polling already stopped for candidate (state check):', candidateId);
+      return;
+    }
+
     try {
       console.log('🔍 Checking candidate folder for:', candidateId);
       const response = await aiFeedbackService.checkCandidateFolder(candidateId);
@@ -230,18 +300,16 @@ const resetScheduleFields = () => {
       if (folderExists) {
         console.log('✅ Candidate folder found! Stopping polling immediately.');
         
-        // Stop polling FIRST to prevent any more calls
-        if (pollingIntervalId) {
-          console.log('🛑 Clearing polling interval:', pollingIntervalId);
-          clearInterval(pollingIntervalId);
-          setPollingIntervalId(null);
-        }
+        // Update refs IMMEDIATELY to prevent race conditions
+        candidateFolderExistsRef.current = true;
+        hasStoppedPollingRef.current = new Set([...hasStoppedPollingRef.current, candidateId]);
+        isPollingRef.current = false;
         
-        // Update states
-        setIsPolling(false);
+        // Stop polling immediately using ref
+        stopPollingImmediate();
+        
+        // Update state after refs
         setCandidateFolderExists(true);
-        
-        // Mark this candidate as having stopped polling
         setHasStoppedPolling(prev => {
           const newSet = new Set([...prev, candidateId]);
           console.log('📝 Updated hasStoppedPolling set:', newSet);
@@ -249,25 +317,47 @@ const resetScheduleFields = () => {
         });
         
         console.log('✅ Polling completely stopped for candidate:', candidateId);
+        
+        // Return early to prevent any further processing
+        return;
       } else {
         console.log('❌ Candidate folder not found yet, continuing polling...');
         console.log('📋 Response data:', response.data);
+        candidateFolderExistsRef.current = false;
         setCandidateFolderExists(false);
       }
     } catch (error) {
       console.error('❌ Error checking candidate folder:', error);
+      candidateFolderExistsRef.current = false;
       setCandidateFolderExists(false);
     }
   };
 
-  const stopPolling = () => {
+  const stopPollingImmediate = () => {
+    // Clear interval using ref for immediate effect
+    if (pollingIntervalRef.current) {
+      console.log('🛑 Stopping polling immediately, clearing interval:', pollingIntervalRef.current);
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    
+    // Also clear state interval as backup
     if (pollingIntervalId) {
-      console.log('🛑 Stopping polling, clearing interval:', pollingIntervalId);
+      console.log('🛑 Also clearing state interval:', pollingIntervalId);
       clearInterval(pollingIntervalId);
       setPollingIntervalId(null);
     }
+    
+    // Update refs immediately
+    isPollingRef.current = false;
+    
+    // Update state
     setIsPolling(false);
-    console.log('🛑 Polling stopped completely');
+    console.log('🛑 Polling stopped completely (immediate)');
+  };
+
+  const stopPolling = () => {
+    stopPollingImmediate();
   };
 
   // AI Feedback generation function
@@ -1224,7 +1314,7 @@ const resetScheduleFields = () => {
       setShowModal(true);
       return;
     }
-    setIsLoading(true);
+    setIsFindingSlotsLoading(true);
     setAvailableSlots([]); // Clear existing slots
     setShowSlots(false); // Hide slots section
     setSelectedSlot(null); // Clear selected slot
@@ -1267,7 +1357,7 @@ const resetScheduleFields = () => {
       setModalMessage(error.message || 'Failed to fetch available slots. Please try again.');
       setShowModal(true);
     } finally {
-      setIsLoading(false);
+      setIsFindingSlotsLoading(false);
     }
   };
 
@@ -1517,7 +1607,37 @@ const resetScheduleFields = () => {
                   )}
                 </div>
               </label>
-              {loadingInterviewers && <p>Loading interviewers...</p>}
+              {loadingInterviewers && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  padding: '12px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  margin: '8px 0',
+                  border: '1px solid #e9ecef'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    color: '#6c757d',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      border: '2px solid #e9ecef',
+                      borderTop: '2px solid #007bff',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    Loading interviewers...
+                  </div>
+                </div>
+              )}
               <div className="datetime-duration-container">
                 <div className="datetime-field">
                   <label>Select Date and Time:</label>
@@ -1607,9 +1727,28 @@ const resetScheduleFields = () => {
                 <button 
                   className="find-slots-button" 
                   onClick={handleFindSlots}
-                  disabled={selectedInterviewers.length === 0}
+                  disabled={selectedInterviewers.length === 0 || isFindingSlotsLoading}
                 >
-                  Find Slots
+                  {isFindingSlotsLoading ? (
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid rgba(255,255,255,0.3)',
+                        borderTop: '2px solid white',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                      Finding Slots...
+                    </div>
+                  ) : (
+                    'Find Slots'
+                  )}
                 </button>
               </div>
               {showSlots && (

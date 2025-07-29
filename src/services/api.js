@@ -141,12 +141,13 @@ const getAccessToken = () => {
 const setAccessToken = (token) => localStorage.setItem('token', token);
 const getRefreshToken = () => localStorage.getItem('refreshToken');
 const setRefreshToken = (token) => localStorage.setItem('refreshToken', token);
-const setIdToken = (token) => localStorage.setItem('id_token', token);
-const getIdToken = () => localStorage.getItem('id_token');
+const setIdToken = (token) => localStorage.setItem('idToken', token);
+const getIdToken = () => localStorage.getItem('idToken');
 const removeTokens = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
-  localStorage.removeItem('id_token');
+  localStorage.removeItem('idToken');
+  localStorage.removeItem('user');
 };
 
 // Request interceptors for adding token to requests
@@ -214,26 +215,28 @@ export const userService = {
 export const authService = {
   exchangeOneLoginToken: async (code) => {
     const response = await api.post('/auth/exchange', { code: code });
-    if (response.success && response.data.id_token) {
-      setIdToken(response.data.id_token);
+    if (response.success && response.data.idToken) {
+      setIdToken(response.data.idToken);
       if (response.data.token) {
-      setAccessToken(response.data.token);
+        setAccessToken(response.data.token);
       }
       if (response.data.refreshToken) {
-      setRefreshToken(response.data.refreshToken);
-    }
+        setRefreshToken(response.data.refreshToken);
+      }
     }
     return response;
   },
 
   logout: () => {
     const idToken = getIdToken();
-    const redirectUri = encodeURIComponent(`${window.location.origin}/login?force_login=true`);
-    
+    const redirectUri = encodeURIComponent(`${window.location.origin}/login`);
+
     // Remove all tokens and cookies
     removeTokens();
     clearAllCookies();
-    
+
+     console.log('idToken:', idToken);
+
     // Redirect to OneLogin logout URL if we have an id_token
     if (idToken) {
       window.location.href = `${ONELOGIN_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${redirectUri}&prompt=login`;

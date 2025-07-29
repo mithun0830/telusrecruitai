@@ -4,12 +4,12 @@ import { clearAllCookies } from '../utils/cookieUtils';
 const ONELOGIN_DOMAIN = 'https://telus-sandbox.onelogin.com';
 const ONELOGIN_LOGOUT_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
 const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
-const API_BASE_URL = 'http://localhost:1998/api';
+const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-865090871947.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-865090871947.asia-south1.run.app/api';
-const AI_FEEDBACK_BASE_URL = 'http://34.42.182.48:80/api';
+const AI_FEEDBACK_BASE_URL = 'https://feedback-api-865090871947.us-central1.run.app/api';
 
 
 // Create axios instances with default config
@@ -141,12 +141,13 @@ const getAccessToken = () => {
 const setAccessToken = (token) => localStorage.setItem('token', token);
 const getRefreshToken = () => localStorage.getItem('refreshToken');
 const setRefreshToken = (token) => localStorage.setItem('refreshToken', token);
-const setIdToken = (token) => localStorage.setItem('id_token', token);
-const getIdToken = () => localStorage.getItem('id_token');
+const setIdToken = (token) => localStorage.setItem('idToken', token);
+const getIdToken = () => localStorage.getItem('idToken');
 const removeTokens = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
-  localStorage.removeItem('id_token');
+  localStorage.removeItem('idToken');
+  localStorage.removeItem('user');
 };
 
 // Request interceptors for adding token to requests
@@ -214,26 +215,28 @@ export const userService = {
 export const authService = {
   exchangeOneLoginToken: async (code) => {
     const response = await api.post('/auth/exchange', { code: code });
-    if (response.success && response.data.id_token) {
-      setIdToken(response.data.id_token);
+    if (response.success && response.data.idToken) {
+      setIdToken(response.data.idToken);
       if (response.data.token) {
-      setAccessToken(response.data.token);
+        setAccessToken(response.data.token);
       }
       if (response.data.refreshToken) {
-      setRefreshToken(response.data.refreshToken);
-    }
+        setRefreshToken(response.data.refreshToken);
+      }
     }
     return response;
   },
 
   logout: () => {
     const idToken = getIdToken();
-    const redirectUri = encodeURIComponent(`${window.location.origin}/login?force_login=true`);
-    
+    const redirectUri = encodeURIComponent(`${window.location.origin}/login`);
+
     // Remove all tokens and cookies
     removeTokens();
     clearAllCookies();
-    
+
+     console.log('idToken:', idToken);
+
     // Redirect to OneLogin logout URL if we have an id_token
     if (idToken) {
       window.location.href = `${ONELOGIN_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${redirectUri}&prompt=login`;
@@ -375,6 +378,10 @@ export const interviewService = {
 
   updateInterviewStatus: async (requestBody) => {
     return await interviewApi.put('/interviews/update-status', requestBody);
+  },
+
+  saveFeedback: async (feedbackData) => {
+    return await interviewApi.put('/interviews/update-status', feedbackData);
   },
 };
 

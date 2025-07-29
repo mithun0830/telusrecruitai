@@ -553,7 +553,9 @@ const ManagerCandidates = () => {
     const payload = {
       managerId: currentUserId,
       candidates: formattedCandidates,
-      jobDescription: fullJobDescriptionData
+      jobDescription: fullJobDescriptionData || {
+        summary: secondarySearch
+      }
     };
 
     try {

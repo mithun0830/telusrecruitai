@@ -465,32 +465,31 @@ const resetScheduleFields = () => {
     console.log('💾 Saving feedback for candidate email:', candidateEmail);
 
     try {
-const feedbackData = {
-  candidateId: candidateHistory.candidateId,
-  roundId: history[history.length - 1].roundNumber,
-  status: aiFeedback.feedback.result === 'pass' ? 'Selected' : 'Rejected',
-  feedback: aiFeedback.feedback.next_steps
-};
+      const feedbackData = {
+        candidateId: candidateHistory.candidateId,
+        roundId: history[history.length - 1].roundNumber,
+        status: aiFeedback.feedback.result === 'pass' ? 'Selected' : 'Rejected',
+        feedback: aiFeedback.feedback.next_steps
+      };
 
       console.log('💾 Feedback data being sent:', feedbackData);
 
       const response = await interviewService.saveFeedback(feedbackData);
       console.log('💾 Save Feedback Response:', response);
 
-      if (response.success) {
+      if (response.status === 200) {
         setModalType('success');
-        setModalMessage('Feedback Saved Successfully');
-        setShowModal(true);
+        setModalMessage('AI Feedback Saved Successfully');
       } else {
-        throw new Error(response.message || 'Failed to save feedback');
+        throw new Error(response.data?.message || 'Failed to save feedback');
       }
     } catch (error) {
       console.error('❌ Error saving feedback:', error);
       setModalType('error');
-      setModalMessage('Error in saving AI Feedback');
-      setShowModal(true);
+      setModalMessage(error.message || 'Error in saving AI Feedback');
     } finally {
       setIsLoadingRelevance(false);
+      setShowModal(true);
     }
   };
 
@@ -2121,7 +2120,9 @@ const feedbackData = {
               />
             </div>
             <h4 className="success-title mb-3">
-              {modalType === 'success' ? 'Interview Scheduled!' : 'Scheduling Failed'}
+              {modalType === 'success' 
+                ? (modalMessage === 'AI Feedback Saved Successfully' ? 'AI Feedback Saved!' : 'Interview Scheduled!') 
+                : (modalMessage.includes('saving') ? 'Saving Failed' : 'Scheduling Failed')}
             </h4>
             <p className="success-message mb-4">{modalMessage}</p>
             <Button 

@@ -109,8 +109,6 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
               : {candidate.score || 0}%
             </span>
           <div style={{ display: 'flex', marginLeft: 'auto', justifyContent: 'space-between', alignItems: 'center' }}>
-            
-          
             <div className="score-value" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               
               {candidate.status.toUpperCase() === 'REJECTED' ? (

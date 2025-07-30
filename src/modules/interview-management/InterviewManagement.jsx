@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+  import React, { useState, useEffect } from 'react';
 import { interviewService, aiFeedbackService } from '../../services/api';
 import InterviewHistoryModal from './InterviewHistoryModal';
 import ChatBot from '../../components/ChatBot';
@@ -96,19 +96,23 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
         </div>
         <CandidateChatBot candidate={candidate} onChatToggle={onChatToggle} />
       </div>
-      <div className="card-content">
+      <div className="card-content" style={{ padding: '0px' }}>
         <div className="score-section">
-          <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-            Manager: {candidate.manager ? candidate.manager.fullName : 'RMG Admin'}
+           <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+            JD: {candidate.jobDescription?.title}
           </span>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '14px', color: '#666' }}>
+          <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+            Manager: {candidate.manager ? candidate.manager.fullName : 'RMG Admin'} 
+          </span>
+          <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
               {round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}
+              : {candidate.score || 0}%
             </span>
+          <div style={{ display: 'flex', marginLeft: 'auto', justifyContent: 'space-between', alignItems: 'center' }}>
+            
+          
             <div className="score-value" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '24px', fontWeight: '600', color: '#333' }}>
-                {candidate.score || 0}%
-              </span>
+              
               {candidate.status.toUpperCase() === 'REJECTED' ? (
                 <OverlayTrigger
                   placement="bottom"

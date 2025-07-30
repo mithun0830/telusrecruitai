@@ -4,6 +4,8 @@ import InterviewHistoryModal from './InterviewHistoryModal';
 import ChatBot from '../../components/ChatBot';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComments } from '@fortawesome/free-solid-svg-icons';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 import './InterviewManagement.css';
 
 const CandidateChatBot = ({ candidate, onChatToggle }) => {
@@ -47,6 +49,20 @@ const getLightColor = () => {
 };
 
 const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) => {
+  const getLatestFeedback = () => {
+    if (candidate.interviewHistory && candidate.interviewHistory.length > 0) {
+      const latestInterview = candidate.interviewHistory[candidate.interviewHistory.length - 1];
+      return latestInterview.feedback || 'No feedback available';
+    }
+    return 'No feedback available';
+  };
+
+  const renderTooltip = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      {getLatestFeedback()}
+    </Tooltip>
+  );
+
   return (
     <div className="candidate-card">
       <div className="card-header">
@@ -77,27 +93,52 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
           <span>{round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}</span>
           <div className="score-value">
             <span>{candidate.score || 0}%</span>
-            <span
-              onClick={(e) => {
-                e.preventDefault();
-                if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) {
-                  handleStatusClick(candidate, round);
-                } else {
-                  console.log('Not calling handleStatusClick for IN PROGRESS, REJECTED, or PENDING in New Applications status');
-                }
-              }}
-              style={{
-                cursor: (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) ? 'pointer' : 'default',
-                backgroundColor: getLightColor(),
-                color: getDarkColor(),
-                padding: '4px 8px',
-                borderRadius: '12px',
-                fontSize: '12px',
-                display: 'inline-block'
-              }}
-            >
-              {candidate.status.toUpperCase()}
-            </span>
+            {candidate.status.toUpperCase() === 'REJECTED' ? (
+              <OverlayTrigger
+                placement="bottom"
+                delay={{ show: 250, hide: 400 }}
+                overlay={renderTooltip}
+              >
+                <span
+                  style={{
+                    backgroundColor: '#dc3545',
+                    color: '#fff',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    display: 'inline-block'
+                  }}
+                >
+                  {candidate.status.toUpperCase()}
+                </span>
+              </OverlayTrigger>
+            ) : (
+              <span
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) {
+                    handleStatusClick(candidate, round);
+                  } else {
+                    console.log('Not calling handleStatusClick for IN PROGRESS, REJECTED, or PENDING in New Applications status');
+                  }
+                }}
+                style={{
+                  cursor: (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) ? 'pointer' : 'default',
+                  backgroundColor: candidate.status.toUpperCase() === 'PENDING' ? '#FFA500' : // Warning color
+                                 candidate.status.toUpperCase() === 'COMPLETED' ? '#17a2b8' : // Info color
+                                 candidate.status.toUpperCase() === 'SELECTED' ? '#007bff' : // Primary color
+                                 candidate.status.toUpperCase() === 'REJECTED' ? '#dc3545' : // Red color
+                                 '#6c757d', // Default gray
+                  color: '#fff', // White text for better contrast
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  display: 'inline-block'
+                }}
+              >
+                {candidate.status.toUpperCase()}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -70,75 +70,94 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
           <div
             className="avatar"
             style={{
-              backgroundColor: getLightColor(),
+              backgroundColor: '#ffd6d6',
+              color: '#333',
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: getDarkColor(),
-              fontWeight: 'bold'
+              fontSize: '18px',
+              fontWeight: 'bold',
+              marginRight: '16px'
             }}
           >
             {getInitials(candidate.name)}
           </div>
           <div>
-            <h3>{candidate.name || 'No Name'}</h3>
-            <p>Applied at {candidate.interviewDateTime ? new Date(candidate.interviewDateTime).toLocaleDateString() : 'N/A'}</p>
+            <h3 style={{ margin: '0', fontSize: '18px', fontWeight: '600', color: '#333' }}>
+              {candidate.name || 'No Name'}
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#666' }}>
+              Applied at {candidate.interviewDateTime ? new Date(candidate.interviewDateTime).toLocaleDateString() : 'N/A'}
+            </p>
           </div>
         </div>
         <CandidateChatBot candidate={candidate} onChatToggle={onChatToggle} />
       </div>
       <div className="card-content">
         <div className="score-section">
-          <span className="manager-info">Manager: {candidate.manager ? candidate.manager.fullName : 'RMG Admin'}</span>
-          <span>{round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}</span>
-          <div className="score-value">
-            <span>{candidate.score || 0}%</span>
-            {candidate.status.toUpperCase() === 'REJECTED' ? (
-              <OverlayTrigger
-                placement="bottom"
-                delay={{ show: 250, hide: 400 }}
-                overlay={renderTooltip}
-              >
+          <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+            Manager: {candidate.manager ? candidate.manager.fullName : 'RMG Admin'}
+          </span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '14px', color: '#666' }}>
+              {round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}
+            </span>
+            <div className="score-value" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '24px', fontWeight: '600', color: '#333' }}>
+                {candidate.score || 0}%
+              </span>
+              {candidate.status.toUpperCase() === 'REJECTED' ? (
+                <OverlayTrigger
+                  placement="bottom"
+                  delay={{ show: 250, hide: 400 }}
+                  overlay={renderTooltip}
+                >
+                  <span
+                    style={{
+                      backgroundColor: '#dc3545',
+                      color: '#fff',
+                      padding: '6px 12px',
+                      borderRadius: '16px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      display: 'inline-block'
+                    }}
+                  >
+                    {candidate.status.toUpperCase()}
+                  </span>
+                </OverlayTrigger>
+              ) : (
                 <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) {
+                      handleStatusClick(candidate, round);
+                    } else {
+                      console.log('Not calling handleStatusClick for IN PROGRESS, REJECTED, or PENDING in New Applications status');
+                    }
+                  }}
                   style={{
-                    backgroundColor: '#dc3545',
+                    cursor: (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) ? 'pointer' : 'default',
+                    backgroundColor: candidate.status.toUpperCase() === 'PENDING' ? '#FFA500' : // Warning color
+                                   candidate.status.toUpperCase() === 'COMPLETED' ? '#00a78e' : // Success color
+                                   candidate.status.toUpperCase() === 'SELECTED' ? '#007bff' : // Primary color
+                                   candidate.status.toUpperCase() === 'REJECTED' ? '#dc3545' : // Red color
+                                   '#6c757d', // Default gray
                     color: '#fff',
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500',
                     display: 'inline-block'
                   }}
                 >
                   {candidate.status.toUpperCase()}
                 </span>
-              </OverlayTrigger>
-            ) : (
-              <span
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) {
-                    handleStatusClick(candidate, round);
-                  } else {
-                    console.log('Not calling handleStatusClick for IN PROGRESS, REJECTED, or PENDING in New Applications status');
-                  }
-                }}
-                style={{
-                  cursor: (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) ? 'pointer' : 'default',
-                  backgroundColor: candidate.status.toUpperCase() === 'PENDING' ? '#FFA500' : // Warning color
-                                 candidate.status.toUpperCase() === 'COMPLETED' ? '#17a2b8' : // Info color
-                                 candidate.status.toUpperCase() === 'SELECTED' ? '#007bff' : // Primary color
-                                 candidate.status.toUpperCase() === 'REJECTED' ? '#dc3545' : // Red color
-                                 '#6c757d', // Default gray
-                  color: '#fff', // White text for better contrast
-                  padding: '4px 8px',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  display: 'inline-block'
-                }}
-              >
-                {candidate.status.toUpperCase()}
-              </span>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

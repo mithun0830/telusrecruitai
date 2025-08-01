@@ -1338,6 +1338,7 @@
   font-size: 14px;
   color: var(--telus-dark-gray);
   text-align: right;
+  white-space: nowrap;
 }
 
 .strengths-list,

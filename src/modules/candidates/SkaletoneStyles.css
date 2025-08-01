@@ -1382,13 +1382,9 @@ input[type="checkbox"]:disabled {
   box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25) !important;
 }
 
-/* Enhanced Score Breakdown Section */
+/* Enhanced Score Breakdown Section - Matching Screenshot */
 .score-breakdown-section {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 8px 0;
+  margin: 16px 0;
 }
 
 .score-breakdown-header {
@@ -1412,8 +1408,8 @@ input[type="checkbox"]:disabled {
 }
 
 .score-badges-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
 }
 
@@ -1421,51 +1417,99 @@ input[type="checkbox"]:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  border-radius: 20px;
+  padding: 8px 12px;
+  border-radius: 12px;
   font-size: 11px;
-  font-weight: 500;
-  color: white;
+  font-weight: 600;
   min-width: fit-content;
-  flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .score-badge.technical {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #f0fdf4;
+  color: #059669;
+  border: 1px solid #bbf7d0;
 }
 
 .score-badge.experience {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
 }
 
 .score-badge.education {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: #faf5ff;
+  color: #7c3aed;
+  border: 1px solid #e9d5ff;
 }
 
 .score-badge.soft-skills {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
 }
 
 .score-badge.achievements {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #f9a8d4;
 }
 
 .badge-icon {
-  font-size: 10px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
 .badge-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
+  flex: 1;
 }
 
 .badge-percentage {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   margin-left: auto;
+}
+
+/* Responsive adjustments for score badges - matching screenshot */
+@media (max-width: 768px) {
+  .score-badges-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  
+  .score-badge {
+    padding: 6px 10px;
+    gap: 4px;
+    font-size: 10px;
+  }
+  
+  .badge-icon {
+    font-size: 10px;
+  }
+  
+  .badge-label {
+    font-size: 10px;
+  }
+  
+  .badge-percentage {
+    font-size: 11px;
+  }
+}
+
+/* Ensure proper grid layout for 5 badges */
+.score-badges-container .score-badge:nth-child(4),
+.score-badges-container .score-badge:nth-child(5) {
+  grid-column: span 1;
+}
+
+/* On smaller screens, make last badge span full width if odd number */
+@media (max-width: 768px) {
+  .score-badges-container .score-badge:nth-child(5) {
+    grid-column: span 2;
+  }
 }
 
 /* Responsive adjustments for score badges */
@@ -1665,169 +1709,172 @@ input[type="checkbox"]:disabled {
   gap: 14px;
 }
 
-/* Enhanced Header Section */
-.enhanced-header-section {
-  text-align: left;
-  margin-bottom: 8px;
+/* Clean Header Section */
+.clean-header-section {
+  margin-bottom: 16px;
   padding-right: 80px; /* Space for heart section */
 }
 
-.enhanced-name {
-  font-size: 18px;
+.avatar-and-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.clean-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
+  font-size: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.name-and-status {
+  flex: 1;
+  min-width: 0;
+}
+
+.clean-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #059669;
+  margin: 0 0 6px 0;
+  line-height: 1.2;
   letter-spacing: -0.025em;
 }
 
-/* Info Badges Row */
-.info-badges-row {
+.status-badges {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.info-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
   border-radius: 12px;
-  font-size: 10px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.95);
+  font-size: 11px;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: #64748b;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  width: fit-content;
-  max-width: 100%;
 }
 
-.info-badge:hover {
-  background: rgba(255, 255, 255, 1);
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.status-badge.interviewing {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #bfdbfe;
 }
 
-.badge-icon-small {
-  font-size: 9px;
-  flex-shrink: 0;
+.status-badge.experience {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
 }
 
-/* Experience Badge */
-.experience-badge {
-  color: #0369a1;
-  border-color: #bae6fd;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-}
-
-.experience-badge .badge-icon-small {
-  color: #0284c7;
-}
-
-.experience-badge:hover {
-  border-color: #7dd3fc;
-  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-}
-
-/* Source Badge */
-.source-badge {
-  color: #059669;
-  border-color: #a7f3d0;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
-
-.source-badge .badge-icon-small {
-  color: #10b981;
-}
-
-.source-badge:hover {
-  border-color: #6ee7b7;
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-}
-
-/* Selection Badge */
-.selection-badge {
-  color: #7c2d12;
-  border-color: #fed7aa;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-}
-
-.selection-badge .badge-icon-small {
-  color: #ea580c;
-}
-
-.selection-badge:hover {
-  border-color: #fdba74;
-  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
-}
-
-/* Selected state for selection badge */
-.enhanced-candidate-card.selected .selection-badge {
-  color: #be185d;
-  border-color: #f9a8d4;
-  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
-}
-
-.enhanced-candidate-card.selected .selection-badge .badge-icon-small {
-  color: #ec4899;
-}
-
-.enhanced-candidate-card.selected .selection-badge:hover {
-  border-color: #f472b6;
-  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
-}
-
-/* Contact Section */
-.contact-section {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
+/* Clean Contact Section */
+.clean-contact-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
-.contact-item {
+.clean-contact-item {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.contact-icon {
+.clean-contact-icon {
   color: #6b7280;
   font-size: 12px;
   width: 14px;
   flex-shrink: 0;
 }
 
-.contact-link {
+.clean-contact-text {
   font-size: 12px;
-  color: #374151;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
+  color: #6b7280;
+  font-weight: 400;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.contact-link:hover {
-  color: #0d9488;
-  text-decoration: underline;
+/* Skill Highlight Clean */
+.skill-highlight-clean {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #374151;
+  font-weight: 500;
 }
 
-.phone-link:hover {
+.skill-icon {
   color: #059669;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
-.email-link:hover {
-  color: #2563eb;
+/* Score Section Clean */
+.score-section-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.main-score {
+  text-align: left;
+}
+
+.score-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #059669;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.score-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.secondary-metric {
+  text-align: right;
+}
+
+.metric-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #374151;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 /* Enhanced Info Row */

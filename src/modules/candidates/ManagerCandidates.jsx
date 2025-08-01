@@ -767,67 +767,62 @@ const ManagerCandidates = () => {
 
                   {/* Card Body */}
                   <div className="enhanced-card-body">
-                    {/* Header with Name */}
-                    <div className="enhanced-header-section">
-                      <h3 className="enhanced-name">{candidate.resume.name}</h3>
-                      <div className="info-badges-row">
-                        <div className="info-badge experience-badge">
-                          <FontAwesomeIcon icon={faClock} className="badge-icon-small" />
-                          {candidate.resume.fullText.match(/(\d+)\+ years/)?.[0] || 
-                           candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 15) || 
-                           '5+ years'}
+                    {/* Clean Header Section */}
+                    <div className="clean-header-section">
+                      <div className="avatar-and-name">
+                        <div className="clean-avatar">
+                          {getInitials(candidate.resume.name)}
                         </div>
-                        <div className="info-badge source-badge">
-                          <FontAwesomeIcon icon={faMapMarkerAlt} className="badge-icon-small" />
-                          {candidate.source || 'Internal'}
-                        </div>
-                        <div className="info-badge selection-badge">
-                          <FontAwesomeIcon icon={faCheck} className="badge-icon-small" />
-                          {candidate.locked && candidate.managerId ? 
-                            `Selected by Manager ${candidate.managerId}` : 
-                            'Not Selected'
-                          }
+                        <div className="name-and-status">
+                          <h3 className="clean-name">{candidate.resume.name}</h3>
+                          <div className="status-badges">
+                            <span className="status-badge interviewing">
+                              {candidate.locked && candidate.managerId ? 'selected' : 'available'}
+                            </span>
+                            <span className="status-badge experience">
+                              {candidate.resume.fullText.match(/(\d+)\+ years/)?.[0] || 
+                               candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 15) || 
+                               '5+ years'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Contact Information */}
-                    <div className="contact-section">
+                    <div className="clean-contact-section">
                       {candidate.resume.phoneNumber && (
-                        <div className="contact-item">
-                          <FontAwesomeIcon icon={faPhone} className="contact-icon" />
-                          <a 
-                            href={`tel:${candidate.resume.phoneNumber}`} 
-                            className="contact-link phone-link"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {candidate.resume.phoneNumber}
-                          </a>
+                        <div className="clean-contact-item">
+                          <FontAwesomeIcon icon={faPhone} className="clean-contact-icon" />
+                          <span className="clean-contact-text">{candidate.resume.phoneNumber}</span>
                         </div>
                       )}
                       {candidate.resume.email && (
-                        <div className="contact-item">
-                          <FontAwesomeIcon icon={faEnvelope} className="contact-icon" />
-                          <a 
-                            href={`mailto:${candidate.resume.email}`} 
-                            className="contact-link email-link"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {candidate.resume.email}
-                          </a>
+                        <div className="clean-contact-item">
+                          <FontAwesomeIcon icon={faEnvelope} className="clean-contact-icon" />
+                          <span className="clean-contact-text">{candidate.resume.email}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Source and Experience Row */}
-                    <div className="info-row-enhanced">
-                      <div className="source-enhanced">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
-                        <span>{candidate.source || 'Internal'}</span>
+                    {/* Score Section */}
+                    <div className="score-section-clean">
+                      <div className="main-score">
+                        <div className="score-number">{candidate.score}%</div>
+                        <div className="score-label">Score</div>
                       </div>
-                      <div className="experience-enhanced">
-                        <span className="label">Experience:</span>
-                        <span className="value">{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'}+ years</span>
+                      <div className="secondary-metric">
+                        {candidate.locked && candidate.managerId ? (
+                          <>
+                            <div className="metric-number">{candidate.managerId}</div>
+                            <div className="metric-label">Selected by</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="metric-number"></div>
+                            <div className="metric-label"></div>
+                          </>
+                        )}
                       </div>
                     </div>
 

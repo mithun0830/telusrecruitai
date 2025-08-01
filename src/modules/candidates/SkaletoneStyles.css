@@ -1511,8 +1511,8 @@ input[type="checkbox"]:disabled {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   overflow: hidden !important;
   width: 100% !important;
-  max-width: 380px !important;
-  min-height: 420px !important;
+  max-width: 480px !important;
+  min-height: 450px !important;
   display: flex !important;
   flex-direction: column !important;
   margin: 0 auto !important;
@@ -1555,9 +1555,11 @@ input[type="checkbox"]:disabled {
   right: 16px;
   z-index: 10;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 200px;
 }
 
 .heart-btn-right {
@@ -1626,15 +1628,20 @@ input[type="checkbox"]:disabled {
   background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
-/* Selection status under score */
+/* Selection status horizontal with heart and score */
 .selection-status {
   font-size: 9px;
   font-weight: 600;
   color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: normal;
   text-align: center;
-  margin-top: 2px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .enhanced-candidate-card.selected .selection-status {
@@ -1669,24 +1676,109 @@ input[type="checkbox"]:disabled {
   font-size: 18px;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 4px 0;
+  margin: 0 0 8px 0;
   line-height: 1.3;
   letter-spacing: -0.025em;
 }
 
-.enhanced-role {
-  font-size: 13px;
-  color: #6b7280;
-  margin: 0 0 4px 0;
-  line-height: 1.4;
-  font-weight: 500;
+/* Info Badges Row */
+.info-badges-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.enhanced-handle {
-  font-size: 11px;
-  color: #9ca3af;
-  margin: 0;
-  font-weight: 500;
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.info-badge:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.badge-icon-small {
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+/* Experience Badge */
+.experience-badge {
+  color: #0369a1;
+  border-color: #bae6fd;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.experience-badge .badge-icon-small {
+  color: #0284c7;
+}
+
+.experience-badge:hover {
+  border-color: #7dd3fc;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+}
+
+/* Source Badge */
+.source-badge {
+  color: #059669;
+  border-color: #a7f3d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+
+.source-badge .badge-icon-small {
+  color: #10b981;
+}
+
+.source-badge:hover {
+  border-color: #6ee7b7;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+/* Selection Badge */
+.selection-badge {
+  color: #7c2d12;
+  border-color: #fed7aa;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+}
+
+.selection-badge .badge-icon-small {
+  color: #ea580c;
+}
+
+.selection-badge:hover {
+  border-color: #fdba74;
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+}
+
+/* Selected state for selection badge */
+.enhanced-candidate-card.selected .selection-badge {
+  color: #be185d;
+  border-color: #f9a8d4;
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+}
+
+.enhanced-candidate-card.selected .selection-badge .badge-icon-small {
+  color: #ec4899;
+}
+
+.enhanced-candidate-card.selected .selection-badge:hover {
+  border-color: #f472b6;
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
 }
 
 /* Contact Section */

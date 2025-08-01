@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import './SkaletoneStyles.css';
 import useManagerCandidates from './useManagerCandidates';
-import { authService, candidateService, interviewService, managerService } from '../../services/api';
+import { authService, candidateService, interviewService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faLock, 
@@ -25,7 +25,8 @@ import {
   faBriefcase,
   faGraduationCap,
   faUsers,
-  faTrophy
+  faTrophy,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
@@ -96,7 +97,6 @@ const ManagerCandidates = () => {
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
-  const [managers, setManagers] = useState([]);
   const textareaRef = useRef(null);
 
   const spinKeyframes = `
@@ -116,23 +116,6 @@ const ManagerCandidates = () => {
   useLayoutEffect(() => {
     adjustTextareaHeight();
   }, [adjustTextareaHeight]);
-
-  // Fetch managers data on component mount
-  useEffect(() => {
-    const fetchManagers = async () => {
-      try {
-        const response = await managerService.getAllManagers();
-        if (response.success) {
-          setManagers(response.data);
-          
-        }
-      } catch (error) {
-        console.error('Error fetching managers:', error);
-      }
-    };
-
-    fetchManagers();
-  }, []);
 
 
   const handleGenerateJobDescription = async (data) => {
@@ -719,7 +702,7 @@ const ManagerCandidates = () => {
           </div>
 
           {/* Enhanced Candidates Grid */}
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {searchResults.length > 0 ? (
               searchResults.map((candidate) => {
                 const getScoreTheme = (score) => {
@@ -738,36 +721,32 @@ const ManagerCandidates = () => {
                     candidate.locked && String(candidate.managerId) === String(currentUserId) ? 'selected' : ''
                   }`}
                 >
-                  {/* Heart Selection - Top Right Corner */}
-                  <div className="card-heart-right">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleCandidateLockToggle(candidate, currentUserId);
-                      }}
-                      className="heart-btn-right"
-                      aria-label={candidate.locked && String(candidate.managerId) === String(currentUserId) ? "Unselect candidate" : "Select candidate"}
-                    >
-                      {candidate.locked && String(candidate.managerId) === String(currentUserId) ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right selected">
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="#ec4899"/>
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right">
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#d1d5db" strokeWidth="2" fill="none"/>
-                        </svg>
-                      )}
-                    </button>
-                    {/* Score under heart */}
-                    <div className={`score-under-heart ${scoreTheme}`}>
-                      {candidate.score}%
+                    {/* Heart Selection - Top Right Corner */}
+                    <div className="card-heart-right">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleCandidateLockToggle(candidate, currentUserId);
+                        }}
+                        className="heart-btn-right"
+                        aria-label={candidate.locked && String(candidate.managerId) === String(currentUserId) ? "Unselect candidate" : "Select candidate"}
+                      >
+                        {candidate.locked && String(candidate.managerId) === String(currentUserId) ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right selected">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="#ec4899"/>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#d1d5db" strokeWidth="2" fill="none"/>
+                          </svg>
+                        )}
+                      </button>
+                      {/* Score under heart */}
+                      <div className={`score-under-heart ${scoreTheme}`}>
+                        {candidate.score}%
+                      </div>
                     </div>
-                    {/* Selection status under score */}
-                    <div className="selection-status">
-                      {candidate.locked && String(candidate.managerId) === String(currentUserId) ? 'Selected' : 'Not Selected'}
-                    </div>
-                  </div>
 
                   {/* Error State */}
                   {lockErrorState.show && lockErrorState.candidateId === candidate.resume.id && (
@@ -791,10 +770,25 @@ const ManagerCandidates = () => {
                     {/* Header with Name */}
                     <div className="enhanced-header-section">
                       <h3 className="enhanced-name">{candidate.resume.name}</h3>
-                      <p className="enhanced-role">
-                        {candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 40) || 'Software Professional'}...
-                      </p>
-                      <p className="enhanced-handle">@{candidate.resume.email.split('@')[0]}</p>
+                      <div className="info-badges-row">
+                        <div className="info-badge experience-badge">
+                          <FontAwesomeIcon icon={faClock} className="badge-icon-small" />
+                          {candidate.resume.fullText.match(/(\d+)\+ years/)?.[0] || 
+                           candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 15) || 
+                           '5+ years'}
+                        </div>
+                        <div className="info-badge source-badge">
+                          <FontAwesomeIcon icon={faMapMarkerAlt} className="badge-icon-small" />
+                          {candidate.source || 'Internal'}
+                        </div>
+                        <div className="info-badge selection-badge">
+                          <FontAwesomeIcon icon={faCheck} className="badge-icon-small" />
+                          {candidate.locked && candidate.managerId ? 
+                            `Selected by Manager ${candidate.managerId}` : 
+                            'Not Selected'
+                          }
+                        </div>
+                      </div>
                     </div>
 
                     {/* Contact Information */}
@@ -884,10 +878,6 @@ const ManagerCandidates = () => {
                       </div>
                     )}
 
-                    {/* Skill Highlight */}
-                    <div className="skill-highlight-enhanced">
-                      {candidate.analysis?.keyStrengths?.[0]?.strength || 'Extensive Java/J2EE experience'}
-                    </div>
 
                     {/* Action Button */}
                     <button

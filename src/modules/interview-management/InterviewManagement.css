@@ -3,7 +3,7 @@
   background-color: #f8fafc;
   min-height: 100vh;
   width: calc(100vw - 40px);
-  overflow-x: auto;
+  /* overflow-x: auto; */
 }
 
 .header {

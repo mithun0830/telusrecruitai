@@ -358,6 +358,9 @@ export const managerService = {
   },
   getAllManagers: async () => {
     return await api.get('/managers');
+  },
+  getManagerById: async (managerId) => {
+    return await api.get(`/users/${managerId}`);
   }
 };
 

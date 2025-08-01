@@ -10,6 +10,7 @@ import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../components/Loader';
 import AIChatOverlay from '../../components/AIChatOverlay';
 import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
+import ManagerDetailsDialog from '../../components/ManagerDetailsDialog';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -66,6 +67,11 @@ const loaderTextStyle = {
 
 const ManagerCandidates = () => {
   const expandedViewRef = useRef(null);
+  const textareaRef = useRef(null);
+  const currentUserId = useSelector(state => state.auth.user?.id);
+
+  // State variables
+  const [searchResults, setSearchResults] = useState([]);
   const [lockErrorState, setLockErrorState] = useState({ show: false, message: '', candidateId: null });
   const [showShortlistModal, setShowShortlistModal] = useState(false);
   const [shortlistMessage, setShortlistMessage] = useState('');
@@ -75,7 +81,60 @@ const ManagerCandidates = () => {
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
   const [managers, setManagers] = useState([]);
-  const textareaRef = useRef(null);
+  const [managerDetails, setManagerDetails] = useState({});
+  const [showManagerDialog, setShowManagerDialog] = useState(false);
+  const [selectedManager, setSelectedManager] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [expandedCandidate, setExpandedCandidate] = useState(null);
+  const [isResumeExpanded, setIsResumeExpanded] = useState(false);
+  const [isCompareViewOpen, setIsCompareViewOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isShortlisting, setIsShortlisting] = useState(false);
+  const [showSearchSlideshow, setShowSearchSlideshow] = useState(false);
+  const [currentSearchSlide, setCurrentSearchSlide] = useState(0);
+  const [showShortlistSlideshow, setShowShortlistSlideshow] = useState(false);
+  const [currentShortlistSlide, setCurrentShortlistSlide] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [currentSearchValue, setCurrentSearchValue] = useState('');
+
+  const {
+    filters,
+    selectedCandidates,
+    handleFilterChange: originalHandleFilterChange,
+    handleSelectCandidate,
+  } = useManagerCandidates();
+
+  const fetchManagerDetails = useCallback(async (managerId) => {
+    if (!managerDetails[managerId]) {
+      try {
+        const response = await managerService.getManagerById(managerId);
+        if (response.success) {
+          const { fullName, email, phoneNumber, designation, region, businessUnit, department, role } = response.data;
+          setManagerDetails(prev => ({
+            ...prev,
+            [managerId]: { fullName, email, phoneNumber, designation, region, businessUnit, department, role }
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching manager details:', error);
+      }
+    }
+  }, [managerDetails]);
+
+  const handleOpenManagerDialog = (managerId) => {
+    setSelectedManager(managerDetails[managerId]);
+    setShowManagerDialog(true);
+  };
+
+  useEffect(() => {
+    searchResults.forEach(candidate => {
+      if (candidate.locked && candidate.managerId) {
+        fetchManagerDetails(candidate.managerId);
+      }
+    });
+  }, [searchResults, fetchManagerDetails]);
 
   const spinKeyframes = `
     @keyframes spin {
@@ -168,19 +227,6 @@ const ManagerCandidates = () => {
       setTimeout(() => setLockErrorState({ show: false, message: '', candidateId: null }), 5000); // Show tooltip for 5 seconds
     }
   };
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [expandedCandidate, setExpandedCandidate] = useState(null);
-  const [isResumeExpanded, setIsResumeExpanded] = useState(false);
-  const [isCompareViewOpen, setIsCompareViewOpen] = useState(false);
-  const currentUserId = useSelector(state => state.auth.user?.id);
-
-  const {
-    filters,
-    selectedCandidates,
-    handleFilterChange: originalHandleFilterChange,
-    handleSelectCandidate,
-  } = useManagerCandidates();
-
   const handleFilterChange = (filterName, value) => {
     setErrorMessage('');
     originalHandleFilterChange(filterName, value);
@@ -363,15 +409,6 @@ const ManagerCandidates = () => {
       </div>
     );
   };
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isShortlisting, setIsShortlisting] = useState(false);
-  const [showSearchSlideshow, setShowSearchSlideshow] = useState(false);
-  const [currentSearchSlide, setCurrentSearchSlide] = useState(0);
-  const [showShortlistSlideshow, setShowShortlistSlideshow] = useState(false);
-  const [currentShortlistSlide, setCurrentShortlistSlide] = useState(0);
 
   // Search slideshow data - dynamically filtered based on external search setting
   const getSearchSlides = () => {
@@ -462,8 +499,6 @@ const ManagerCandidates = () => {
     setLoading(isLoading);
     return () => setLoading(false);
   }, [isGeneratingDescription, isSearching, isShortlisting, setLoading]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [currentSearchValue, setCurrentSearchValue] = useState('');
 
   const handleSearchClick = async (e, searchValue = null) => {
     // Prevent any event bubbling
@@ -750,14 +785,19 @@ const ManagerCandidates = () => {
                             <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
                             <div>Experience: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
                             <div>Score: {candidate.score}%</div>
-                            {candidate.locked && candidate.managerId && (
-                              <div style={{ color: '#059669', fontWeight: '500' }}>
-                                Shortlisted by: 
-                                <span style={{ marginLeft: '4px' }}>
-                                  {candidate.managerId}
-                                </span>
-                              </div>
-                            )}
+{candidate.locked && candidate.managerId && (
+  <div style={{ color: '#059669', fontWeight: '500' }}>
+    Shortlisted by: 
+    <span 
+      style={{ marginLeft: '4px', cursor: 'pointer', textDecoration: 'underline' }}
+      onClick={() => handleOpenManagerDialog(candidate.managerId)}
+    >
+      {managerDetails[candidate.managerId] 
+        ? managerDetails[candidate.managerId].fullName 
+        : 'Loading...'}
+    </span>
+  </div>
+)}
                           </div>
                           <div className="source-section">
                             <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
@@ -911,6 +951,11 @@ const ManagerCandidates = () => {
       )}
 
     </div>
+      <ManagerDetailsDialog
+        show={showManagerDialog}
+        onHide={() => setShowManagerDialog(false)}
+        manager={selectedManager}
+      />
     </>
   );
 };

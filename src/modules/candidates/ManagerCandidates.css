@@ -36,9 +36,9 @@
   /* z-index: 1100; */
 }
 
-.candidates-content {
+/* .candidates-content {
   margin-top: 76px;
-}
+} */
 
 .candidates-header .ai-job-description-btn {
   background-color: var(--telus-purple);
@@ -95,7 +95,9 @@
 
 .filters-section {
   width: 100%;
-  padding: 24px;
+  padding-left: 24px;
+  padding-top: 24px;
+  padding-right: 24px;
   background-color: var(--telus-white);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);

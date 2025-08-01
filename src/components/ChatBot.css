@@ -86,7 +86,7 @@
 }
 
 .chat-bot-container {
-  width: 320px;
+  width: 420px;
   height: 450px;
   background-color: #F4F4F4;
   border-radius: 10px;
@@ -234,7 +234,7 @@
 .chat-bot-input-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  /* gap: 8px; */
   margin-left: auto;
 }
 

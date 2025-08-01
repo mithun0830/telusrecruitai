@@ -17,7 +17,7 @@
   background: white;
   border-radius: 16px;
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   height: 100%;
   max-height: 600px;
   display: flex;
@@ -261,7 +261,7 @@ button[data-tooltip]:hover::after {
 .chat-input {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px;
   background-color: #FFFFFF;
   border-top: 1px solid #E0E0E0;
   gap: 8px;
@@ -276,14 +276,14 @@ button[data-tooltip]:hover::after {
   border: none;
   outline: none;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 16px;
   color: #374151;
   background: transparent;
 }
 
 .chat-input input::placeholder {
   color: #9CA3AF;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .input-action-btn {
@@ -560,6 +560,18 @@ button[data-tooltip]:hover::after {
     font-size: 14px;
     line-height: 1.6;
     margin-bottom: 24px;
+  }
+
+  .chat-container {
+    max-width: 95%;
+  }
+
+  .chat-input input {
+    font-size: 14px;
+  }
+
+  .chat-input input::placeholder {
+    font-size: 14px;
   }
 }
 

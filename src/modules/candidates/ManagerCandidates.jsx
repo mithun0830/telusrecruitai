@@ -20,7 +20,12 @@ import {
   faTimes,
   faEnvelope,
   faPhone,
-  faMapMarkerAlt
+  faMapMarkerAlt,
+  faCode,
+  faBriefcase,
+  faGraduationCap,
+  faUsers,
+  faTrophy
 } from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
@@ -282,10 +287,10 @@ const ManagerCandidates = () => {
                         <div className="score-bar">
                           <div
                             className="score-fill"
-                            style={{ width: `${(candidate.analysis.categoryScores[item.score] / item.total) * 100}%` }}
+                            style={{ width: `${candidate.analysis.categoryScores[item.score]}%` }}
                           ></div>
                         </div>
-                        <div className="score-value">{candidate.analysis.categoryScores[item.score]}/{item.total}</div>
+                        <div className="score-value">{candidate.analysis.categoryScores[item.score]}%</div>
                       </div>
                     </div>
                   ))}
@@ -729,167 +734,173 @@ const ManagerCandidates = () => {
                 return (
                 <div
                   key={candidate.resume.id}
-                  className={`rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 border overflow-hidden group cursor-pointer ${
-                    candidate.locked && String(candidate.managerId) === String(currentUserId)
-                      ? 'bg-gradient-to-br from-pink-50 to-purple-50 border-pink-200 shadow-pink-100'
-                      : `bg-white card-theme-${scoreTheme}`
-                  } text-score-${scoreTheme}`}
+                  className={`enhanced-candidate-card ${scoreTheme} ${
+                    candidate.locked && String(candidate.managerId) === String(currentUserId) ? 'selected' : ''
+                  }`}
                 >
-                  <div className="p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        {/* Heart-style checkbox for candidate selection */}
-                        <div className="flex items-center">
-                          <button
-                            onClick={() => handleCandidateLockToggle(candidate, currentUserId)}
-                            className="heart-checkbox transition-all duration-300 hover:scale-110 focus:outline-none"
-                            aria-label={candidate.locked && String(candidate.managerId) === String(currentUserId) ? "Unselect candidate" : "Select candidate"}
-                          >
-                            {candidate.locked && String(candidate.managerId) === String(currentUserId) ? (
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-500">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>
-                              </svg>
-                            ) : (
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-300 hover:text-pink-400">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                              </svg>
-                            )}
-                          </button>
-                        </div>
-                        <div 
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                          style={{
-                            backgroundColor: getLightColor().replace('85', '500').replace('95', 'white'),
-                            color: getDarkColor()
-                          }}
-                        >
-                          {getInitials(candidate.resume.name)}
-                        </div>
-                        <div>
-                          <h3 className="candidate-name text-lg font-semibold transition-colors duration-200">
-                            {candidate.resume.name}
-                          </h3>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              candidate.locked ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {candidate.locked ? 'shortlisted' : 'available'}
-                            </span>
-                            <span className="contact-text text-sm">
-                              {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs experience
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {lockErrorState.show && lockErrorState.candidateId === candidate.resume.id && (
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={
-                              <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
-                                {lockErrorState.message}
-                              </Tooltip>
-                            }
-                            show={true}
-                          >
-                            <div className="p-2 text-red-500">
-                              <FontAwesomeIcon icon={faTimesCircle} className="text-lg" />
-                            </div>
-                          </OverlayTrigger>
-                        )}
-                        <div className="relative">
-                          <button 
-                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                            onClick={() => handleMoreOptionsClick(candidate.resume.id)}
-                          >
-                            <FontAwesomeIcon icon={faEllipsisV} className="icon-sm" />
-                          </button>
-                          {activeDropdown === candidate.resume.id && (
-                            <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-                              <button 
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                                onClick={() => handleViewClick(candidate)}
-                              >
-                                <FontAwesomeIcon icon={faEye} className="fa-icon-left icon-sm" />
-                                {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'View Details'}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                  {/* Heart Selection - Top Right Corner */}
+                  <div className="card-heart-right">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleCandidateLockToggle(candidate, currentUserId);
+                      }}
+                      className="heart-btn-right"
+                      aria-label={candidate.locked && String(candidate.managerId) === String(currentUserId) ? "Unselect candidate" : "Select candidate"}
+                    >
+                      {candidate.locked && String(candidate.managerId) === String(currentUserId) ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right selected">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="#ec4899"/>
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#d1d5db" strokeWidth="2" fill="none"/>
+                        </svg>
+                      )}
+                    </button>
+                    {/* Score under heart */}
+                    <div className={`score-under-heart ${scoreTheme}`}>
+                      {candidate.score}%
                     </div>
-
-                    {/* Contact Info - Simplified */}
-                    <div className="space-y-1 mb-4">
-                      <div className="text-sm text-gray-600">{candidate.resume.phoneNumber}</div>
-                      <div className="text-sm text-gray-600 truncate">{candidate.resume.email}</div>
+                    {/* Selection status under score */}
+                    <div className="selection-status">
+                      {candidate.locked && String(candidate.managerId) === String(currentUserId) ? 'Selected' : 'Not Selected'}
                     </div>
+                  </div>
 
-                    {/* Skills - Simplified */}
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
-                        {candidate.analysis?.keyStrengths?.[0]?.strength || 'Extensive experience in relevant technologies'}
+                  {/* Error State */}
+                  {lockErrorState.show && lockErrorState.candidateId === candidate.resume.id && (
+                    <div className="card-error-left">
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id={`error-tooltip-${candidate.resume.id}`}>
+                            {lockErrorState.message}
+                          </Tooltip>
+                        }
+                        show={true}
+                      >
+                        <FontAwesomeIcon icon={faTimesCircle} className="error-icon" />
+                      </OverlayTrigger>
+                    </div>
+                  )}
+
+                  {/* Card Body */}
+                  <div className="enhanced-card-body">
+                    {/* Header with Name */}
+                    <div className="enhanced-header-section">
+                      <h3 className="enhanced-name">{candidate.resume.name}</h3>
+                      <p className="enhanced-role">
+                        {candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 40) || 'Software Professional'}...
                       </p>
+                      <p className="enhanced-handle">@{candidate.resume.email.split('@')[0]}</p>
                     </div>
 
-                    {/* Score and Stats - Simplified */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="text-center">
-                          <div className={`text-2xl font-bold ${
-                            candidate.score >= 85 ? 'text-green-600' : 
-                            candidate.score >= 75 ? 'text-blue-600' : 'text-orange-600'
-                          }`}>
-                            {candidate.score}%
-                          </div>
-                          <div className="text-xs text-gray-500">Score</div>
+                    {/* Contact Information */}
+                    <div className="contact-section">
+                      {candidate.resume.phoneNumber && (
+                        <div className="contact-item">
+                          <FontAwesomeIcon icon={faPhone} className="contact-icon" />
+                          <a 
+                            href={`tel:${candidate.resume.phoneNumber}`} 
+                            className="contact-link phone-link"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {candidate.resume.phoneNumber}
+                          </a>
                         </div>
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-teal-600">
-                            {candidate.locked ? '1' : '0'}
+                      )}
+                      {candidate.resume.email && (
+                        <div className="contact-item">
+                          <FontAwesomeIcon icon={faEnvelope} className="contact-icon" />
+                          <a 
+                            href={`mailto:${candidate.resume.email}`} 
+                            className="contact-link email-link"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {candidate.resume.email}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Source and Experience Row */}
+                    <div className="info-row-enhanced">
+                      <div className="source-enhanced">
+                        <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+                        <span>{candidate.source || 'Internal'}</span>
+                      </div>
+                      <div className="experience-enhanced">
+                        <span className="label">Experience:</span>
+                        <span className="value">{candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'}+ years</span>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Score Breakdown */}
+                    {candidate.analysis?.categoryScores && (
+                      <div className="score-breakdown-section">
+                        <div className="score-breakdown-header">
+                          <h4 className="breakdown-title">Score Breakdown</h4>
+                          <div className="overall-score">{candidate.score}% Overall</div>
+                        </div>
+                        <div className="score-badges-container">
+                          <div className="score-badge technical">
+                            <FontAwesomeIcon icon={faCode} className="badge-icon" />
+                            <span className="badge-label">Technical</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.technicalSkills}%
+                            </span>
                           </div>
-                          <div className="text-xs text-gray-500">Shortlisted by</div>
+                          <div className="score-badge experience">
+                            <FontAwesomeIcon icon={faBriefcase} className="badge-icon" />
+                            <span className="badge-label">Experience</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.experience}%
+                            </span>
+                          </div>
+                          <div className="score-badge education">
+                            <FontAwesomeIcon icon={faGraduationCap} className="badge-icon" />
+                            <span className="badge-label">Education</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.education}%
+                            </span>
+                          </div>
+                          <div className="score-badge soft-skills">
+                            <FontAwesomeIcon icon={faUsers} className="badge-icon" />
+                            <span className="badge-label">Soft Skills</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.softSkills}%
+                            </span>
+                          </div>
+                          <div className="score-badge achievements">
+                            <FontAwesomeIcon icon={faTrophy} className="badge-icon" />
+                            <span className="badge-label">Achievements</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.achievements}%
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button 
-                          className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200 text-sm font-medium"
-                          onClick={() => handleViewClick(candidate)}
-                        >
-                          View Details
-                        </button>
-                      </div>
+                    )}
+
+                    {/* Skill Highlight */}
+                    <div className="skill-highlight-enhanced">
+                      {candidate.analysis?.keyStrengths?.[0]?.strength || 'Extensive Java/J2EE experience'}
                     </div>
 
-                    {/* Enhanced Progress Bar */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                        <span>Match Score</span>
-                        <span className="font-semibold">{candidate.score}%</span>
-                      </div>
-                      <div className="progress-bar-container">
-                        <div
-                          className={`progress-bar-fill ${
-                            candidate.score >= 85 ? 'progress-bar-excellent' :
-                            candidate.score >= 75 ? 'progress-bar-good' :
-                            candidate.score >= 60 ? 'progress-bar-average' : 'progress-bar-poor'
-                          }`}
-                          style={{ width: `${candidate.score}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    {/* Source Tag */}
-                    <div className="mt-3 flex justify-end">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        candidate.source?.toLowerCase() === 'external' 
-                          ? 'bg-purple-100 text-purple-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {candidate.source || 'Internal'}
-                      </span>
-                    </div>
+                    {/* Action Button */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewClick(candidate);
+                      }}
+                      className={`action-btn-enhanced ${scoreTheme}`}
+                    >
+                      <FontAwesomeIcon icon={faEye} className="icon" />
+                      View Details
+                    </button>
                   </div>
                 </div>
                 );

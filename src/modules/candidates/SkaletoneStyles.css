@@ -1381,3 +1381,596 @@ input[type="checkbox"]:disabled {
 .card-theme-poor:hover {
   box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25) !important;
 }
+
+/* Enhanced Score Breakdown Section */
+.score-breakdown-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px 0;
+}
+
+.score-breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.breakdown-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.overall-score {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.score-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.score-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  color: white;
+  min-width: fit-content;
+  flex: 1;
+  justify-content: center;
+}
+
+.score-badge.technical {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.score-badge.experience {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.score-badge.education {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.score-badge.soft-skills {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.score-badge.achievements {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.badge-icon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.badge-label {
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-percentage {
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Responsive adjustments for score badges */
+@media (max-width: 768px) {
+  .score-badges-container {
+    gap: 6px;
+  }
+  
+  .score-badge {
+    padding: 4px 8px;
+    gap: 4px;
+    font-size: 10px;
+  }
+  
+  .badge-icon {
+    font-size: 9px;
+  }
+  
+  .badge-label {
+    font-size: 9px;
+  }
+  
+  .badge-percentage {
+    font-size: 10px;
+  }
+  
+  .breakdown-title {
+    font-size: 13px;
+  }
+  
+  .overall-score {
+    font-size: 11px;
+  }
+}
+
+/* Enhanced Candidate Card Styles - With Right Corner Heart & Contact Info */
+.enhanced-candidate-card {
+  position: relative !important;
+  background: white !important;
+  border-radius: 16px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  max-width: 380px !important;
+  min-height: 420px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+.enhanced-candidate-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
+  border-color: #d1d5db;
+}
+
+.enhanced-candidate-card.selected {
+  border-color: #ec4899;
+  background: linear-gradient(135deg, #fdf2f8 0%, #faf5ff 100%);
+  box-shadow: 0 20px 25px -5px rgba(236, 72, 153, 0.25);
+}
+
+/* Score-based card themes for enhanced cards */
+.enhanced-candidate-card.excellent {
+  border-left: 4px solid #10b981;
+}
+
+.enhanced-candidate-card.good {
+  border-left: 4px solid #3b82f6;
+}
+
+.enhanced-candidate-card.average {
+  border-left: 4px solid #f59e0b;
+}
+
+.enhanced-candidate-card.poor {
+  border-left: 4px solid #ef4444;
+}
+
+/* Heart Selection - Top Right Corner */
+.card-heart-right {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.heart-btn-right {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.heart-btn-right:hover {
+  background: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.heart-right {
+  font-size: 16px;
+  color: #d1d5db;
+  transition: all 0.3s ease;
+}
+
+.heart-right.selected {
+  color: #ec4899;
+  transform: scale(1.1);
+}
+
+.heart-right:not(.selected):hover {
+  color: #f472b6;
+  transform: scale(1.05);
+}
+
+/* Score under heart */
+.score-under-heart {
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  background: #6b7280;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 45px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.score-under-heart.excellent {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.score-under-heart.good {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.score-under-heart.average {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.score-under-heart.poor {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Selection status under score */
+.selection-status {
+  font-size: 9px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.enhanced-candidate-card.selected .selection-status {
+  color: #ec4899;
+}
+
+/* Error State - Top Left */
+.card-error-left {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+}
+
+/* Enhanced Card Body */
+.enhanced-card-body {
+  padding: 20px 20px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 14px;
+}
+
+/* Enhanced Header Section */
+.enhanced-header-section {
+  text-align: left;
+  margin-bottom: 8px;
+  padding-right: 80px; /* Space for heart section */
+}
+
+.enhanced-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+
+.enhanced-role {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.enhanced-handle {
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Contact Section */
+.contact-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-icon {
+  color: #6b7280;
+  font-size: 12px;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.contact-link {
+  font-size: 12px;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-link:hover {
+  color: #0d9488;
+  text-decoration: underline;
+}
+
+.phone-link:hover {
+  color: #059669;
+}
+
+.email-link:hover {
+  color: #2563eb;
+}
+
+/* Enhanced Info Row */
+.info-row-enhanced {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.source-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.source-enhanced .icon {
+  color: #9ca3af;
+  font-size: 10px;
+}
+
+.source-enhanced span {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.experience-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.experience-enhanced .label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.experience-enhanced .value {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Enhanced Skill Highlight */
+.skill-highlight-enhanced {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 4px 0 8px 0;
+  font-size: 12px;
+  color: #0369a1;
+  line-height: 1.4;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Enhanced Action Button */
+.action-btn-enhanced {
+  background: #0d9488;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.action-btn-enhanced:hover {
+  background: #0f766e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(13, 148, 136, 0.3);
+}
+
+.action-btn-enhanced.excellent {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.action-btn-enhanced.excellent:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.action-btn-enhanced.good {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.action-btn-enhanced.good:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.action-btn-enhanced.average {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.action-btn-enhanced.average:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.action-btn-enhanced.poor {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.action-btn-enhanced.poor:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.action-btn-enhanced .icon {
+  font-size: 11px;
+}
+
+/* Responsive Design for Enhanced Cards */
+@media (max-width: 768px) {
+  .enhanced-candidate-card {
+    max-width: 100%;
+    min-height: 400px;
+  }
+  
+  .enhanced-card-body {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .enhanced-header-section {
+    padding-right: 70px;
+  }
+  
+  .enhanced-name {
+    font-size: 16px;
+  }
+  
+  .enhanced-role {
+    font-size: 12px;
+  }
+  
+  .contact-section {
+    padding: 10px;
+    gap: 6px;
+  }
+  
+  .contact-link {
+    font-size: 11px;
+  }
+  
+  .skill-highlight-enhanced {
+    padding: 8px;
+    font-size: 11px;
+  }
+  
+  .action-btn-enhanced {
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+  
+  .card-heart-right {
+    top: 12px;
+    right: 12px;
+    gap: 3px;
+  }
+  
+  .heart-btn-right {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .heart-right {
+    font-size: 14px;
+  }
+  
+  .score-under-heart {
+    font-size: 12px;
+    padding: 1px 6px;
+    min-width: 40px;
+  }
+  
+  .selection-status {
+    font-size: 8px;
+  }
+}
+
+/* Animation for enhanced cards */
+@keyframes enhancedCardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.enhanced-candidate-card {
+  animation: enhancedCardEntrance 0.4s ease-out;
+}
+
+/* Hover effects for enhanced cards */
+.enhanced-candidate-card:hover .enhanced-name {
+  color: #059669;
+  transition: color 0.3s ease;
+}
+
+.enhanced-candidate-card.excellent:hover .enhanced-name {
+  color: #059669;
+}
+
+.enhanced-candidate-card.good:hover .enhanced-name {
+  color: #2563eb;
+}
+
+.enhanced-candidate-card.average:hover .enhanced-name {
+  color: #d97706;
+}
+
+.enhanced-candidate-card.poor:hover .enhanced-name {
+  color: #dc2626;
+}
+
+/* Focus states for enhanced cards */
+.heart-btn-right:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3);
+}
+
+.action-btn-enhanced:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3);
+}

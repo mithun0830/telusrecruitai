@@ -5,7 +5,23 @@ import './SkaletoneStyles.css';
 import useManagerCandidates from './useManagerCandidates';
 import { authService, candidateService, interviewService, managerService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faLock, 
+  faLockOpen, 
+  faTimesCircle, 
+  faCheck, 
+  faSearch, 
+  faEllipsisV, 
+  faEye, 
+  faMagic, 
+  faSort, 
+  faChevronDown, 
+  faPlus, 
+  faTimes,
+  faEnvelope,
+  faPhone,
+  faMapMarkerAlt
+} from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../components/Loader';
@@ -221,15 +237,15 @@ const ManagerCandidates = () => {
                   <h2 className="candidate-name-large">{candidate.resume.name}</h2>
                   <div className="contact-info">
                     <div className="contact-item">
-                      <span>📧</span>
+                      <FontAwesomeIcon icon={faEnvelope} className="icon-sm text-gray-500" />
                       <span>{candidate.resume.email}</span>
                     </div>
                     <div className="contact-item">
-                      <span>📞</span>
+                      <FontAwesomeIcon icon={faPhone} className="icon-sm text-gray-500" />
                       <span>{candidate.resume.phoneNumber}</span>
                     </div>
                     <div className="contact-item">
-                      <span>🔍</span>
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="icon-sm text-gray-500" />
                       <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
                     </div>
                   </div>
@@ -610,11 +626,11 @@ const ManagerCandidates = () => {
                 <p className="text-gray-600 mt-1">Find and manage your candidate pipeline</p>
               </div>
               <button
-                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 rounded-button whitespace-nowrap cursor-pointer"
+                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 rounded-button whitespace-nowrap cursor-pointer text-base"
                 onClick={handleEnableAI}
                 aria-label="Generate AI Job Description"
               >
-                <span className="fas fa-magic mr-2">✨</span>
+                <FontAwesomeIcon icon={faMagic} className="fa-icon-left icon-md" />
                 Generate AI Job Description
               </button>
             </div>
@@ -628,7 +644,7 @@ const ManagerCandidates = () => {
               {/* Search Bar */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <i className="fas fa-search text-gray-400 text-lg">🔍</i>
+                  <FontAwesomeIcon icon={faSearch} className="text-gray-400 icon-md" />
                 </div>
                 <textarea
                   ref={textareaRef}
@@ -648,12 +664,12 @@ const ManagerCandidates = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <button 
-                    className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200 rounded-button whitespace-nowrap cursor-pointer"
+                    className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200 rounded-button whitespace-nowrap cursor-pointer text-base"
                     onClick={() => handleSearchClick(null, secondarySearch)}
                     aria-label="Search candidates"
                     disabled={isSearching}
                   >
-                    <i className="fas fa-search mr-2">🔍</i>
+                    <FontAwesomeIcon icon={faSearch} className="fa-icon-left icon-sm" />
                     {isSearching ? 'Searching...' : 'Search'}
                   </button>
                   <OverlayTrigger
@@ -690,9 +706,9 @@ const ManagerCandidates = () => {
                 </span>
               </h2>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <i className="fas fa-sort">📊</i>
+                <FontAwesomeIcon icon={faSort} className="icon-sm" />
                 <span>Sort by: Relevance</span>
-                <i className="fas fa-chevron-down">▼</i>
+                <FontAwesomeIcon icon={faChevronDown} className="icon-sm" />
               </div>
             </div>
           </div>
@@ -787,7 +803,7 @@ const ManagerCandidates = () => {
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
                             onClick={() => handleMoreOptionsClick(candidate.resume.id)}
                           >
-                            <i className="fas fa-ellipsis-v">⋮</i>
+                            <FontAwesomeIcon icon={faEllipsisV} className="icon-sm" />
                           </button>
                           {activeDropdown === candidate.resume.id && (
                             <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
@@ -795,7 +811,7 @@ const ManagerCandidates = () => {
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                                 onClick={() => handleViewClick(candidate)}
                               >
-                                <i className="fas fa-eye mr-2">👁️</i>
+                                <FontAwesomeIcon icon={faEye} className="fa-icon-left icon-sm" />
                                 {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'View Details'}
                               </button>
                             </div>
@@ -900,8 +916,8 @@ const ManagerCandidates = () => {
           {/* Load More */}
           {searchResults.length > 0 && (
             <div className="text-center mt-12">
-              <button className="bg-white text-teal-600 border-2 border-teal-600 px-8 py-3 rounded-lg hover:bg-teal-600 hover:text-white transition-all duration-200 font-medium rounded-button whitespace-nowrap cursor-pointer">
-                <i className="fas fa-plus mr-2">➕</i>
+              <button className="bg-white text-teal-600 border-2 border-teal-600 px-8 py-3 rounded-lg hover:bg-teal-600 hover:text-white transition-all duration-200 font-medium rounded-button whitespace-nowrap cursor-pointer text-base">
+                <FontAwesomeIcon icon={faPlus} className="fa-icon-left icon-sm" />
                 Load More Candidates
               </button>
             </div>
@@ -916,7 +932,7 @@ const ManagerCandidates = () => {
                   onClick={() => setExpandedCandidate(null)}
                   aria-label="Close expanded view"
                 >
-                  <i className="fas fa-times text-xl">✕</i>
+                  <FontAwesomeIcon icon={faTimes} className="icon-lg" />
                 </button>
                 {renderExpandedView(expandedCandidate)}
               </div>

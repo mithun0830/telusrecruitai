@@ -1,6 +1,11 @@
 /* Landing Page Styles */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -39,6 +44,7 @@
   width: 100%;
   overflow-x: hidden;
   font-family: 'Inter', sans-serif;
+  padding-top: 80px; /* Add space for fixed navbar */
 }
 
 /* Navigation */
@@ -52,12 +58,17 @@
 }
 
 .nav-landing {
+  position: fixed;
+  top: 0;
+  left: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
   background-color: #ffffff;
-  width: 100%;
+  width: 100vw;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-left {

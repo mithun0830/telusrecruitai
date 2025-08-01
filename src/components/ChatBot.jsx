@@ -85,7 +85,13 @@ const ChatBot = ({ candidateId, candidateName, resumeId, onClose }) => {
               className={`message ${message.sender}`}
               data-thinking={message.isThinking || false}
             >
-              {message.sender === 'bot' ? (
+              {message.sender === 'bot' && message.isThinking ? (
+                <div className="thinking-dots">
+                  <span className="dot dot-red"></span>
+                  <span className="dot dot-blue"></span>
+                  <span className="dot dot-green"></span>
+                </div>
+              ) : message.sender === 'bot' ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   rehypePlugins={[rehypeRaw]}
@@ -135,31 +141,33 @@ const ChatBot = ({ candidateId, candidateName, resumeId, onClose }) => {
             </button>
           )}
           
-          <button className="input-action-btn tools-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 8H14M8 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-            </svg>
-            <span>Tools</span>
-          </button>
-          
-          <button className="input-action-btn mic-btn" disabled={isLoading}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1C7.17 1 6.5 1.67 6.5 2.5V8C6.5 8.83 7.17 9.5 8 9.5C8.83 9.5 9.5 8.83 9.5 8V2.5C9.5 1.67 8.83 1 8 1Z" fill="currentColor"/>
-              <path d="M4.5 6.5V8C4.5 10.21 6.29 12 8.5 12H7.5C9.71 12 11.5 10.21 11.5 8V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M8 12V15M8 15H6M8 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
-          
-          <button className="input-action-btn audio-viz-btn" onClick={handleSendMessage} disabled={inputMessage.trim() === '' || isLoading}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="6" width="2" height="4" fill="currentColor" rx="1"/>
-              <rect x="4" y="4" width="2" height="8" fill="currentColor" rx="1"/>
-              <rect x="7" y="2" width="2" height="12" fill="currentColor" rx="1"/>
-              <rect x="10" y="5" width="2" height="6" fill="currentColor" rx="1"/>
-              <rect x="13" y="7" width="2" height="2" fill="currentColor" rx="1"/>
-            </svg>
-          </button>
+          <div className="chat-bot-input-buttons">
+            <button className="input-action-btn tools-btn">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 8H14M8 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+              </svg>
+              {/* <span>Tools</span> */}
+            </button>
+            
+            <button className="input-action-btn mic-btn" disabled={isLoading}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1C7.17 1 6.5 1.67 6.5 2.5V8C6.5 8.83 7.17 9.5 8 9.5C8.83 9.5 9.5 8.83 9.5 8V2.5C9.5 1.67 8.83 1 8 1Z" fill="currentColor"/>
+                <path d="M4.5 6.5V8C4.5 10.21 6.29 12 8.5 12H7.5C9.71 12 11.5 10.21 11.5 8V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M8 12V15M8 15H6M8 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+            
+            <button className="input-action-btn audio-viz-btn" onClick={handleSendMessage} disabled={inputMessage.trim() === '' || isLoading}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="6" width="2" height="4" fill="currentColor" rx="1"/>
+                <rect x="4" y="4" width="2" height="8" fill="currentColor" rx="1"/>
+                <rect x="7" y="2" width="2" height="12" fill="currentColor" rx="1"/>
+                <rect x="10" y="5" width="2" height="6" fill="currentColor" rx="1"/>
+                <rect x="13" y="7" width="2" height="2" fill="currentColor" rx="1"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -168,16 +168,43 @@
   font-size: 11px !important;
 }
 
-@keyframes thinking {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+.thinking-dots {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  align-items: center;
 }
 
-.message.bot[data-thinking="true"] {
-  animation: thinking 1.5s ease-in-out infinite;
-  font-style: italic;
-  color: #666;
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot-red {
+  background-color: #ff4444;
+  animation: jump 1s ease-in-out infinite;
+}
+
+.dot-blue {
+  background-color: #4444ff;
+  animation: jump 1s ease-in-out infinite 0.3s;
+}
+
+.dot-green {
+  background-color: #44ff44;
+  animation: jump 1s ease-in-out infinite 0.6s;
+}
+
+@keyframes jump {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
 }
 
 .chat-bot-input {
@@ -194,13 +221,21 @@
 }
 
 .chat-bot-input input {
-  flex-grow: 1;
+  flex: 1;
+  min-width: 0;
   border: none;
   outline: none;
   padding: 8px 12px;
   font-size: 14px;
   color: #374151;
   background: transparent;
+}
+
+.chat-bot-input-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .chat-bot-input input::placeholder {
@@ -214,14 +249,15 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: 8px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   color: #6B7280;
   font-size: 12px;
   font-weight: 500;
   transition: all 0.2s ease;
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .input-action-btn:hover:not(:disabled) {
@@ -311,4 +347,32 @@
 
 .chat-bot-messages::-webkit-scrollbar-thumb:hover {
   background: #047857;
+}
+
+/* Responsive styles for chat input */
+@media (max-width: 360px) {
+  .chat-bot-input {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+  }
+  
+  .chat-bot-input input {
+    flex: 1 1 100%;
+    margin-bottom: 8px;
+  }
+  
+  .chat-bot-input-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .input-action-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .input-action-btn svg {
+    width: 14px;
+    height: 14px;
+  }
 }

@@ -15,9 +15,12 @@
   font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
   background-color: var(--telus-light-gray);
   color: var(--telus-dark-gray);
+  /* position: relative;
+  overflow-y: auto;
+  height: 100vh; */
 }
 
-.candidates-page > .candidates-header {
+.candidates-page >.candidates-header {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -26,6 +29,15 @@
   border-bottom: 2px solid var(--telus-light-purple);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   justify-content: space-between;
+  /* position: fixed; */
+  /* top: 0; */
+  /* left: 0; */
+  /* right: 0; */
+  /* z-index: 1100; */
+}
+
+.candidates-content {
+  margin-top: 76px;
 }
 
 .candidates-header .ai-job-description-btn {
@@ -92,6 +104,9 @@
   gap: 16px;
   margin-bottom: 24px;
   transition: all 0.3s ease;
+  position: sticky;
+  top: 76px;
+  z-index: 1000;
 }
 
 .filters-section:hover {
@@ -781,6 +796,10 @@
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 2px solid var(--telus-light-purple);
+  /* position: sticky; */
+  /* top: 196px; */
+  /* background-color: var(--telus-white); */
+  /* z-index: 900; */
 }
 
 .candidates-list-header h2 {
@@ -1513,6 +1532,7 @@
   left: 0;
   right: 0;
   z-index: 1;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .selection-info {

@@ -214,7 +214,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* white-space: nowrap; */
 }
+
+/* .score-value span {
+  flex-shrink: 0;
+}
+
+.score-value span:last-child {
+  margin-left: 8px;
+} */
 
 .score-value span:first-child {
   font-size: 18px;

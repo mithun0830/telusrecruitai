@@ -225,7 +225,7 @@ const Layout = ({ children }) => {
             ))}
           </nav>
         </aside>
-        <main className="col p-4">
+        <main className="col p-4 main-content">
           {children}
         </main>
       </div>

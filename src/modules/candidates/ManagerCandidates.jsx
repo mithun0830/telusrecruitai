@@ -10,6 +10,7 @@ import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../components/Loader';
 import AIChatOverlay from '../../components/AIChatOverlay';
 import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
+import ManagerDetailsDialog from '../../components/ManagerDetailsDialog';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -81,6 +82,8 @@ const ManagerCandidates = () => {
   const [showAIPopup, setShowAIPopup] = useState(true);
   const [managers, setManagers] = useState([]);
   const [managerDetails, setManagerDetails] = useState({});
+  const [showManagerDialog, setShowManagerDialog] = useState(false);
+  const [selectedManager, setSelectedManager] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
   const [isResumeExpanded, setIsResumeExpanded] = useState(false);
@@ -108,13 +111,22 @@ const ManagerCandidates = () => {
       try {
         const response = await managerService.getManagerById(managerId);
         if (response.success) {
-          setManagerDetails(prev => ({...prev, [managerId]: response.data}));
+          const { fullName, email, phoneNumber, designation, region, businessUnit, department, role } = response.data;
+          setManagerDetails(prev => ({
+            ...prev,
+            [managerId]: { fullName, email, phoneNumber, designation, region, businessUnit, department, role }
+          }));
         }
       } catch (error) {
         console.error('Error fetching manager details:', error);
       }
     }
   }, [managerDetails]);
+
+  const handleOpenManagerDialog = (managerId) => {
+    setSelectedManager(managerDetails[managerId]);
+    setShowManagerDialog(true);
+  };
 
   useEffect(() => {
     searchResults.forEach(candidate => {
@@ -776,7 +788,10 @@ const ManagerCandidates = () => {
 {candidate.locked && candidate.managerId && (
   <div style={{ color: '#059669', fontWeight: '500' }}>
     Shortlisted by: 
-    <span style={{ marginLeft: '4px' }}>
+    <span 
+      style={{ marginLeft: '4px', cursor: 'pointer', textDecoration: 'underline' }}
+      onClick={() => handleOpenManagerDialog(candidate.managerId)}
+    >
       {managerDetails[candidate.managerId] 
         ? managerDetails[candidate.managerId].fullName 
         : 'Loading...'}
@@ -936,6 +951,11 @@ const ManagerCandidates = () => {
       )}
 
     </div>
+      <ManagerDetailsDialog
+        show={showManagerDialog}
+        onHide={() => setShowManagerDialog(false)}
+        manager={selectedManager}
+      />
     </>
   );
 };

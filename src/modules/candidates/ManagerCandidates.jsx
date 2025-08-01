@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
+import './SkaletoneStyles.css';
 import useManagerCandidates from './useManagerCandidates';
 import { authService, candidateService, interviewService, managerService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -598,228 +599,353 @@ const ManagerCandidates = () => {
   return (
     <>
       {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
-      <div className="candidates-page">
+      <div className="min-h-screen bg-white">
         <style>{spinKeyframes}</style>
-      <div className="candidates-header">
-        <h1>Candidates Search</h1>
-        <button
-          className="ai-job-description-btn"
-          onClick={handleEnableAI}
-          aria-label="Generate AI Job Description"
-        >
-          <span style={{ fontSize: '20px' }}>✨</span>
-          Generate AI Job Description
-        </button>
-      </div>
-      <div className="candidates-content">
-        <div className="filters-section horizontal">
-            <div className="filters-container" style={{ backgroundColor: '#fff', border: '2px solid #059669' }}>
-              <div className="ai-search-container">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Candidates Search</h1>
+                <p className="text-gray-600 mt-1">Find and manage your candidate pipeline</p>
+              </div>
+              <button
+                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 rounded-button whitespace-nowrap cursor-pointer"
+                onClick={handleEnableAI}
+                aria-label="Generate AI Job Description"
+              >
+                <span className="fas fa-magic mr-2">✨</span>
+                Generate AI Job Description
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Main Content */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+          {/* Enhanced Search Section */}
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100">
+            <div className="space-y-6">
+              {/* Search Bar */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <i className="fas fa-search text-gray-400 text-lg">🔍</i>
+                </div>
                 <textarea
                   ref={textareaRef}
-                  placeholder="Enter job requirements to search for candidates..."
-                  className="ai-search-input ai-generated-textarea"
+                  placeholder="Search candidates by name, skills, or experience..."
                   value={secondarySearch}
                   onChange={(e) => {
                     setSecondarySearch(e.target.value);
                     adjustTextareaHeight();
                   }}
                   onFocus={() => setErrorMessage('')}
+                  className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all duration-200 bg-gray-50 hover:bg-white resize-none"
+                  style={{ minHeight: '60px', maxHeight: '120px' }}
                 />
               </div>
-              <div className="search-controls">
-                <OverlayTrigger
-                  placement="top"
-                  overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
-                >
-                  <div className="external-search-checkbox">
-                    <input
-                      type="checkbox"
-                      id="externalSearch"
-                      checked={filters.externalSearch || false}
-                      onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
-                    />
-                    <label htmlFor="externalSearch"></label>
-                  </div>
-                </OverlayTrigger>
-                <button
-                  className="search-button"
-                  onClick={() => handleSearchClick(null, secondarySearch)}
-                  aria-label="Search candidates"
-                  disabled={isSearching}
-                  style={{
-                    backgroundColor: '#059669',
-                    padding: '10px 24px',
-                    fontSize: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  {isSearching ? (
-                    <span>Searching...</span>
-                  ) : (
-                    <>
-                      <span style={{ fontSize: '20px' }}>🔍</span>
-                      Search
-                    </>
-                  )}
-                </button>
+              
+              {/* Search Controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button 
+                    className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200 rounded-button whitespace-nowrap cursor-pointer"
+                    onClick={() => handleSearchClick(null, secondarySearch)}
+                    aria-label="Search candidates"
+                    disabled={isSearching}
+                  >
+                    <i className="fas fa-search mr-2">🔍</i>
+                    {isSearching ? 'Searching...' : 'Search'}
+                  </button>
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
+                  >
+                    <label className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="externalSearch"
+                        checked={filters.externalSearch || false}
+                        onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
+                        className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                      />
+                      <span>External Search</span>
+                    </label>
+                  </OverlayTrigger>
+                </div>
               </div>
             </div>
-          {errorMessage && <div className="error-message">{errorMessage}</div>}
-        </div>
-        <div className={`candidates-container ${isCompareViewOpen ? 'with-compare-view' : ''}`}>
-          <div className="candidates-list-wrapper">
-            <div className="candidates-list">
-              <div className="candidates-list-header">
-                <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
-                <div className="header-actions">
-                </div>
+            {errorMessage && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm">{errorMessage}</p>
               </div>
-              <div className="candidates-table-container">
-                {searchResults.length > 0 ? (
-                  <div className="candidates-grid">
-                    {searchResults.map((candidate) => (
-                      <div key={candidate.resume.id} className="candidate-card">
-                        <div className="card-header">
-                          <div className="candidate-info">
-                            <div
-                              className="avatar"
-                              style={{
-                                backgroundColor: getLightColor(),
-                                color: getDarkColor(),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                fontWeight: 'bold',
-                                fontSize: '16px',
-                              }}
-                            >
-                              {getInitials(candidate.resume.name)}
-                            </div>
-                            <div>
-                              <h3>{candidate.resume.name}</h3>
-                            </div>
-                          </div>
-                          <div className="card-actions">
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
-                                  {lockErrorState.message}
-                                </Tooltip>
-                              }
-                              show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
-                            >
-                              <div className="lock-toggle">
-                                <input
-                                  type="checkbox"
-                                  checked={candidate.locked}
-                                  onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-                                />
-                                <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-                                  <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
-                                </span>
-                              </div>
-                            </OverlayTrigger>
-                            <div className="dropdown">
-                              <button
-                                className="btn-more"
-                                onClick={() => handleMoreOptionsClick(candidate.resume.id)}
-                              >
-                                ⋮
-                              </button>
-                              {activeDropdown === candidate.resume.id && (
-                                <div className="dropdown-content">
-                                  <button onClick={() => handleViewClick(candidate)}>
-                                    {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="card-content">
-                          <div className="candidate-details">
-                            <div>Phone: {candidate.resume.phoneNumber}</div>
-                            <div>Email: {candidate.resume.email}</div>
-                            <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
-                            <div>Experience: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
-                            <div>Score: {candidate.score}%</div>
-                            {candidate.locked && candidate.managerId && (
-                              <div style={{ color: '#059669', fontWeight: '500' }}>
-                                Shortlisted by: 
-                                <span style={{ marginLeft: '4px' }}>
-                                  {candidate.managerId}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="source-section">
-                            <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-candidates-message">
-                    <div>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
-                        <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-                        <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                      <div>
-                        {currentSearchValue
-                          ? "Please check back later or try refreshing the data."
-                          : "Enter your requirements to discover candidates that fit your role"}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {expandedCandidate && (
-                  <div ref={expandedViewRef} className="expanded-view-container">
-                    <button
-                      className="close-button"
-                      onClick={() => setExpandedCandidate(null)}
-                      aria-label="Close expanded view"
-                    >
-                      ✕
-                    </button>
-                    {renderExpandedView(expandedCandidate)}
-                  </div>
-                )}
-              </div>
-              <div className="candidates-footer">
-                <div className="selection-info">
-                  Selected: <span className="selected-count">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span>
-                </div>
-                <div className="footer-actions">
-                  <button
-                    className="btn-action secondary"
-                    onClick={handleShortlistClick}
-                    disabled={searchResults.length === 0 || isShortlisting || searchResults.filter(c => c.locked && c.managerId === currentUserId).length === 0}
-                  >
-                    {isShortlisting ? 'Shortlisting...' : 'Shortlist'}
-                  </button>
-                </div>
+            )}
+          </div>
+          {/* Results Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Candidates
+                <span className="ml-2 bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {searchResults.length}
+                </span>
+              </h2>
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <i className="fas fa-sort">📊</i>
+                <span>Sort by: Relevance</span>
+                <i className="fas fa-chevron-down">▼</i>
               </div>
             </div>
           </div>
-          {isCompareViewOpen && (
-            <div className="compare-view-wrapper">
-              <CompareView
-                candidates={selectedCandidates.map(id => searchResults.find(c => c.resume.id === id))}
-                onClose={() => setIsCompareViewOpen(false)}
-              />
+
+          {/* Enhanced Candidates Grid */}
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {searchResults.length > 0 ? (
+              searchResults.map((candidate) => {
+                const getScoreTheme = (score) => {
+                  if (score >= 85) return 'excellent';
+                  if (score >= 75) return 'good';
+                  if (score >= 60) return 'average';
+                  return 'poor';
+                };
+                
+                const scoreTheme = getScoreTheme(candidate.score);
+                
+                return (
+                <div
+                  key={candidate.resume.id}
+                  className={`rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 border overflow-hidden group cursor-pointer ${
+                    candidate.locked && String(candidate.managerId) === String(currentUserId)
+                      ? 'bg-gradient-to-br from-pink-50 to-purple-50 border-pink-200 shadow-pink-100'
+                      : `bg-white card-theme-${scoreTheme}`
+                  } text-score-${scoreTheme}`}
+                >
+                  <div className="p-6">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        {/* Heart-style checkbox for candidate selection */}
+                        <div className="flex items-center">
+                          <button
+                            onClick={() => handleCandidateLockToggle(candidate, currentUserId)}
+                            className="heart-checkbox transition-all duration-300 hover:scale-110 focus:outline-none"
+                            aria-label={candidate.locked && String(candidate.managerId) === String(currentUserId) ? "Unselect candidate" : "Select candidate"}
+                          >
+                            {candidate.locked && String(candidate.managerId) === String(currentUserId) ? (
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-500">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>
+                              </svg>
+                            ) : (
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-300 hover:text-pink-400">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                        <div 
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                          style={{
+                            backgroundColor: getLightColor().replace('85', '500').replace('95', 'white'),
+                            color: getDarkColor()
+                          }}
+                        >
+                          {getInitials(candidate.resume.name)}
+                        </div>
+                        <div>
+                          <h3 className="candidate-name text-lg font-semibold transition-colors duration-200">
+                            {candidate.resume.name}
+                          </h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              candidate.locked ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {candidate.locked ? 'shortlisted' : 'available'}
+                            </span>
+                            <span className="contact-text text-sm">
+                              {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs experience
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {lockErrorState.show && lockErrorState.candidateId === candidate.resume.id && (
+                          <OverlayTrigger
+                            placement="top"
+                            overlay={
+                              <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
+                                {lockErrorState.message}
+                              </Tooltip>
+                            }
+                            show={true}
+                          >
+                            <div className="p-2 text-red-500">
+                              <FontAwesomeIcon icon={faTimesCircle} className="text-lg" />
+                            </div>
+                          </OverlayTrigger>
+                        )}
+                        <div className="relative">
+                          <button 
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                            onClick={() => handleMoreOptionsClick(candidate.resume.id)}
+                          >
+                            <i className="fas fa-ellipsis-v">⋮</i>
+                          </button>
+                          {activeDropdown === candidate.resume.id && (
+                            <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                              <button 
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                                onClick={() => handleViewClick(candidate)}
+                              >
+                                <i className="fas fa-eye mr-2">👁️</i>
+                                {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'View Details'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact Info - Simplified */}
+                    <div className="space-y-1 mb-4">
+                      <div className="text-sm text-gray-600">{candidate.resume.phoneNumber}</div>
+                      <div className="text-sm text-gray-600 truncate">{candidate.resume.email}</div>
+                    </div>
+
+                    {/* Skills - Simplified */}
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
+                        {candidate.analysis?.keyStrengths?.[0]?.strength || 'Extensive experience in relevant technologies'}
+                      </p>
+                    </div>
+
+                    {/* Score and Stats - Simplified */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className={`text-2xl font-bold ${
+                            candidate.score >= 85 ? 'text-green-600' : 
+                            candidate.score >= 75 ? 'text-blue-600' : 'text-orange-600'
+                          }`}>
+                            {candidate.score}%
+                          </div>
+                          <div className="text-xs text-gray-500">Score</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-teal-600">
+                            {candidate.locked ? '1' : '0'}
+                          </div>
+                          <div className="text-xs text-gray-500">Shortlisted by</div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200 text-sm font-medium"
+                          onClick={() => handleViewClick(candidate)}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Progress Bar */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                        <span>Match Score</span>
+                        <span className="font-semibold">{candidate.score}%</span>
+                      </div>
+                      <div className="progress-bar-container">
+                        <div
+                          className={`progress-bar-fill ${
+                            candidate.score >= 85 ? 'progress-bar-excellent' :
+                            candidate.score >= 75 ? 'progress-bar-good' :
+                            candidate.score >= 60 ? 'progress-bar-average' : 'progress-bar-poor'
+                          }`}
+                          style={{ width: `${candidate.score}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Source Tag */}
+                    <div className="mt-3 flex justify-end">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        candidate.source?.toLowerCase() === 'external' 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {candidate.source || 'Internal'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                );
+              })
+            ) : (
+              <div className="col-span-full flex justify-center items-center py-12">
+                <div className="text-center">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4">
+                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
+                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No candidates found</h3>
+                  <p className="text-gray-600">
+                    {currentSearchValue
+                      ? "Please check back later or try refreshing the data."
+                      : "Enter your requirements to discover candidates that fit your role"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Load More */}
+          {searchResults.length > 0 && (
+            <div className="text-center mt-12">
+              <button className="bg-white text-teal-600 border-2 border-teal-600 px-8 py-3 rounded-lg hover:bg-teal-600 hover:text-white transition-all duration-200 font-medium rounded-button whitespace-nowrap cursor-pointer">
+                <i className="fas fa-plus mr-2">➕</i>
+                Load More Candidates
+              </button>
             </div>
           )}
+
+          {/* Expanded View */}
+          {expandedCandidate && (
+            <div className="mt-8 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="relative">
+                <button
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                  onClick={() => setExpandedCandidate(null)}
+                  aria-label="Close expanded view"
+                >
+                  <i className="fas fa-times text-xl">✕</i>
+                </button>
+                {renderExpandedView(expandedCandidate)}
+              </div>
+            </div>
+          )}
+
+          {/* Footer Actions */}
+          <div className="mt-8 flex items-center justify-between p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
+            <div className="text-sm text-gray-600">
+              Selected: <span className="font-semibold text-teal-600">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span> candidates
+            </div>
+            <button
+              className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              onClick={handleShortlistClick}
+              disabled={searchResults.length === 0 || isShortlisting || searchResults.filter(c => c.locked && c.managerId === currentUserId).length === 0}
+            >
+              {isShortlisting ? 'Shortlisting...' : 'Shortlist Selected'}
+            </button>
+          </div>
         </div>
+
+        {isCompareViewOpen && (
+          <div className="compare-view-wrapper">
+            <CompareView
+              candidates={selectedCandidates.map(id => searchResults.find(c => c.resume.id === id))}
+              onClose={() => setIsCompareViewOpen(false)}
+            />
+          </div>
+        )}
       </div>
       <Modal
         show={showShortlistModal}
@@ -910,7 +1036,6 @@ const ManagerCandidates = () => {
         </div>
       )}
 
-    </div>
     </>
   );
 };

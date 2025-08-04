@@ -34,6 +34,7 @@ import Loader from '../../components/Loader';
 import AIChatOverlay from '../../components/AIChatOverlay';
 import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
 import ManagerDetailsDialog from '../../components/ManagerDetailsDialog';
+import CandidateDrawer from '../../components/CandidateDrawer';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -118,6 +119,11 @@ const ManagerCandidates = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [currentSearchValue, setCurrentSearchValue] = useState('');
   const textareaRef = useRef(null);
+
+  // Smart Drawer State
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [drawerCandidate, setDrawerCandidate] = useState(null);
+  const [drawerDirection, setDrawerDirection] = useState('right');
 
   const {
     filters,
@@ -209,14 +215,37 @@ const ManagerCandidates = () => {
     setActiveDropdown(activeDropdown === candidateId ? null : candidateId);
   };
 
-  const handleViewClick = (candidate) => {
-    if (expandedCandidate?.resume.id === candidate.resume.id) {
-      setExpandedCandidate(null);
-    } else {
-      setExpandedCandidate(candidate);
-      setTimeout(() => scrollToRef(expandedViewRef), 100);
-    }
+  // Smart positioning logic for drawer
+  const getDrawerDirection = (cardElement) => {
+    if (!cardElement) return 'right';
+    
+    const rect = cardElement.getBoundingClientRect();
+    const screenWidth = window.innerWidth;
+    const cardCenterX = rect.left + rect.width / 2;
+    
+    // If card is on right half of screen, drawer slides from left
+    // If card is on left half of screen, drawer slides from right
+    return cardCenterX > screenWidth / 2 ? 'left' : 'right';
+  };
+
+  const handleViewClick = (candidate, event) => {
+    // Close any existing expanded view
+    setExpandedCandidate(null);
+    
+    // Get the card element for smart positioning
+    const cardElement = event?.target?.closest('.enhanced-candidate-card');
+    const direction = getDrawerDirection(cardElement);
+    
+    // Set drawer state
+    setDrawerCandidate(candidate);
+    setDrawerDirection(direction);
+    setShowDrawer(true);
     setActiveDropdown(null);
+  };
+
+  const handleCloseDrawer = () => {
+    setShowDrawer(false);
+    setDrawerCandidate(null);
   };
 
   const renderExpandedView = (candidate) => {
@@ -899,7 +928,7 @@ const ManagerCandidates = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleViewClick(candidate);
+                        handleViewClick(candidate, e);
                       }}
                       className={`action-btn-enhanced ${scoreTheme}`}
                     >
@@ -1067,6 +1096,14 @@ const ManagerCandidates = () => {
           </div>
         </div>
       )}
+
+      {/* Smart Candidate Drawer */}
+      <CandidateDrawer
+        candidate={drawerCandidate}
+        isOpen={showDrawer}
+        onClose={handleCloseDrawer}
+        slideDirection={drawerDirection}
+      />
 
     </>
   );

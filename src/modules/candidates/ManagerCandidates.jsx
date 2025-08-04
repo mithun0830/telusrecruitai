@@ -784,6 +784,9 @@ const ManagerCandidates = () => {
                                candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 15) || 
                                '5+ years'}
                             </span>
+                            <span className={`status-badge source ${candidate.source?.toLowerCase() || 'internal'}`}>
+                              {candidate.source || 'Internal'}
+                            </span>
                           </div>
                         </div>
                       </div>

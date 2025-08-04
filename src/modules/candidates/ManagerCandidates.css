@@ -90,14 +90,13 @@
   gap: 20px;
   min-height: calc(100vh - 74px);
   flex-direction: column;
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
 }
 
 .filters-section {
   width: 100%;
-  padding-left: 24px;
-  padding-top: 24px;
-  padding-right: 24px;
+  padding: 16px;
   background-color: var(--telus-white);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
@@ -106,8 +105,8 @@
   gap: 16px;
   margin-bottom: 24px;
   transition: all 0.3s ease;
-  position: sticky;
-  /* top: 76px; */
+  /* position: sticky; */
+  top: 0;
   z-index: 1000;
 }
 
@@ -636,8 +635,11 @@
   box-shadow: 0 4px 12px rgba(75, 40, 109, 0.1);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 100;
+  /* margin-top: 80px; */
 }
 
 .candidates-list:hover {
@@ -800,9 +802,9 @@
   padding-bottom: 16px;
   border-bottom: 2px solid var(--telus-light-purple);
   /* position: sticky; */
-  /* top: 196px; */
-  /* background-color: var(--telus-white); */
-  /* z-index: 900; */
+  top: 0;
+  background-color: var(--telus-white);
+  z-index: 900;
 }
 
 .candidates-list-header h2 {
@@ -853,10 +855,14 @@
 .candidates-table-container {
   flex: 1;
   overflow-y: auto;
-  margin: 0 -24px;
-  padding: 0 24px;
+  margin: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 100;
+  background-color: var(--telus-light-gray);
+  border-radius: 8px;
 }
 
 .no-candidates-message {

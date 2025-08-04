@@ -1779,12 +1779,20 @@ input[type="checkbox"]:disabled {
   border-color: #d1d5db;
 }
 
-/* Clean Contact Section */
-.clean-contact-section {
+/* Contact and Selection Section */
+.contact-and-selection-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.contact-details {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 12px;
+  flex: 1;
 }
 
 .clean-contact-item {
@@ -1804,77 +1812,118 @@ input[type="checkbox"]:disabled {
   font-size: 12px;
   color: #6b7280;
   font-weight: 400;
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Skill Highlight Clean */
-.skill-highlight-clean {
+.selection-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.selected-by-info {
+  text-align: right;
+}
+
+.selected-by-label {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.selected-by-value {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 700;
+}
+
+/* Key Strengths Section - Multiple Tags */
+.key-strengths-section {
+  margin-bottom: 16px;
+}
+
+.strengths-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.strength-tag {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
   padding: 10px 12px;
-  margin-bottom: 16px;
-  font-size: 12px;
-  color: #374151;
-  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.skill-icon {
+.strength-tag:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+}
+
+.strength-tag-icon {
   color: #059669;
   font-size: 12px;
   flex-shrink: 0;
 }
 
-/* Score Section Clean */
-.score-section-clean {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.main-score {
-  text-align: left;
-}
-
-.score-number {
-  font-size: 32px;
-  font-weight: 700;
-  color: #059669;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.score-label {
+.strength-tag-text {
   font-size: 12px;
-  color: #6b7280;
-  font-weight: 500;
+  font-weight: 600;
+  color: #059669;
+  line-height: 1.3;
+  flex: 1;
 }
 
-.secondary-metric {
-  text-align: right;
+/* Different colors for different strength types */
+.strength-tag:nth-child(1) {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
 }
 
-.metric-number {
-  font-size: 20px;
-  font-weight: 700;
-  color: #374151;
-  line-height: 1;
-  margin-bottom: 4px;
+.strength-tag:nth-child(1) .strength-tag-icon,
+.strength-tag:nth-child(1) .strength-tag-text {
+  color: #059669;
 }
 
-.metric-label {
-  font-size: 11px;
-  color: #6b7280;
-  font-weight: 500;
+.strength-tag:nth-child(2) {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.strength-tag:nth-child(2) .strength-tag-icon,
+.strength-tag:nth-child(2) .strength-tag-text {
+  color: #2563eb;
+}
+
+.strength-tag:nth-child(2):hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+/* Responsive design for strength tags */
+@media (max-width: 768px) {
+  .strength-tag {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  
+  .strength-tag-icon {
+    font-size: 11px;
+  }
+  
+  .strength-tag-text {
+    font-size: 11px;
+  }
 }
 
 /* Enhanced Info Row */

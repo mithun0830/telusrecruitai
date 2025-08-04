@@ -789,40 +789,67 @@ const ManagerCandidates = () => {
                       </div>
                     </div>
 
-                    {/* Contact Information */}
-                    <div className="clean-contact-section">
-                      {candidate.resume.phoneNumber && (
-                        <div className="clean-contact-item">
-                          <FontAwesomeIcon icon={faPhone} className="clean-contact-icon" />
-                          <span className="clean-contact-text">{candidate.resume.phoneNumber}</span>
-                        </div>
-                      )}
-                      {candidate.resume.email && (
-                        <div className="clean-contact-item">
-                          <FontAwesomeIcon icon={faEnvelope} className="clean-contact-icon" />
-                          <span className="clean-contact-text">{candidate.resume.email}</span>
-                        </div>
-                      )}
+                    {/* Contact Information with Selected By */}
+                    <div className="contact-and-selection-section">
+                      <div className="contact-details">
+                        {candidate.resume.phoneNumber && (
+                          <div className="clean-contact-item">
+                            <FontAwesomeIcon icon={faPhone} className="clean-contact-icon" />
+                            <span className="clean-contact-text">{candidate.resume.phoneNumber}</span>
+                          </div>
+                        )}
+                        {candidate.resume.email && (
+                          <div className="clean-contact-item">
+                            <FontAwesomeIcon icon={faEnvelope} className="clean-contact-icon" />
+                            <span className="clean-contact-text">{candidate.resume.email}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="selection-info">
+                        {candidate.locked && candidate.managerId && (
+                          <div className="selected-by-info">
+                            <div className="selected-by-label">Selected by:</div>
+                            <div className="selected-by-value">{candidate.managerId}</div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Score Section */}
-                    <div className="score-section-clean">
-                      <div className="main-score">
-                        <div className="score-number">{candidate.score}%</div>
-                        <div className="score-label">Score</div>
-                      </div>
-                      <div className="secondary-metric">
-                        {candidate.locked && candidate.managerId ? (
-                          <>
-                            <div className="metric-number">{candidate.managerId}</div>
-                            <div className="metric-label">Selected by</div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="metric-number"></div>
-                            <div className="metric-label"></div>
-                          </>
-                        )}
+                    {/* Key Strengths Section - Top 2 Only */}
+                    <div className="key-strengths-section">
+                      <div className="strengths-container">
+                        {(() => {
+                          // Debug logging
+                          console.log('Candidate Analysis:', candidate.analysis);
+                          console.log('Key Strengths Array:', candidate.analysis?.keyStrengths);
+                          console.log('First 2 Strengths:', candidate.analysis?.keyStrengths?.slice(0, 4));
+                          
+                          const strengths = candidate.analysis?.keyStrengths;
+                          if (strengths && strengths.length > 0) {
+                            return strengths.slice(0, 4).map((strength, index) => {
+                              console.log(`Strength ${index}:`, strength);
+                              return (
+                                <div key={index} className="strength-tag">
+                                  <FontAwesomeIcon 
+                                    icon={index === 0 ? faTrophy : faCode} 
+                                    className="strength-tag-icon" 
+                                  />
+                                  <span className="strength-tag-text">
+                                    {strength?.strength || `Strength ${index + 1}`}
+                                  </span>
+                                </div>
+                              );
+                            });
+                          } else {
+                            // Fallback when no strengths available
+                            return (
+                              <div className="strength-tag">
+                                <FontAwesomeIcon icon={faTrophy} className="strength-tag-icon" />
+                                <span className="strength-tag-text">Strong candidate</span>
+                              </div>
+                            );
+                          }
+                        })()}
                       </div>
                     </div>
 

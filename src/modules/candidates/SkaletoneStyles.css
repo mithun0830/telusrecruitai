@@ -1425,34 +1425,14 @@ input[type="checkbox"]:disabled {
   justify-content: flex-start;
 }
 
-.score-badge.technical {
-  background: #f0fdf4;
-  color: #059669;
-  border: 1px solid #bbf7d0;
-}
-
-.score-badge.experience {
-  background: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
-}
-
-.score-badge.education {
-  background: #faf5ff;
-  color: #7c3aed;
-  border: 1px solid #e9d5ff;
-}
-
-.score-badge.soft-skills {
-  background: #fff7ed;
-  color: #ea580c;
-  border: 1px solid #fed7aa;
-}
-
+.score-badge.technical,
+.score-badge.experience,
+.score-badge.education,
+.score-badge.soft-skills,
 .score-badge.achievements {
-  background: #fdf2f8;
-  color: #be185d;
-  border: 1px solid #f9a8d4;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .badge-icon {
@@ -1768,32 +1748,35 @@ input[type="checkbox"]:disabled {
 }
 
 .status-badge.interviewing {
-  background: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
 .status-badge.experience {
-  background: #f3f4f6;
-  color: #374151;
-  border-color: #d1d5db;
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
 .status-badge.source {
   font-weight: 600;
   font-size: 10px;
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
 .status-badge.source.internal {
-  background: #dcfce7;
-  color: #166534;
-  border-color: #bbf7d0;
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
 .status-badge.source.external {
-  background: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
 /* Contact and Selection Section */
@@ -1915,52 +1898,22 @@ input[type="checkbox"]:disabled {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Green Pills */
-.strength-pill.green {
-  background: #dcfce7;
-  color: #166534;
-  border-color: #bbf7d0;
-}
-
-.strength-pill.green:hover {
-  background: #bbf7d0;
-  border-color: #86efac;
-}
-
-/* Blue Pills */
-.strength-pill.blue {
-  background: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
-}
-
-.strength-pill.blue:hover {
-  background: #bfdbfe;
-  border-color: #93c5fd;
-}
-
-/* Purple Pills */
-.strength-pill.purple {
-  background: #f3e8ff;
-  color: #7c3aed;
-  border-color: #e9d5ff;
-}
-
-.strength-pill.purple:hover {
-  background: #e9d5ff;
-  border-color: #d8b4fe;
-}
-
-/* Orange Pills */
+/* Unified White Theme Pills */
+.strength-pill.green,
+.strength-pill.blue,
+.strength-pill.purple,
 .strength-pill.orange {
-  background: #fff7ed;
-  color: #ea580c;
-  border-color: #fed7aa;
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
+.strength-pill.green:hover,
+.strength-pill.blue:hover,
+.strength-pill.purple:hover,
 .strength-pill.orange:hover {
-  background: #fed7aa;
-  border-color: #fdba74;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 /* More Strengths Pill */

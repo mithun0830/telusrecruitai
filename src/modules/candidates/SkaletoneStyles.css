@@ -794,7 +794,7 @@ input[type="checkbox"]:disabled {
 
 /* Custom component styles */
 .skaletone-header {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #4ade80 0%, #06b6d4 100%);
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
@@ -1555,21 +1555,9 @@ input[type="checkbox"]:disabled {
   box-shadow: 0 20px 25px -5px rgba(236, 72, 153, 0.25);
 }
 
-/* Score-based card themes for enhanced cards */
-.enhanced-candidate-card.excellent {
+/* Unified card theme for all candidates */
+.enhanced-candidate-card {
   border-left: 4px solid #10b981;
-}
-
-.enhanced-candidate-card.good {
-  border-left: 4px solid #3b82f6;
-}
-
-.enhanced-candidate-card.average {
-  border-left: 4px solid #f59e0b;
-}
-
-.enhanced-candidate-card.poor {
-  border-left: 4px solid #ef4444;
 }
 
 /* Heart Selection - Top Right Corner */
@@ -1628,28 +1616,12 @@ input[type="checkbox"]:disabled {
   font-size: 14px;
   font-weight: 700;
   color: white;
-  background: #6b7280;
+  background: linear-gradient(135deg, #10b981, #059669);
   padding: 2px 8px;
   border-radius: 10px;
   text-align: center;
   min-width: 45px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.score-under-heart.excellent {
-  background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.score-under-heart.good {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.score-under-heart.average {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.score-under-heart.poor {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 /* Selection status horizontal with heart and score */
@@ -1705,7 +1677,7 @@ input[type="checkbox"]:disabled {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #10b981, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1713,7 +1685,7 @@ input[type="checkbox"]:disabled {
   font-weight: 700;
   font-size: 16px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .name-and-status {
@@ -2073,9 +2045,9 @@ input[type="checkbox"]:disabled {
   text-align: center;
 }
 
-/* Enhanced Action Button */
+/* Enhanced Action Button - Unified Green Theme */
 .action-btn-enhanced {
-  background: #0d9488;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
   padding: 12px 16px;
@@ -2092,41 +2064,9 @@ input[type="checkbox"]:disabled {
 }
 
 .action-btn-enhanced:hover {
-  background: #0f766e;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(13, 148, 136, 0.3);
-}
-
-.action-btn-enhanced.excellent {
-  background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.action-btn-enhanced.excellent:hover {
   background: linear-gradient(135deg, #059669, #047857);
-}
-
-.action-btn-enhanced.good {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.action-btn-enhanced.good:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-}
-
-.action-btn-enhanced.average {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.action-btn-enhanced.average:hover {
-  background: linear-gradient(135deg, #d97706, #b45309);
-}
-
-.action-btn-enhanced.poor {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.action-btn-enhanced.poor:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
 .action-btn-enhanced .icon {
@@ -2253,12 +2193,47 @@ input[type="checkbox"]:disabled {
 
 /* Compact Search Section Styles */
 .compact-search-container {
-  background: white;
+  position: relative;
+  background: #f8fafc;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e5e7eb;
   padding: 16px 20px;
   margin-bottom: 24px;
+  overflow: hidden;
+}
+
+/* Corner Decorative Shapes - Matching Reference Screenshot */
+.compact-search-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 80px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 0 0 60px 0;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.compact-search-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 60px;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-radius: 0 0 0 50px;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+/* Ensure content appears above decorative shapes */
+.compact-search-container > * {
+  position: relative;
+  z-index: 2;
 }
 
 .search-row {
@@ -2372,13 +2347,13 @@ input[type="checkbox"]:disabled {
   color: #374151;
 }
 
-/* Search Button - Green Theme */
+/* Search Button - Beautiful Green Gradient */
 .search-btn-green {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #059669, #047857);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
   border-radius: 8px;
@@ -2387,13 +2362,13 @@ input[type="checkbox"]:disabled {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 .search-btn-green:hover {
-  background: linear-gradient(135deg, #047857, #065f46);
+  background: linear-gradient(135deg, #059669, #047857);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
 .search-btn-green:active {
@@ -2412,13 +2387,13 @@ input[type="checkbox"]:disabled {
   font-size: 14px;
 }
 
-/* AI Job Generator Button */
+/* AI Job Generator Button - Beautiful Purple Gradient */
 .ai-generator-btn {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
   border: none;
   border-radius: 8px;
@@ -2427,13 +2402,13 @@ input[type="checkbox"]:disabled {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
 }
 
 .ai-generator-btn:hover {
-  background: linear-gradient(135deg, #6d28d9, #5b21b6);
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
 }
 
 .ai-generator-btn:active {

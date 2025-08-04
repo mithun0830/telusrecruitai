@@ -231,6 +231,7 @@
   border-radius: 8px;
   border: 1px solid var(--telus-light-purple);
   box-shadow: 0 2px 8px rgba(75, 40, 109, 0.1);
+  margin-bottom : 15px;
 }
 
 .ai-search-container {
@@ -265,7 +266,7 @@
 }
 
 .filters-section {
-  margin-bottom: 0;
+  margin-bottom: 76px;
 }
 
 @media screen and (max-width: 768px) {

@@ -58,10 +58,10 @@ const ManagerDetailsDialog = ({ manager, show, onHide }) => {
           </div>
         </div>
       </Modal.Body>
-      <Modal.Footer>
+      {/* <Modal.Footer>
         <Button variant="secondary" className="btn-cancel" onClick={onHide}>Cancel</Button>
         <Button variant="primary">Request changes</Button>
-      </Modal.Footer>
+      </Modal.Footer> */}
     </Modal>
   );
 };

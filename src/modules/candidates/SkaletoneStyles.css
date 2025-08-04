@@ -1858,89 +1858,207 @@ input[type="checkbox"]:disabled {
   font-weight: 700;
 }
 
-/* Key Strengths Section - Multiple Tags */
+/* Key Strengths Section - Horizontal Pills Layout */
 .key-strengths-section {
   margin-bottom: 16px;
 }
 
-.strengths-container {
+/* Strengths Section Header */
+.strengths-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.strengths-icon {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.strengths-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Pills Container */
+.strengths-pills-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.strength-tag {
+.strengths-row {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  padding: 10px 12px;
+  align-items: center;
+}
+
+/* Strength Pills */
+.strength-pill {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
   transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
-.strength-tag:hover {
-  background: #dcfce7;
-  border-color: #86efac;
+.strength-pill:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.strength-tag-icon {
-  color: #059669;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.strength-tag-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #059669;
-  line-height: 1.3;
-  flex: 1;
-}
-
-/* Different colors for different strength types */
-.strength-tag:nth-child(1) {
-  background: #f0fdf4;
+/* Green Pills */
+.strength-pill.green {
+  background: #dcfce7;
+  color: #166534;
   border-color: #bbf7d0;
 }
 
-.strength-tag:nth-child(1) .strength-tag-icon,
-.strength-tag:nth-child(1) .strength-tag-text {
-  color: #059669;
+.strength-pill.green:hover {
+  background: #bbf7d0;
+  border-color: #86efac;
 }
 
-.strength-tag:nth-child(2) {
-  background: #eff6ff;
+/* Blue Pills */
+.strength-pill.blue {
+  background: #dbeafe;
+  color: #1e40af;
   border-color: #bfdbfe;
 }
 
-.strength-tag:nth-child(2) .strength-tag-icon,
-.strength-tag:nth-child(2) .strength-tag-text {
-  color: #2563eb;
-}
-
-.strength-tag:nth-child(2):hover {
-  background: #dbeafe;
+.strength-pill.blue:hover {
+  background: #bfdbfe;
   border-color: #93c5fd;
 }
 
-/* Responsive design for strength tags */
+/* Purple Pills */
+.strength-pill.purple {
+  background: #f3e8ff;
+  color: #7c3aed;
+  border-color: #e9d5ff;
+}
+
+.strength-pill.purple:hover {
+  background: #e9d5ff;
+  border-color: #d8b4fe;
+}
+
+/* Orange Pills */
+.strength-pill.orange {
+  background: #fff7ed;
+  color: #ea580c;
+  border-color: #fed7aa;
+}
+
+.strength-pill.orange:hover {
+  background: #fed7aa;
+  border-color: #fdba74;
+}
+
+/* More Strengths Pill */
+.more-strengths-pill {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.more-strengths-pill:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design for strength pills */
 @media (max-width: 768px) {
-  .strength-tag {
-    padding: 8px 10px;
+  .strengths-section-header {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .strengths-icon {
+    font-size: 11px;
+  }
+  
+  .strengths-title {
+    font-size: 10px;
+  }
+  
+  .strengths-row {
     gap: 6px;
   }
   
-  .strength-tag-icon {
+  .strength-pill,
+  .more-strengths-pill {
+    padding: 4px 8px;
     font-size: 11px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .strengths-row {
+    gap: 4px;
   }
   
-  .strength-tag-text {
-    font-size: 11px;
+  .strength-pill,
+  .more-strengths-pill {
+    padding: 3px 6px;
+    font-size: 10px;
+    border-radius: 10px;
   }
+  
+  .strengths-title {
+    font-size: 9px;
+  }
+  
+  .strengths-icon {
+    font-size: 10px;
+  }
+}
+
+/* Animation for pills */
+@keyframes pillEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.strength-pill,
+.more-strengths-pill {
+  animation: pillEntrance 0.3s ease-out;
+}
+
+.strength-pill:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.strength-pill:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.more-strengths-pill {
+  animation-delay: 0.3s;
 }
 
 /* Enhanced Info Row */
@@ -2216,11 +2334,11 @@ input[type="checkbox"]:disabled {
 
 .compact-search-input {
   width: 100%;
-  height: 44px;
+  height: 52px;
   padding: 0 16px 0 40px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: #374151;
   background: #f9fafb;
   transition: all 0.2s ease;
@@ -2510,4 +2628,118 @@ input[type="checkbox"]:disabled {
 @keyframes spin {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Compact Header Styles */
+.compact-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 12px 0;
+  margin-bottom: 0;
+}
+
+.header-content {
+  
+  margin: 0 auto;
+  padding: 0 1rem;
+  text-align: left !important;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #059669;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-align: left !important;
+  align-self: flex-start;
+  width: auto;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left !important;
+  align-self: flex-start;
+  width: auto;
+}
+
+/* Responsive header adjustments */
+@media (min-width: 640px) {
+  .header-content {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-content {
+    padding: 0 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .compact-header {
+    padding: 10px 0;
+  }
+  
+  .header-title {
+    font-size: 1.25rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .header-content {
+    padding: 0 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .compact-header {
+    padding: 8px 0;
+  }
+  
+  .header-title {
+    font-size: 1.125rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.75rem;
+  }
+  
+  .header-content {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Header animation */
+@keyframes headerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.compact-header {
+  animation: headerSlideIn 0.3s ease-out;
+}
+
+/* Header hover effect for title */
+.header-title:hover {
+  color: #047857;
+  transition: color 0.2s ease;
 }

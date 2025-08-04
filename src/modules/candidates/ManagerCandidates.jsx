@@ -605,23 +605,11 @@ const ManagerCandidates = () => {
       {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
       <div className="min-h-screen bg-white">
         <style>{spinKeyframes}</style>
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Candidates Search</h1>
-                <p className="text-gray-600 mt-1">Find and manage your candidate pipeline</p>
-              </div>
-              <button
-                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 rounded-button whitespace-nowrap cursor-pointer text-base"
-                onClick={handleEnableAI}
-                aria-label="Generate AI Job Description"
-              >
-                <FontAwesomeIcon icon={faMagic} className="fa-icon-left icon-md" />
-                Generate AI Job Description
-              </button>
-            </div>
+        {/* Compact Header */}
+        <div className="compact-header">
+          <div className="header-content">
+            <h1 className="header-title">Candidates Search</h1>
+            <p className="header-subtitle">Find and manage your candidate pipeline</p>
           </div>
         </div>
         {/* Main Content */}
@@ -815,41 +803,43 @@ const ManagerCandidates = () => {
                       </div>
                     </div>
 
-                    {/* Key Strengths Section - Top 2 Only */}
+                    {/* Key Strengths Section - Horizontal Pills */}
                     <div className="key-strengths-section">
-                      <div className="strengths-container">
-                        {(() => {
-                          // Debug logging
-                          console.log('Candidate Analysis:', candidate.analysis);
-                          console.log('Key Strengths Array:', candidate.analysis?.keyStrengths);
-                          console.log('First 2 Strengths:', candidate.analysis?.keyStrengths?.slice(0, 4));
-                          
-                          const strengths = candidate.analysis?.keyStrengths;
-                          if (strengths && strengths.length > 0) {
-                            return strengths.slice(0, 4).map((strength, index) => {
-                              console.log(`Strength ${index}:`, strength);
+                      <div className="strengths-section-header">
+                        <FontAwesomeIcon icon={faTrophy} className="strengths-icon" />
+                        <span className="strengths-title">STRENGTHS</span>
+                      </div>
+                      <div className="strengths-pills-container">
+                        <div className="strengths-row">
+                          {(() => {
+                            const strengths = candidate.analysis?.keyStrengths;
+                            if (strengths && strengths.length > 0) {
+                              // Show ALL strengths instead of limiting to 2
+                              const getStrengthColor = (index) => {
+                                const colors = ['green', 'blue', 'purple', 'orange'];
+                                return colors[index % colors.length];
+                              };
+                              
+                              return strengths.map((strength, index) => (
+                                <span 
+                                  key={index} 
+                                  className={`strength-pill ${getStrengthColor(index)}`}
+                                >
+                                  {strength?.strength || `Strength ${index + 1}`}
+                                </span>
+                              ));
+                            } else {
+                              // Fallback when no strengths available
                               return (
-                                <div key={index} className="strength-tag">
-                                  <FontAwesomeIcon 
-                                    icon={index === 0 ? faTrophy : faCode} 
-                                    className="strength-tag-icon" 
-                                  />
-                                  <span className="strength-tag-text">
-                                    {strength?.strength || `Strength ${index + 1}`}
-                                  </span>
-                                </div>
+                                <>
+                                  <span className="strength-pill green">Strong candidate</span>
+                                  <span className="strength-pill blue">Experienced professional</span>
+                                  <span className="strength-pill purple">Team player</span>
+                                </>
                               );
-                            });
-                          } else {
-                            // Fallback when no strengths available
-                            return (
-                              <div className="strength-tag">
-                                <FontAwesomeIcon icon={faTrophy} className="strength-tag-icon" />
-                                <span className="strength-tag-text">Strong candidate</span>
-                              </div>
-                            );
-                          }
-                        })()}
+                            }
+                          })()}
+                        </div>
                       </div>
                     </div>
 

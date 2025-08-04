@@ -1,10 +1,33 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
+import './SkaletoneStyles.css';
 import useManagerCandidates from './useManagerCandidates';
-import { authService, candidateService, interviewService, managerService } from '../../services/api';
+import { authService, candidateService, interviewService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock, faLockOpen, faTimesCircle, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faLock, 
+  faLockOpen, 
+  faTimesCircle, 
+  faCheck, 
+  faSearch, 
+  faEllipsisV, 
+  faEye, 
+  faMagic, 
+  faSort, 
+  faChevronDown, 
+  faPlus, 
+  faTimes,
+  faEnvelope,
+  faPhone,
+  faMapMarkerAlt,
+  faCode,
+  faBriefcase,
+  faGraduationCap,
+  faUsers,
+  faTrophy,
+  faClock
+} from '@fortawesome/free-solid-svg-icons';
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../components/Loader';
@@ -67,7 +90,7 @@ const loaderTextStyle = {
 
 const ManagerCandidates = () => {
   const expandedViewRef = useRef(null);
-  const textareaRef = useRef(null);
+ // const textareaRef = useRef(null);
   const currentUserId = useSelector(state => state.auth.user?.id);
 
   // State variables
@@ -80,10 +103,6 @@ const ManagerCandidates = () => {
   const [fullJobDescriptionData, setFullJobDescriptionData] = useState(null);
   const [showAIChatOverlay, setShowAIChatOverlay] = useState(false);
   const [showAIPopup, setShowAIPopup] = useState(true);
-  const [managers, setManagers] = useState([]);
-  const [managerDetails, setManagerDetails] = useState({});
-  const [showManagerDialog, setShowManagerDialog] = useState(false);
-  const [selectedManager, setSelectedManager] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
   const [isResumeExpanded, setIsResumeExpanded] = useState(false);
@@ -98,6 +117,7 @@ const ManagerCandidates = () => {
   const [currentShortlistSlide, setCurrentShortlistSlide] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [currentSearchValue, setCurrentSearchValue] = useState('');
+  const textareaRef = useRef(null);
 
   const {
     filters,
@@ -105,36 +125,6 @@ const ManagerCandidates = () => {
     handleFilterChange: originalHandleFilterChange,
     handleSelectCandidate,
   } = useManagerCandidates();
-
-  const fetchManagerDetails = useCallback(async (managerId) => {
-    if (!managerDetails[managerId]) {
-      try {
-        const response = await managerService.getManagerById(managerId);
-        if (response.success) {
-          const { fullName, email, phoneNumber, designation, region, businessUnit, department, role } = response.data;
-          setManagerDetails(prev => ({
-            ...prev,
-            [managerId]: { fullName, email, phoneNumber, designation, region, businessUnit, department, role }
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching manager details:', error);
-      }
-    }
-  }, [managerDetails]);
-
-  const handleOpenManagerDialog = (managerId) => {
-    setSelectedManager(managerDetails[managerId]);
-    setShowManagerDialog(true);
-  };
-
-  useEffect(() => {
-    searchResults.forEach(candidate => {
-      if (candidate.locked && candidate.managerId) {
-        fetchManagerDetails(candidate.managerId);
-      }
-    });
-  }, [searchResults, fetchManagerDetails]);
 
   const spinKeyframes = `
     @keyframes spin {
@@ -153,23 +143,6 @@ const ManagerCandidates = () => {
   useLayoutEffect(() => {
     adjustTextareaHeight();
   }, [adjustTextareaHeight]);
-
-  // Fetch managers data on component mount
-  useEffect(() => {
-    const fetchManagers = async () => {
-      try {
-        const response = await managerService.getAllManagers();
-        if (response.success) {
-          setManagers(response.data);
-          
-        }
-      } catch (error) {
-        console.error('Error fetching managers:', error);
-      }
-    };
-
-    fetchManagers();
-  }, []);
 
 
   const handleGenerateJobDescription = async (data) => {
@@ -266,15 +239,15 @@ const ManagerCandidates = () => {
                   <h2 className="candidate-name-large">{candidate.resume.name}</h2>
                   <div className="contact-info">
                     <div className="contact-item">
-                      <span>📧</span>
+                      <FontAwesomeIcon icon={faEnvelope} className="icon-sm text-gray-500" />
                       <span>{candidate.resume.email}</span>
                     </div>
                     <div className="contact-item">
-                      <span>📞</span>
+                      <FontAwesomeIcon icon={faPhone} className="icon-sm text-gray-500" />
                       <span>{candidate.resume.phoneNumber}</span>
                     </div>
                     <div className="contact-item">
-                      <span>🔍</span>
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="icon-sm text-gray-500" />
                       <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
                     </div>
                   </div>
@@ -311,10 +284,10 @@ const ManagerCandidates = () => {
                         <div className="score-bar">
                           <div
                             className="score-fill"
-                            style={{ width: `${(candidate.analysis.categoryScores[item.score] / item.total) * 100}%` }}
+                            style={{ width: `${candidate.analysis.categoryScores[item.score]}%` }}
                           ></div>
                         </div>
-                        <div className="score-value">{candidate.analysis.categoryScores[item.score]}/{item.total}</div>
+                        <div className="score-value">{candidate.analysis.categoryScores[item.score]}%</div>
                       </div>
                     </div>
                   ))}
@@ -633,233 +606,378 @@ const ManagerCandidates = () => {
   return (
     <>
       {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
-      <div className="candidates-page">
+      <div className="min-h-screen bg-white">
         <style>{spinKeyframes}</style>
-      <div className="candidates-header">
-        <h1>Candidates Search</h1>
-        <button
-          className="ai-job-description-btn"
-          onClick={handleEnableAI}
-          aria-label="Generate AI Job Description"
-        >
-          <span style={{ fontSize: '20px' }}>✨</span>
-          Generate AI Job Description
-        </button>
-      </div>
-      <div className="candidates-content">
-        <div className="filters-section horizontal">
-            <div className="filters-container" style={{ backgroundColor: '#fff', border: '2px solid #059669' }}>
-              <div className="ai-search-container">
-                <textarea
-                  ref={textareaRef}
-                  placeholder="Enter job requirements to search for candidates..."
-                  className="ai-search-input ai-generated-textarea"
+        {/* Compact Header */}
+        <div className="compact-header">
+          <div className="header-content">
+            <h1 className="header-title">Candidates Search</h1>
+            <p className="header-subtitle">Find and manage your candidate pipeline</p>
+          </div>
+        </div>
+        {/* Main Content */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+          {/* Compact Search Section */}
+          <div className="compact-search-container">
+            <div className="search-row">
+              {/* Search Input */}
+              <div className="search-input-wrapper">
+                <div className="search-icon">
+                  <FontAwesomeIcon icon={faSearch} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by name, skills, location..."
                   value={secondarySearch}
-                  onChange={(e) => {
-                    setSecondarySearch(e.target.value);
-                    adjustTextareaHeight();
-                  }}
+                  onChange={(e) => setSecondarySearch(e.target.value)}
                   onFocus={() => setErrorMessage('')}
+                  className="compact-search-input"
                 />
               </div>
-              <div className="search-controls">
-                <OverlayTrigger
-                  placement="top"
-                  overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
-                >
-                  <div className="external-search-checkbox">
-                    <input
-                      type="checkbox"
-                      id="externalSearch"
-                      checked={filters.externalSearch || false}
-                      onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
-                    />
-                    <label htmlFor="externalSearch"></label>
-                  </div>
-                </OverlayTrigger>
-                <button
-                  className="search-button"
-                  onClick={() => handleSearchClick(null, secondarySearch)}
-                  aria-label="Search candidates"
-                  disabled={isSearching}
-                  style={{
-                    backgroundColor: '#059669',
-                    padding: '10px 24px',
-                    fontSize: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  {isSearching ? (
-                    <span>Searching...</span>
-                  ) : (
-                    <>
-                      <span style={{ fontSize: '20px' }}>🔍</span>
-                      Search
-                    </>
-                  )}
-                </button>
-              </div>
+              
+              {/* Internal Only Checkbox */}
+              <label className="internal-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={!filters.externalSearch}
+                  onChange={(e) => handleFilterChange('externalSearch', !e.target.checked)}
+                  className="internal-checkbox"
+                />
+                <span className="checkbox-text">Internal Only</span>
+              </label>
+              
+              {/* Search Button */}
+              <button 
+                className="search-btn-green"
+                onClick={() => handleSearchClick(null, secondarySearch)}
+                disabled={isSearching}
+              >
+                <FontAwesomeIcon icon={faSearch} />
+                {isSearching ? 'Searching...' : 'Search'}
+              </button>
+              
+              {/* AI Job Generator Button */}
+              <button
+                className="ai-generator-btn"
+                onClick={handleEnableAI}
+              >
+                <FontAwesomeIcon icon={faMagic} />
+                AI Job Generator
+              </button>
             </div>
-          {errorMessage && <div className="error-message">{errorMessage}</div>}
-        </div>
-        <div className={`candidates-container ${isCompareViewOpen ? 'with-compare-view' : ''}`}>
-          <div className="candidates-list-wrapper">
-            <div className="candidates-list">
-              <div className="candidates-list-header">
-                <h2>Candidates <span className="candidate-count">{isLoading ? '...' : searchResults.length}</span></h2>
-                <div className="header-actions">
-                </div>
+            
+            {errorMessage && (
+              <div className="error-message">
+                <p>{errorMessage}</p>
               </div>
-              <div className="candidates-table-container">
-                {searchResults.length > 0 ? (
-                  <div className="candidates-grid">
-                    {searchResults.map((candidate) => (
-                      <div key={candidate.resume.id} className="candidate-card">
-                        <div className="card-header">
-                          <div className="candidate-info">
-                            <div
-                              className="avatar"
-                              style={{
-                                backgroundColor: getLightColor(),
-                                color: getDarkColor(),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                fontWeight: 'bold',
-                                fontSize: '16px',
-                              }}
-                            >
-                              {getInitials(candidate.resume.name)}
-                            </div>
-                            <div>
-                              <h3>{candidate.resume.name}</h3>
-                            </div>
-                          </div>
-                          <div className="card-actions">
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={
-                                <Tooltip id={`lock-error-tooltip-${candidate.resume.id}`} className="custom-tooltip">
-                                  {lockErrorState.message}
-                                </Tooltip>
-                              }
-                              show={lockErrorState.show && lockErrorState.candidateId === candidate.resume.id}
-                            >
-                              <div className="lock-toggle">
-                                <input
-                                  type="checkbox"
-                                  checked={candidate.locked}
-                                  onChange={() => handleCandidateLockToggle(candidate, currentUserId)}
-                                />
-                                <span className={`status-icon ${candidate.locked ? 'locked' : 'unlocked'}`}>
-                                  <FontAwesomeIcon icon={!candidate.locked ? faLockOpen : faLock} />
-                                </span>
-                              </div>
-                            </OverlayTrigger>
-                            <div className="dropdown">
-                              <button
-                                className="btn-more"
-                                onClick={() => handleMoreOptionsClick(candidate.resume.id)}
-                              >
-                                ⋮
-                              </button>
-                              {activeDropdown === candidate.resume.id && (
-                                <div className="dropdown-content">
-                                  <button onClick={() => handleViewClick(candidate)}>
-                                    {expandedCandidate?.resume.id === candidate.resume.id ? 'Hide Details' : 'Show Details'}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="card-content">
-                          <div className="candidate-details">
-                            <div>Phone: {candidate.resume.phoneNumber}</div>
-                            <div>Email: {candidate.resume.email}</div>
-                            <div>Skill: {candidate.analysis?.keyStrengths?.[0]?.strength || 'N/A'}</div>
-                            <div>Experience: {candidate.resume.fullText.match(/(\d+)\+ years/)?.[1] || 'N/A'} yrs</div>
-                            <div>Score: {candidate.score}%</div>
-{candidate.locked && candidate.managerId && (
-  <div style={{ color: '#059669', fontWeight: '500' }}>
-    Shortlisted by: 
-    <span 
-      style={{ marginLeft: '4px', cursor: 'pointer', textDecoration: 'underline' }}
-      onClick={() => handleOpenManagerDialog(candidate.managerId)}
-    >
-      {managerDetails[candidate.managerId] 
-        ? managerDetails[candidate.managerId].fullName 
-        : 'Loading...'}
-    </span>
-  </div>
-)}
-                          </div>
-                          <div className="source-section">
-                            <span className={`source-tag ${candidate.source?.toLowerCase()}`}>{candidate.source || 'Internal'}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-candidates-message">
-                    <div>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
-                        <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-                        <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                      <div>
-                        {currentSearchValue
-                          ? "Please check back later or try refreshing the data."
-                          : "Enter your requirements to discover candidates that fit your role"}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {expandedCandidate && (
-                  <div ref={expandedViewRef} className="expanded-view-container">
-                    <button
-                      className="close-button"
-                      onClick={() => setExpandedCandidate(null)}
-                      aria-label="Close expanded view"
-                    >
-                      ✕
-                    </button>
-                    {renderExpandedView(expandedCandidate)}
-                  </div>
-                )}
-              </div>
-              <div className="candidates-footer">
-                <div className="selection-info">
-                  Selected: <span className="selected-count">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span>
-                </div>
-                <div className="footer-actions">
-                  <button
-                    className="btn-action secondary"
-                    onClick={handleShortlistClick}
-                    disabled={searchResults.length === 0 || isShortlisting || searchResults.filter(c => c.locked && c.managerId === currentUserId).length === 0}
-                  >
-                    {isShortlisting ? 'Shortlisting...' : 'Shortlist'}
-                  </button>
-                </div>
+            )}
+          </div>
+          {/* Results Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Candidates
+                <span className="ml-2 bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {searchResults.length}
+                </span>
+              </h2>
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <FontAwesomeIcon icon={faSort} className="icon-sm" />
+                <span>Sort by: Relevance</span>
+                <FontAwesomeIcon icon={faChevronDown} className="icon-sm" />
               </div>
             </div>
           </div>
-          {isCompareViewOpen && (
-            <div className="compare-view-wrapper">
-              <CompareView
-                candidates={selectedCandidates.map(id => searchResults.find(c => c.resume.id === id))}
-                onClose={() => setIsCompareViewOpen(false)}
-              />
+
+          {/* Enhanced Candidates Grid */}
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {searchResults.length > 0 ? (
+              searchResults.map((candidate) => {
+                const getScoreTheme = (score) => {
+                  if (score >= 85) return 'excellent';
+                  if (score >= 75) return 'good';
+                  if (score >= 60) return 'average';
+                  return 'poor';
+                };
+                
+                const scoreTheme = getScoreTheme(candidate.score);
+                
+                return (
+                <div
+                  key={candidate.resume.id}
+                  className={`enhanced-candidate-card ${scoreTheme} ${
+                    candidate.locked && String(candidate.managerId) === String(currentUserId) ? 'selected' : ''
+                  }`}
+                >
+                    {/* Heart Selection - Top Right Corner */}
+                    <div className="card-heart-right">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleCandidateLockToggle(candidate, currentUserId);
+                        }}
+                        className="heart-btn-right"
+                        aria-label={candidate.locked && String(candidate.managerId) === String(currentUserId) ? "Unselect candidate" : "Select candidate"}
+                      >
+                        {candidate.locked && String(candidate.managerId) === String(currentUserId) ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right selected">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="#ec4899"/>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="heart-right">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#d1d5db" strokeWidth="2" fill="none"/>
+                          </svg>
+                        )}
+                      </button>
+                      {/* Score under heart */}
+                      <div className={`score-under-heart ${scoreTheme}`}>
+                        {candidate.score}%
+                      </div>
+                    </div>
+
+                  {/* Error State */}
+                  {lockErrorState.show && lockErrorState.candidateId === candidate.resume.id && (
+                    <div className="card-error-left">
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id={`error-tooltip-${candidate.resume.id}`}>
+                            {lockErrorState.message}
+                          </Tooltip>
+                        }
+                        show={true}
+                      >
+                        <FontAwesomeIcon icon={faTimesCircle} className="error-icon" />
+                      </OverlayTrigger>
+                    </div>
+                  )}
+
+                  {/* Card Body */}
+                  <div className="enhanced-card-body">
+                    {/* Clean Header Section */}
+                    <div className="clean-header-section">
+                      <div className="avatar-and-name">
+                        <div className="clean-avatar">
+                          {getInitials(candidate.resume.name)}
+                        </div>
+                        <div className="name-and-status">
+                          <h3 className="clean-name">{candidate.resume.name}</h3>
+                          <div className="status-badges">
+                            <span className="status-badge interviewing">
+                              {candidate.locked && candidate.managerId ? 'selected' : 'available'}
+                            </span>
+                            <span className="status-badge experience">
+                              {candidate.resume.fullText.match(/(\d+)\+ years/)?.[0] || 
+                               candidate.analysis?.keyStrengths?.[0]?.strength?.substring(0, 15) || 
+                               '5+ years'}
+                            </span>
+                            <span className={`status-badge source ${candidate.source?.toLowerCase() || 'internal'}`}>
+                              {candidate.source || 'Internal'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact Information with Selected By */}
+                    <div className="contact-and-selection-section">
+                      <div className="contact-details">
+                        {candidate.resume.phoneNumber && (
+                          <div className="clean-contact-item">
+                            <FontAwesomeIcon icon={faPhone} className="clean-contact-icon" />
+                            <span className="clean-contact-text">{candidate.resume.phoneNumber}</span>
+                          </div>
+                        )}
+                        {candidate.resume.email && (
+                          <div className="clean-contact-item">
+                            <FontAwesomeIcon icon={faEnvelope} className="clean-contact-icon" />
+                            <span className="clean-contact-text">{candidate.resume.email}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="selection-info">
+                        {candidate.locked && candidate.managerId && (
+                          <div className="selected-by-info">
+                            <div className="selected-by-label">Selected by:</div>
+                            <div className="selected-by-value">{candidate.managerId}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Key Strengths Section - Horizontal Pills */}
+                    <div className="key-strengths-section">
+                      <div className="strengths-section-header">
+                        <FontAwesomeIcon icon={faTrophy} className="strengths-icon" />
+                        <span className="strengths-title">STRENGTHS</span>
+                      </div>
+                      <div className="strengths-pills-container">
+                        <div className="strengths-row">
+                          {(() => {
+                            const strengths = candidate.analysis?.keyStrengths;
+                            if (strengths && strengths.length > 0) {
+                              // Show ALL strengths instead of limiting to 2
+                              const getStrengthColor = (index) => {
+                                const colors = ['green', 'blue', 'purple', 'orange'];
+                                return colors[index % colors.length];
+                              };
+                              
+                              return strengths.map((strength, index) => (
+                                <span 
+                                  key={index} 
+                                  className={`strength-pill ${getStrengthColor(index)}`}
+                                >
+                                  {strength?.strength || `Strength ${index + 1}`}
+                                </span>
+                              ));
+                            } else {
+                              // Fallback when no strengths available
+                              return (
+                                <>
+                                  <span className="strength-pill green">Strong candidate</span>
+                                  <span className="strength-pill blue">Experienced professional</span>
+                                  <span className="strength-pill purple">Team player</span>
+                                </>
+                              );
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Score Breakdown */}
+                    {candidate.analysis?.categoryScores && (
+                      <div className="score-breakdown-section">
+                        <div className="score-breakdown-header">
+                          <h4 className="breakdown-title">Score Breakdown</h4>
+                          <div className="overall-score">{candidate.score}% Overall</div>
+                        </div>
+                        <div className="score-badges-container">
+                          <div className="score-badge technical">
+                            <FontAwesomeIcon icon={faCode} className="badge-icon" />
+                            <span className="badge-label">Technical</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.technicalSkills}%
+                            </span>
+                          </div>
+                          <div className="score-badge experience">
+                            <FontAwesomeIcon icon={faBriefcase} className="badge-icon" />
+                            <span className="badge-label">Experience</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.experience}%
+                            </span>
+                          </div>
+                          <div className="score-badge education">
+                            <FontAwesomeIcon icon={faGraduationCap} className="badge-icon" />
+                            <span className="badge-label">Education</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.education}%
+                            </span>
+                          </div>
+                          <div className="score-badge soft-skills">
+                            <FontAwesomeIcon icon={faUsers} className="badge-icon" />
+                            <span className="badge-label">Soft Skills</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.softSkills}%
+                            </span>
+                          </div>
+                          <div className="score-badge achievements">
+                            <FontAwesomeIcon icon={faTrophy} className="badge-icon" />
+                            <span className="badge-label">Achievements</span>
+                            <span className="badge-percentage">
+                              {candidate.analysis.categoryScores.achievements}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+
+                    {/* Action Button */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewClick(candidate);
+                      }}
+                      className={`action-btn-enhanced ${scoreTheme}`}
+                    >
+                      <FontAwesomeIcon icon={faEye} className="icon" />
+                      View Details
+                    </button>
+                  </div>
+                </div>
+                );
+              })
+            ) : (
+              <div className="col-span-full flex justify-center items-center py-12">
+                <div className="text-center">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4">
+                    <path d="M15 8C15 10.2091 13.2091 12 11 12C8.79086 12 7 10.2091 7 8C7 5.79086 8.79086 4 11 4C13.2091 4 15 5.79086 15 8Z" stroke="#059669" strokeWidth="2" />
+                    <path d="M3 20C3 16.6863 6.58172 14 11 14C15.4183 14 19 16.6863 19 20" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M19 4L23 8M23 4L19 8" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No candidates found</h3>
+                  <p className="text-gray-600">
+                    {currentSearchValue
+                      ? "Please check back later or try refreshing the data."
+                      : "Enter your requirements to discover candidates that fit your role"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Load More */}
+          {searchResults.length > 0 && (
+            <div className="text-center mt-12">
+              <button className="bg-white text-teal-600 border-2 border-teal-600 px-8 py-3 rounded-lg hover:bg-teal-600 hover:text-white transition-all duration-200 font-medium rounded-button whitespace-nowrap cursor-pointer text-base">
+                <FontAwesomeIcon icon={faPlus} className="fa-icon-left icon-sm" />
+                Load More Candidates
+              </button>
             </div>
           )}
+
+          {/* Expanded View */}
+          {expandedCandidate && (
+            <div className="mt-8 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="relative">
+                <button
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                  onClick={() => setExpandedCandidate(null)}
+                  aria-label="Close expanded view"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="icon-lg" />
+                </button>
+                {renderExpandedView(expandedCandidate)}
+              </div>
+            </div>
+          )}
+
+          {/* Footer Actions */}
+          <div className="mt-8 flex items-center justify-between p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
+            <div className="text-sm text-gray-600">
+              Selected: <span className="font-semibold text-teal-600">{searchResults.filter(c => c.locked && c.managerId === currentUserId).length}</span> candidates
+            </div>
+            <button
+              className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              onClick={handleShortlistClick}
+              disabled={searchResults.length === 0 || isShortlisting || searchResults.filter(c => c.locked && c.managerId === currentUserId).length === 0}
+            >
+              {isShortlisting ? 'Shortlisting...' : 'Shortlist Selected'}
+            </button>
+          </div>
         </div>
+
+        {isCompareViewOpen && (
+          <div className="compare-view-wrapper">
+            <CompareView
+              candidates={selectedCandidates.map(id => searchResults.find(c => c.resume.id === id))}
+              onClose={() => setIsCompareViewOpen(false)}
+            />
+          </div>
+        )}
       </div>
       <Modal
         show={showShortlistModal}
@@ -950,12 +1068,6 @@ const ManagerCandidates = () => {
         </div>
       )}
 
-    </div>
-      <ManagerDetailsDialog
-        show={showManagerDialog}
-        onHide={() => setShowManagerDialog(false)}
-        manager={selectedManager}
-      />
     </>
   );
 };

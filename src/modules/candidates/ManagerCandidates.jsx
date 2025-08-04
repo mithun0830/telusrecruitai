@@ -626,61 +626,58 @@ const ManagerCandidates = () => {
         </div>
         {/* Main Content */}
         <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-          {/* Enhanced Search Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100">
-            <div className="space-y-6">
-              {/* Search Bar */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <FontAwesomeIcon icon={faSearch} className="text-gray-400 icon-md" />
+          {/* Compact Search Section */}
+          <div className="compact-search-container">
+            <div className="search-row">
+              {/* Search Input */}
+              <div className="search-input-wrapper">
+                <div className="search-icon">
+                  <FontAwesomeIcon icon={faSearch} />
                 </div>
-                <textarea
-                  ref={textareaRef}
-                  placeholder="Search candidates by name, skills, or experience..."
+                <input
+                  type="text"
+                  placeholder="Search by name, skills, location..."
                   value={secondarySearch}
-                  onChange={(e) => {
-                    setSecondarySearch(e.target.value);
-                    adjustTextareaHeight();
-                  }}
+                  onChange={(e) => setSecondarySearch(e.target.value)}
                   onFocus={() => setErrorMessage('')}
-                  className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all duration-200 bg-gray-50 hover:bg-white resize-none"
-                  style={{ minHeight: '60px', maxHeight: '120px' }}
+                  className="compact-search-input"
                 />
               </div>
               
-              {/* Search Controls */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <button 
-                    className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200 rounded-button whitespace-nowrap cursor-pointer text-base"
-                    onClick={() => handleSearchClick(null, secondarySearch)}
-                    aria-label="Search candidates"
-                    disabled={isSearching}
-                  >
-                    <FontAwesomeIcon icon={faSearch} className="fa-icon-left icon-sm" />
-                    {isSearching ? 'Searching...' : 'Search'}
-                  </button>
-                  <OverlayTrigger
-                    placement="top"
-                    overlay={<Tooltip id="external-search-tooltip">Search External Candidates</Tooltip>}
-                  >
-                    <label className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        id="externalSearch"
-                        checked={filters.externalSearch || false}
-                        onChange={(e) => handleFilterChange('externalSearch', e.target.checked)}
-                        className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                      />
-                      <span>External Search</span>
-                    </label>
-                  </OverlayTrigger>
-                </div>
-              </div>
+              {/* Internal Only Checkbox */}
+              <label className="internal-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={!filters.externalSearch}
+                  onChange={(e) => handleFilterChange('externalSearch', !e.target.checked)}
+                  className="internal-checkbox"
+                />
+                <span className="checkbox-text">Internal Only</span>
+              </label>
+              
+              {/* Search Button */}
+              <button 
+                className="search-btn-green"
+                onClick={() => handleSearchClick(null, secondarySearch)}
+                disabled={isSearching}
+              >
+                <FontAwesomeIcon icon={faSearch} />
+                {isSearching ? 'Searching...' : 'Search'}
+              </button>
+              
+              {/* AI Job Generator Button */}
+              <button
+                className="ai-generator-btn"
+                onClick={handleEnableAI}
+              >
+                <FontAwesomeIcon icon={faMagic} />
+                AI Job Generator
+              </button>
             </div>
+            
             {errorMessage && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{errorMessage}</p>
+              <div className="error-message">
+                <p>{errorMessage}</p>
               </div>
             )}
           </div>

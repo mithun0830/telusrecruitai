@@ -2179,3 +2179,335 @@ input[type="checkbox"]:disabled {
   outline: none;
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3);
 }
+
+/* Compact Search Section Styles */
+.compact-search-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Search Input Wrapper */
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 16px;
+  z-index: 2;
+}
+
+.compact-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.compact-search-input:focus {
+  border-color: #059669;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.compact-search-input:hover {
+  background: white;
+  border-color: #d1d5db;
+}
+
+.compact-search-input::placeholder {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Internal Only Checkbox */
+.internal-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.internal-checkbox-label:hover {
+  background: #f0fdf4;
+}
+
+.internal-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.internal-checkbox:checked {
+  background: #059669;
+  border-color: #059669;
+}
+
+.internal-checkbox:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.internal-checkbox:hover {
+  border-color: #059669;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
+}
+
+.checkbox-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Search Button - Green Theme */
+.search-btn-green {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #059669, #047857);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
+.search-btn-green:hover {
+  background: linear-gradient(135deg, #047857, #065f46);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+}
+
+.search-btn-green:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
+.search-btn-green:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
+.search-btn-green svg {
+  font-size: 14px;
+}
+
+/* AI Job Generator Button */
+.ai-generator-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+}
+
+.ai-generator-btn:hover {
+  background: linear-gradient(135deg, #6d28d9, #5b21b6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+}
+
+.ai-generator-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+}
+
+.ai-generator-btn svg {
+  font-size: 14px;
+}
+
+/* Error Message */
+.error-message {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.error-message p {
+  color: #dc2626;
+  font-size: 14px;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive Design for Compact Search */
+@media (max-width: 1024px) {
+  .search-row {
+    gap: 12px;
+  }
+  
+  .search-input-wrapper {
+    min-width: 250px;
+  }
+  
+  .search-btn-green,
+  .ai-generator-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .compact-search-container {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  
+  .search-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .search-input-wrapper {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .internal-checkbox-label {
+    justify-content: center;
+    padding: 10px 12px;
+  }
+  
+  .search-btn-green,
+  .ai-generator-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .compact-search-input {
+    height: 40px;
+    font-size: 13px;
+    padding: 0 12px 0 36px;
+  }
+  
+  .search-icon {
+    left: 10px;
+    font-size: 14px;
+  }
+  
+  .search-btn-green,
+  .ai-generator-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  
+  .checkbox-text {
+    font-size: 13px;
+  }
+}
+
+/* Focus states for accessibility */
+.search-btn-green:focus,
+.ai-generator-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.3);
+}
+
+.ai-generator-btn:focus {
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+}
+
+/* Animation for search container */
+@keyframes searchContainerEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.compact-search-container {
+  animation: searchContainerEntrance 0.3s ease-out;
+}
+
+/* Loading state for search button */
+.search-btn-green:disabled {
+  position: relative;
+  color: transparent;
+}
+
+.search-btn-green:disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}

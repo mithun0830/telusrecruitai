@@ -18,10 +18,11 @@ const ShortlistedCandidates = () => {
       try {
         setIsLoading(true);
         const response = await interviewService.getShortlistedCandidates(currentUserId);
-        if (response && Array.isArray(response)) {
-          setCandidates(response);
+        console.log('Shortlisted candidates response:', response);
+        if (response.success && Array.isArray(response.data)) {
+          setCandidates(response.data);
         } else {
-          setError('Failed to fetch shortlisted candidates');
+          setError(response.message || 'Failed to fetch shortlisted candidates');
         }
       } catch (err) {
         setError('An error occurred while fetching shortlisted candidates');

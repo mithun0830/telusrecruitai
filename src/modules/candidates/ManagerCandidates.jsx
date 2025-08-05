@@ -679,49 +679,108 @@ const ManagerCandidates = () => {
   };
 
   const handleShortlistClick = async () => {
-    setIsShortlisting(true);
-    setShowShortlistSlideshow(true);
-    setCurrentShortlistSlide(0);
-    
-    const formattedCandidates = getFormattedCandidateData();
-    if (formattedCandidates.length === 0) {
-      setShortlistMessage('Please select at least one candidate to shortlist.');
-      setShortlistSuccess(false);
-      setIsShortlisting(false);
-      setShowShortlistSlideshow(false);
-      setShowShortlistModal(true);
-      return;
-    }
-
-    const payload = {
-      managerId: currentUserId,
-      candidates: formattedCandidates,
-      jobDescription: fullJobDescriptionData || {
-        summary: secondarySearch
-      }
-    };
-
     try {
+      setIsShortlisting(true);
+      setShowShortlistSlideshow(true);
+      setCurrentShortlistSlide(0);
+      
+      // Get selected candidates
+      const selectedCandidates = searchResults.filter(c => c.locked && c.managerId === currentUserId);
+      console.log('Selected candidates:', selectedCandidates);
+      
+      if (selectedCandidates.length === 0) {
+        throw new Error('Please select at least one candidate to shortlist.');
+      }
+
+      // Format candidates data
+      const formattedCandidates = selectedCandidates.map(candidate => {
+        // Validate required fields
+        if (!candidate.resume?.id) {
+          throw new Error(`Missing resume ID for candidate ${candidate.resume?.name || 'Unknown'}`);
+        }
+        if (!candidate.resume?.name) {
+          throw new Error(`Missing name for candidate with ID ${candidate.resume?.id}`);
+        }
+        if (!candidate.resume?.email) {
+          throw new Error(`Missing email for candidate ${candidate.resume?.name}`);
+        }
+
+        return {
+          resumeId: candidate.resume.id,
+          evaluationId: 123456, // This should be dynamic if possible
+          name: candidate.resume.name,
+          email: candidate.resume.email,
+          phone: candidate.resume.phoneNumber || '',
+          positionApplied: currentSearchValue || candidate.resume.positionApplied || "Not specified",
+          jobDetails: currentSearchValue || candidate.resume.jobDetails || "Not specified",
+          score: candidate.score || 0
+        };
+      });
+
+      console.log('Formatted candidates data:', formattedCandidates);
+
+      // Validate managerId
+      if (!currentUserId) {
+        throw new Error('Your session has expired. Please refresh the page and try again.');
+      }
+
+      const payload = {
+        managerId: currentUserId,
+        candidates: formattedCandidates,
+        jobDescription: fullJobDescriptionData || {
+          summary: secondarySearch || "No job description provided"
+        }
+      };
+
+      console.log('Shortlist payload:', payload);
+
       // Add minimum 5-second delay to ensure slideshow displays properly
       const [response] = await Promise.all([
         interviewService.shortlistCandidates(payload),
         new Promise(resolve => setTimeout(resolve, 5000)) // 5-second minimum delay
       ]);
       
-      if (response) {
-        setShortlistMessage('Candidates have been successfully shortlisted. Please contact HR for further processing and scheduling!');
-        setShortlistSuccess(true);
-      } else {
-        setShortlistMessage('Failed to shortlist candidates. Please try again.');
-        setShortlistSuccess(false);
+      console.log('Shortlist API Response:', response);
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || 'Failed to shortlist candidates. Please try again.');
       }
+
+      // Get names of shortlisted candidates
+      const names = selectedCandidates.map(c => c.resume.name);
+      console.log('Shortlisted candidate names:', names);
+
+      let successMessage;
+      if (names.length === 1) {
+        successMessage = `Candidate ${names[0]} has been successfully shortlisted.`;
+      } else {
+        const lastCandidate = names.pop();
+        successMessage = `The following candidates have been successfully shortlisted:\n${names.join(', ')} and ${lastCandidate}.`;
+      }
+      
+      successMessage += '\n\nPlease contact HR for further processing and scheduling!';
+      console.log('Final success message:', successMessage);
+
+      setShortlistMessage(successMessage);
+      setShortlistSuccess(true);
+
     } catch (error) {
       console.error('Error shortlisting candidates:', error);
-      setShortlistMessage('An error occurred while shortlisting candidates. Please try again.');
-      setShortlistSuccess(false);
+      let errorMessage = error.message;
       
-      // Ensure minimum delay even on error
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Handle specific error cases
+      if (errorMessage.includes('Missing')) {
+        errorMessage = 'Some candidates are missing required information. Please ensure all candidates have complete profiles.';
+      } else if (errorMessage.includes('session')) {
+        errorMessage = 'Your session has expired. Please refresh the page and try again.';
+      } else if (errorMessage.includes('Network Error')) {
+        errorMessage = 'Network error occurred. Please check your internet connection and try again.';
+      } else if (!errorMessage || errorMessage.includes('Failed to shortlist')) {
+        errorMessage = 'Failed to shortlist candidates. Please try again later.';
+      }
+      
+      setShortlistMessage(errorMessage);
+      setShortlistSuccess(false);
     } finally {
       setIsShortlisting(false);
       setShowShortlistSlideshow(false);
@@ -1185,13 +1244,15 @@ const ManagerCandidates = () => {
           <div className="success-icon-wrapper mb-4">
             <FontAwesomeIcon
               icon={faCheck}
-              className="success-icon text-success"
+              className={`success-icon ${shortlistSuccess ? 'text-success' : 'text-danger'}`}
             />
           </div>
           <h4 className="success-title mb-3">
-            {shortlistSuccess ? 'Success' : 'Operation Failed'}
+            {shortlistSuccess ? 'Success!' : 'Operation Failed'}
           </h4>
-          <p className="success-message mb-4">{shortlistMessage}</p>
+          <div className="success-message mb-4" style={{ whiteSpace: 'pre-line' }}>
+            {shortlistMessage}
+          </div>
           <Button
             variant={shortlistSuccess ? 'success' : 'danger'}
             onClick={() => setShowShortlistModal(false)}

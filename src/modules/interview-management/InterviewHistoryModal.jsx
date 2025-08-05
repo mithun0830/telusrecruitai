@@ -6,7 +6,7 @@ import { candidateService, interviewService, aiFeedbackService, notificationServ
 import Loader from '../../components/Loader';
 import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle, faRobot } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faTimesCircle, faRobot, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -1592,7 +1592,23 @@ const resetScheduleFields = () => {
                               </Tooltip>
                             }
                           >
-                            <span style={{ cursor: 'help' }}>ℹ️</span>
+                            <span style={{ 
+                              cursor: 'help',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              transition: 'all 0.2s ease-in-out'
+                            }}>
+                              <FontAwesomeIcon 
+                                icon={faInfoCircle} 
+                                style={{ 
+                                  fontSize: selectedInterviewers.includes(interviewer.email) ? '18px' : '16px',
+                                  width: selectedInterviewers.includes(interviewer.email) ? '18px' : '16px',
+                                  height: selectedInterviewers.includes(interviewer.email) ? '18px' : '16px',
+                                  color: selectedInterviewers.includes(interviewer.email) ? '#10B981' : '#6B7280',
+                                  transition: 'all 0.2s ease-in-out'
+                                }} 
+                              />
+                            </span>
                           </OverlayTrigger>
                         </div>
                       ))}

@@ -372,6 +372,15 @@ export const interviewService = {
     return await interviewApi.post('/candidates/shortlist', data);
   },
 
+  getShortlistedCandidates: async (managerId) => {
+    const response = await interviewApi.get(`/candidates/latest-interviews/manager/${managerId}`);
+    if (response.status === 200 && Array.isArray(response.data)) {
+      return response.data;
+    } else {
+      throw new Error('Invalid response format');
+    }
+  },
+
   getFreeSlots: async (requestBody) => {
     return await googleApi.post('/free-slots', requestBody);
   },

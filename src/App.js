@@ -12,6 +12,7 @@ import MngDashboard from './modules/dashboard/MngDashboard';
 import Approvals from './modules/approvals/Approvals';
 import RecruitPool from './modules/recruits/RecruitPool';
 import ManagerCandidates from './modules/candidates/ManagerCandidates';
+import ShortlistedCandidates from './modules/candidates/ShortlistedCandidates';
 import Notifications from './modules/notifications/Notifications';
 import UserManagement from './modules/user-management/UserManagement';
 import InterviewManagement from './modules/interview-management/InterviewManagement';
@@ -57,6 +58,11 @@ function App() {
           <Layout>
             <Notifications />
           </Layout>
+        } />
+        <Route path="/shortlisted-candidates" element={
+          <ProtectedRoute allowedRoles={['Manager']}>
+            <Layout><ShortlistedCandidates /></Layout>
+          </ProtectedRoute>
         } />
         <Route path="/user-management" element={
           <ProtectedRoute allowedRoles={['RMG']}>

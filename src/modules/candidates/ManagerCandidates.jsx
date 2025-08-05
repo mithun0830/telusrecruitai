@@ -31,7 +31,7 @@ import {
 import CompareView from './CompareView';
 import { Modal, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../components/Loader';
-import AIChatOverlay from '../../components/AIChatOverlay';
+import AIJobDescriptionGenerator from '../../components/AIJobDescriptionGenerator';
 import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
 import ManagerDetailsDialog from '../../components/ManagerDetailsDialog';
 import CandidateDrawer from '../../components/CandidateDrawer';
@@ -158,6 +158,13 @@ const ManagerCandidates = () => {
       // Do not automatically set the summary in the search field
       // adjustTextareaHeight();
     }
+  };
+
+  const handleCopyForSearch = (combinedText) => {
+    // Update the search box with the combined text
+    setSecondarySearch(combinedText);
+    // Show success feedback
+    console.log('Search box updated with:', combinedText);
   };
 
   const handleCandidateLockToggle = async (candidate, currentUserId) => {
@@ -635,6 +642,53 @@ const ManagerCandidates = () => {
   return (
     <>
       {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
+      
+      {/* Search slideshow overlay on top of loader */}
+      {showSearchSlideshow && isSearching && (
+        <div className="slideshow-overlay">
+          <div className="slideshow-container">
+            <div className="slideshow-slide">
+              <h3>{searchSlides[currentSearchSlide].title}</h3>
+              <p className="slide-description">{searchSlides[currentSearchSlide].description}</p>
+              <p className="slide-content">{searchSlides[currentSearchSlide].content}</p>
+              
+              <div className="slide-indicators">
+                {searchSlides.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`indicator ${index === currentSearchSlide ? 'active' : ''}`}
+                    onClick={() => setCurrentSearchSlide(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shortlist slideshow overlay on top of loader */}
+      {showShortlistSlideshow && isShortlisting && (
+        <div className="slideshow-overlay">
+          <div className="slideshow-container">
+            <div className="slideshow-slide">
+              <h3>{shortlistSlides[currentShortlistSlide].title}</h3>
+              <p className="slide-description">{shortlistSlides[currentShortlistSlide].description}</p>
+              <p className="slide-content">{shortlistSlides[currentShortlistSlide].content}</p>
+              
+              <div className="slide-indicators">
+                {shortlistSlides.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`indicator ${index === currentShortlistSlide ? 'active' : ''}`}
+                    onClick={() => setCurrentShortlistSlide(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="min-h-screen bg-white">
         <style>{spinKeyframes}</style>
         {/* Main Content */}
@@ -1031,9 +1085,10 @@ const ManagerCandidates = () => {
         </Modal.Body>
       </Modal>
       {showAIChatOverlay && (
-        <AIChatOverlay 
+        <AIJobDescriptionGenerator 
           onClose={() => setShowAIChatOverlay(false)}
           onJobDescriptionGenerated={handleGenerateJobDescription}
+          onCopyForSearch={handleCopyForSearch}
         />
       )}
       {showAIPopup && (
@@ -1042,52 +1097,6 @@ const ManagerCandidates = () => {
           onEnable={handleEnableAI}
           onMaybeLater={handleMaybeLater}
         />
-      )}
-      
-      {/* Search slideshow overlay on top of loader */}
-      {showSearchSlideshow && isSearching && (
-        <div className="slideshow-overlay">
-          <div className="slideshow-container">
-            <div className="slideshow-slide">
-              <h3>{searchSlides[currentSearchSlide].title}</h3>
-              <p className="slide-description">{searchSlides[currentSearchSlide].description}</p>
-              <p className="slide-content">{searchSlides[currentSearchSlide].content}</p>
-              
-              <div className="slide-indicators">
-                {searchSlides.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`indicator ${index === currentSearchSlide ? 'active' : ''}`}
-                    onClick={() => setCurrentSearchSlide(index)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Shortlist slideshow overlay on top of loader */}
-      {showShortlistSlideshow && isShortlisting && (
-        <div className="slideshow-overlay">
-          <div className="slideshow-container">
-            <div className="slideshow-slide">
-              <h3>{shortlistSlides[currentShortlistSlide].title}</h3>
-              <p className="slide-description">{shortlistSlides[currentShortlistSlide].description}</p>
-              <p className="slide-content">{shortlistSlides[currentShortlistSlide].content}</p>
-              
-              <div className="slide-indicators">
-                {shortlistSlides.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`indicator ${index === currentShortlistSlide ? 'active' : ''}`}
-                    onClick={() => setCurrentShortlistSlide(index)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Smart Candidate Drawer */}

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import './ManagerCandidates.css';
 import './SkaletoneStyles.css';
 import useManagerCandidates from './useManagerCandidates';
-import { authService, candidateService, interviewService } from '../../services/api';
+import { authService, candidateService, interviewService  , managerService } from '../../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faLock, 
@@ -114,6 +114,13 @@ const ManagerCandidates = () => {
   const [isShortlisting, setIsShortlisting] = useState(false);
   const [showSearchSlideshow, setShowSearchSlideshow] = useState(false);
   const [currentSearchSlide, setCurrentSearchSlide] = useState(0);
+    const [managers, setManagers] = useState([]);
+
+  const [managerDetails, setManagerDetails] = useState({});
+
+  const [showManagerDialog, setShowManagerDialog] = useState(false);
+
+  const [selectedManager, setSelectedManager] = useState(null);
   const [showShortlistSlideshow, setShowShortlistSlideshow] = useState(false);
   const [currentShortlistSlide, setCurrentShortlistSlide] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
@@ -124,6 +131,64 @@ const ManagerCandidates = () => {
   const [showDrawer, setShowDrawer] = useState(false);
   const [drawerCandidate, setDrawerCandidate] = useState(null);
   const [drawerDirection, setDrawerDirection] = useState('right');
+
+   const fetchManagerDetails = useCallback(async (managerId) => {
+
+    if (!managerDetails[managerId]) {
+
+      try {
+
+        const response = await managerService.getManagerById(managerId);
+
+        if (response.success) {
+
+          const { fullName, email, phoneNumber, designation, region, businessUnit, department, role } = response.data;
+
+          setManagerDetails(prev => ({
+
+            ...prev,
+
+            [managerId]: { fullName, email, phoneNumber, designation, region, businessUnit, department, role }
+
+          }));
+
+        }
+
+      } catch (error) {
+
+        console.error('Error fetching manager details:', error);
+
+      }
+
+    }
+
+  }, [managerDetails]);
+
+
+
+  const handleOpenManagerDialog = (managerId) => {
+
+    setSelectedManager(managerDetails[managerId]);
+
+    setShowManagerDialog(true);
+
+  };
+
+
+
+  useEffect(() => {
+
+    searchResults.forEach(candidate => {
+
+      if (candidate.locked && candidate.managerId) {
+
+        fetchManagerDetails(candidate.managerId);
+
+      }
+
+    });
+
+  }, [searchResults, fetchManagerDetails]);
 
   const {
     filters,
@@ -149,6 +214,38 @@ const ManagerCandidates = () => {
   useLayoutEffect(() => {
     adjustTextareaHeight();
   }, [adjustTextareaHeight]);
+
+    // Fetch managers data on component mount
+
+  useEffect(() => {
+
+    const fetchManagers = async () => {
+
+      try {
+
+        const response = await managerService.getAllManagers();
+
+        if (response.success) {
+
+          setManagers(response.data);
+
+          
+
+        }
+
+      } catch (error) {
+
+        console.error('Error fetching managers:', error);
+
+      }
+
+    };
+
+
+
+    fetchManagers();
+
+  }, []);
 
 
   const handleGenerateJobDescription = async (data) => {
@@ -875,8 +972,26 @@ const ManagerCandidates = () => {
                       <div className="selection-info">
                         {candidate.locked && candidate.managerId && (
                           <div className="selected-by-info">
-                            <div className="selected-by-label">Selected by:</div>
-                            <div className="selected-by-value">{candidate.managerId}</div>
+                            <div className="selected-by-label">Shortlisted by:
+
+                              <span 
+
+      style={{ marginLeft: '4px', cursor: 'pointer', textDecoration: 'underline' }}
+
+      onClick={() => handleOpenManagerDialog(candidate.managerId)}
+
+    >
+
+      {managerDetails[candidate.managerId] 
+
+        ? managerDetails[candidate.managerId].fullName 
+
+        : 'Loading...'}
+
+    </span>
+
+                            </div>
+                            {/* <div className="selected-by-value">{candidate.managerId}</div> */}
                           </div>
                         )}
                       </div>

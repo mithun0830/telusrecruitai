@@ -202,6 +202,8 @@ const InterviewManagement = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeChatCandidate, setActiveChatCandidate] = useState(null);
   const [candidateFolderStatus, setCandidateFolderStatus] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredRounds, setFilteredRounds] = useState([]);
   const stageColors = ['#6366F1', '#F97316', '#F59E0B', '#3B82F6'];
 
   const handleChatToggle = (candidateInfo) => {
@@ -294,6 +296,31 @@ const InterviewManagement = () => {
   useEffect(() => {
     fetchInterviewRounds();
   }, []);
+
+  // Effect to filter candidates based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredRounds(interviewRounds);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = interviewRounds.map(round => ({
+      ...round,
+      candidates: round.candidates.filter(candidate => 
+        candidate.name?.toLowerCase().includes(query) ||
+        candidate.email?.toLowerCase().includes(query) ||
+        candidate.jobDescription?.title?.toLowerCase().includes(query)
+      )
+    }));
+
+    setFilteredRounds(filtered);
+  }, [searchQuery, interviewRounds]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
   // Effect to check folder status when interview rounds are loaded
   useEffect(() => {
@@ -437,7 +464,12 @@ const InterviewManagement = () => {
         <div className="left-controls">
           <div className="search">
             <i className="fas fa-search"></i>
-            <input type="text" placeholder="Search candidate" />
+            <input 
+              type="text" 
+              placeholder="Search candidate" 
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
           </div>
           <div className="control">
             <i className="fas fa-filter"></i>
@@ -456,7 +488,7 @@ const InterviewManagement = () => {
         </div>
       ) : (
         <div className="kanban-board">
-          {interviewRounds.map((round) => (
+          {filteredRounds.map((round) => (
             <KanbanColumn
               key={round.roundId}
               round={round}

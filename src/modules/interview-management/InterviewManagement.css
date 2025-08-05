@@ -74,6 +74,16 @@
   outline: none;
   width: 100%;
   font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.search input:focus {
+  width: 250px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search input::placeholder {
+  color: #64748b;
 }
 
 .kanban-board {

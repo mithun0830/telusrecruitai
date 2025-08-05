@@ -197,6 +197,8 @@ const InterviewManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [interviewRounds, setInterviewRounds] = useState([]);
+  const [filteredRounds, setFilteredRounds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -294,6 +296,30 @@ const InterviewManagement = () => {
   useEffect(() => {
     fetchInterviewRounds();
   }, []);
+
+  // Effect to handle search filtering
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredRounds(interviewRounds);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    const filtered = interviewRounds.map(round => ({
+      ...round,
+      candidates: round.candidates.filter(candidate => {
+        const nameMatch = candidate.name?.toLowerCase().includes(query);
+        const emailMatch = candidate.email?.toLowerCase().includes(query);
+        const jobTitleMatch = candidate.jobTitle?.toLowerCase().includes(query);
+        const departmentMatch = candidate.department?.toLowerCase().includes(query);
+        const managerMatch = candidate.manager?.fullName?.toLowerCase().includes(query);
+        
+        return nameMatch || emailMatch || jobTitleMatch || departmentMatch || managerMatch;
+      })
+    }));
+
+    setFilteredRounds(filtered);
+  }, [searchQuery, interviewRounds]);
 
   // Effect to check folder status when interview rounds are loaded
   useEffect(() => {
@@ -437,7 +463,12 @@ const InterviewManagement = () => {
         <div className="left-controls">
           <div className="search">
             <i className="fas fa-search"></i>
-            <input type="text" placeholder="Search candidate" />
+            <input 
+              type="text" 
+              placeholder="Search candidate by name, email, job title, department, or manager"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           <div className="control">
             <i className="fas fa-filter"></i>
@@ -456,7 +487,7 @@ const InterviewManagement = () => {
         </div>
       ) : (
         <div className="kanban-board">
-          {interviewRounds.map((round) => (
+          {filteredRounds.map((round) => (
             <KanbanColumn
               key={round.roundId}
               round={round}

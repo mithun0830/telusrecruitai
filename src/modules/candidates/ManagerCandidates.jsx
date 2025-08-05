@@ -637,13 +637,6 @@ const ManagerCandidates = () => {
       {(isGeneratingDescription || isSearching || isShortlisting) && <Loader isVisible={true} />}
       <div className="min-h-screen bg-white">
         <style>{spinKeyframes}</style>
-        {/* Compact Header */}
-        <div className="compact-header">
-          <div className="header-content">
-            <h1 className="header-title">Candidates Search</h1>
-            <p className="header-subtitle">Find and manage your candidate pipeline</p>
-          </div>
-        </div>
         {/* Main Content */}
         <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           {/* Compact Search Section */}
@@ -656,7 +649,7 @@ const ManagerCandidates = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search by name, skills, location..."
+                  placeholder="Search your candidate pipeline by name, skills, location, or requirements..."
                   value={secondarySearch}
                   onChange={(e) => setSecondarySearch(e.target.value)}
                   onFocus={() => setErrorMessage('')}

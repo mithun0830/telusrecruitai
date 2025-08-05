@@ -3,7 +3,7 @@
 /* Overlay - No background blur, transparent */
 .drawer-overlay {
   position: fixed;
-  top: 120px; /* Start below header */
+  top: 80px; /* Adjusted for removed header */
   left: 0;
   right: 0;
   bottom: 0;
@@ -12,10 +12,10 @@
   pointer-events: none; /* Allow clicks through to background */
 }
 
-/* Drawer Content - Wider and positioned under header */
+/* Drawer Content - Wider and positioned under search section */
 .drawer-content {
   position: fixed;
-  top: 120px; /* Position under header */
+  top: 80px; /* Adjusted for removed header */
   bottom: 0;
   width: 60%; /* Increased width for better content display */
   max-width: 800px; /* Increased max width */

@@ -32,20 +32,19 @@ const CandidateDrawer = ({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscKey);
-      document.body.style.overflow = 'hidden'; // Prevent background scroll
+      // Allow background scrolling - removed overflow hidden
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscKey);
-      document.body.style.overflow = 'unset';
+      // No need to reset overflow since we're not changing it
     };
   }, [isOpen, onClose]);
 
-  // Handle backdrop click
+  // Handle backdrop click - Removed to allow background interaction
   const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    // Allow clicks to pass through to background
+    // No longer closes drawer on backdrop click
   };
 
   const toggleResumeExpand = () => {
@@ -89,18 +88,12 @@ const CandidateDrawer = ({
             <div className="drawer-candidate-details">
               <h2 className="drawer-candidate-name">{candidate.resume.name}</h2>
               <div className="drawer-contact-info">
-                <div className="drawer-contact-item">
-                  <FontAwesomeIcon icon={faEnvelope} className="drawer-contact-icon" />
-                  <span>{candidate.resume.email}</span>
-                </div>
-                <div className="drawer-contact-item">
-                  <FontAwesomeIcon icon={faPhone} className="drawer-contact-icon" />
-                  <span>{candidate.resume.phoneNumber}</span>
-                </div>
-                <div className="drawer-contact-item">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="drawer-contact-icon" />
-                  <span className={`drawer-source-tag ${candidate.source?.toLowerCase()}`}>
-                    {candidate.source || 'Internal'}
+                <div className="drawer-contact-single-line">
+                  <span className="drawer-contact-text">
+                    {candidate.resume.email} • {candidate.resume.phoneNumber} • 
+                    <span className={`drawer-source-tag ${candidate.source?.toLowerCase()}`}>
+                      {candidate.source || 'Internal'}
+                    </span>
                   </span>
                 </div>
               </div>

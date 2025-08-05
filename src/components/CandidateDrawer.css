@@ -1,9 +1,9 @@
 /* Candidate Drawer Styles */
 
-/* Overlay - No background blur, transparent */
+/* Overlay - Transparent, allows interaction with background */
 .drawer-overlay {
   position: fixed;
-  top: 80px; /* Adjusted for removed header */
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
@@ -12,33 +12,35 @@
   pointer-events: none; /* Allow clicks through to background */
 }
 
-/* Drawer Content - Wider and positioned under search section */
+/* Drawer Content - Card-style floating design */
 .drawer-content {
   position: fixed;
-  top: 80px; /* Adjusted for removed header */
-  bottom: 0;
-  width: 60%; /* Increased width for better content display */
-  max-width: 800px; /* Increased max width */
-  min-width: 500px; /* Increased min width */
+  top: 100px; /* More space from top */
+  bottom: 30px; /* Space from bottom */
+  width: 55%; /* Slightly smaller for better proportions */
+  max-width: 750px;
+  min-width: 480px;
   background: white;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  border-radius: 20px; /* Rounded corners for card effect */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1001;
-  pointer-events: auto; /* Enable clicks on drawer */
-  border-top: 3px solid #10b981; /* Add top border for visual separation */
+  pointer-events: auto;
+  overflow: hidden; /* Ensure content respects border radius */
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-/* Slide Directions */
+/* Slide Directions - Card-style with margins */
 .drawer-content.slide-right {
-  right: 0;
-  transform: translateX(100%);
+  right: 30px; /* Space from right edge */
+  transform: translateX(calc(100% + 30px));
 }
 
 .drawer-content.slide-left {
-  left: 0;
-  transform: translateX(-100%);
+  left: 30px; /* Space from left edge */
+  transform: translateX(calc(-100% - 30px));
 }
 
 .drawer-content.open.slide-right {
@@ -96,33 +98,36 @@
 }
 
 .drawer-contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-top: 8px;
 }
 
-.drawer-contact-item {
+.drawer-contact-single-line {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.drawer-contact-icon {
-  width: 16px;
-  color: rgba(255, 255, 255, 0.7);
-  flex-shrink: 0;
+.drawer-contact-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .drawer-source-tag {
   background: rgba(255, 255, 255, 0.2);
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-left: 4px;
+  display: inline-block;
 }
 
 .drawer-header-actions {
@@ -486,18 +491,20 @@
   .drawer-content {
     width: 90%;
     min-width: auto;
+    top: 80px;
+    bottom: 20px;
   }
   
   .drawer-content.slide-left {
-    left: 0;
-    right: 0;
-    transform: translateX(-100%);
+    left: 20px;
+    right: 20px;
+    transform: translateX(calc(-100% - 20px));
   }
   
   .drawer-content.slide-right {
-    left: 0;
-    right: 0;
-    transform: translateX(100%);
+    left: 20px;
+    right: 20px;
+    transform: translateX(calc(100% + 20px));
   }
   
   .drawer-header {
@@ -516,6 +523,17 @@
   
   .drawer-candidate-name {
     font-size: 24px;
+  }
+  
+  .drawer-contact-text {
+    font-size: 13px;
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .drawer-source-tag {
+    font-size: 11px;
+    padding: 3px 8px;
   }
   
   .drawer-header-actions {

@@ -1,0 +1,603 @@
+/* Candidate Detail Panel - Under Header */
+
+.candidate-detail-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.candidate-detail-panel.open {
+  transform: translateY(0);
+}
+
+.panel-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Panel Header */
+.panel-header {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.candidate-info-header {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.candidate-avatar-panel {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.candidate-details-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.candidate-name-panel {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  color: white;
+}
+
+.contact-info-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.contact-item-panel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.contact-icon-panel {
+  width: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.source-tag-panel {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.match-score-panel {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.score-percentage-panel {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.score-label-panel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.panel-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.panel-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+/* Weighted Scores Section */
+.weighted-scores-section {
+  background: #f8fafc;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.scores-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px 0;
+}
+
+.weighted-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.weighted-score-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.score-icon-weighted {
+  color: #059669;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.score-label-weighted {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  min-width: 80px;
+}
+
+.score-bar-weighted {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 8px;
+}
+
+.score-fill-weighted {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.score-fill-weighted.technical {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.score-fill-weighted.experience {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.score-fill-weighted.education {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.score-fill-weighted.soft-skills {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.score-fill-weighted.achievements {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.score-value-weighted {
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+  min-width: 35px;
+  text-align: right;
+}
+
+/* Panel Content */
+.panel-content {
+  background: white;
+  padding: 0;
+}
+
+.panel-section {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.panel-section:last-child {
+  border-bottom: none;
+}
+
+.section-header-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.section-header-panel:hover {
+  background: #f9fafb;
+}
+
+.section-title-panel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.section-toggle-icon {
+  color: #6b7280;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.section-content-panel {
+  padding: 0 24px 20px 24px;
+  background: #fafbfc;
+}
+
+.section-content-panel p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* Strengths Grid */
+.strengths-grid-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.strength-item-panel {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.strength-icon-panel {
+  width: 20px;
+  height: 20px;
+  background: #059669;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.strength-content-panel {
+  flex: 1;
+}
+
+.strength-title-panel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+  margin: 0 0 4px 0;
+}
+
+.strength-evidence-panel {
+  font-size: 12px;
+  color: #065f46;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Improvements Grid */
+.improvements-grid-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.improvement-item-panel {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: #fef3c7;
+  border-radius: 8px;
+  border: 1px solid #fde68a;
+}
+
+.improvement-icon-panel {
+  width: 20px;
+  height: 20px;
+  background: #f59e0b;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.improvement-content-panel {
+  flex: 1;
+}
+
+.improvement-title-panel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #d97706;
+  margin: 0 0 4px 0;
+}
+
+.improvement-suggestion-panel {
+  font-size: 12px;
+  color: #92400e;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Recommendation */
+.recommendation-card-panel {
+  background: #f0f9ff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #bae6fd;
+}
+
+.recommendation-header-panel {
+  margin-bottom: 8px;
+}
+
+.recommendation-badge-panel {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.recommendation-badge-panel.highly-recommended {
+  background: #059669;
+  color: white;
+}
+
+.recommendation-badge-panel.recommended {
+  background: #10b981;
+  color: white;
+}
+
+.recommendation-badge-panel.consider {
+  background: #f59e0b;
+  color: white;
+}
+
+.recommendation-badge-panel.not-recommended {
+  background: #ef4444;
+  color: white;
+}
+
+.recommendation-reason-panel {
+  font-size: 13px;
+  color: #0369a1;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Resume Content */
+.resume-content-panel {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.resume-section-panel {
+  margin-bottom: 16px;
+}
+
+.resume-section-panel:last-child {
+  margin-bottom: 0;
+}
+
+.resume-section-title-panel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+  margin: 0 0 6px 0;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 2px;
+}
+
+.resume-line-panel {
+  font-size: 12px;
+  color: #4b5563;
+  margin: 0 0 2px 0;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .panel-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .candidate-info-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .candidate-name-panel {
+    font-size: 20px;
+  }
+
+  .contact-info-panel {
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .panel-header-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .weighted-scores-section {
+    padding: 16px 20px;
+  }
+
+  .weighted-scores-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .section-header-panel {
+    padding: 14px 20px;
+  }
+
+  .section-content-panel {
+    padding: 0 20px 16px 20px;
+  }
+
+  .section-title-panel {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-header {
+    padding: 12px 16px;
+  }
+
+  .candidate-name-panel {
+    font-size: 18px;
+  }
+
+  .weighted-scores-section {
+    padding: 12px 16px;
+  }
+
+  .section-header-panel {
+    padding: 12px 16px;
+  }
+
+  .section-content-panel {
+    padding: 0 16px 12px 16px;
+  }
+
+  .weighted-score-item {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .score-label-weighted {
+    font-size: 11px;
+    min-width: 70px;
+  }
+
+  .score-value-weighted {
+    font-size: 11px;
+    min-width: 30px;
+  }
+}
+
+/* Scrollbar Styling */
+.candidate-detail-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.candidate-detail-panel::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.candidate-detail-panel::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.candidate-detail-panel::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animation for panel entrance */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Focus states for accessibility */
+.panel-close-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.section-header-panel:focus {
+  outline: none;
+  background: #f9fafb;
+}
+
+/* Ensure panel appears above everything */
+.candidate-detail-panel {
+  z-index: 999;
+}
+
+/* Add smooth opening animation */
+.candidate-detail-panel.open {
+  animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}

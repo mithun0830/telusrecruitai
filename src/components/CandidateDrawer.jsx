@@ -52,7 +52,23 @@ const CandidateDrawer = ({
     setIsResumeExpanded(!isResumeExpanded);
   };
 
+  // Use weighted scores directly - they are already calculated correctly
+  const getWeightedScores = (categoryScores) => {
+    if (!categoryScores) return null;
+    
+    // The categoryScores values are already the weighted scores out of their respective totals
+    return {
+      technical: categoryScores.technicalSkills,    // Already out of 40
+      experience: categoryScores.experience,        // Already out of 25
+      education: categoryScores.education,          // Already out of 10
+      softSkills: categoryScores.softSkills,        // Already out of 15
+      achievements: categoryScores.achievements     // Already out of 10
+    };
+  };
+
   if (!isOpen || !candidate) return null;
+
+  const weightedScores = getWeightedScores(candidate.analysis?.categoryScores);
 
   return (
     <div 
@@ -115,17 +131,17 @@ const CandidateDrawer = ({
             </p>
           </div>
 
-          {/* Category Scores */}
-          {candidate.analysis?.categoryScores && (
+          {/* Category Scores - Weighted */}
+          {weightedScores && (
             <div className="drawer-section">
-              <h4 className="drawer-section-title">Category Scores</h4>
+              <h4 className="drawer-section-title">Category Scores (Weighted)</h4>
               <div className="drawer-scores-grid">
                 {[
-                  { label: "Technical Skills", score: "technicalSkills", icon: faCode },
-                  { label: "Experience", score: "experience", icon: faBriefcase },
-                  { label: "Education", score: "education", icon: faGraduationCap },
-                  { label: "Soft Skills", score: "softSkills", icon: faUsers },
-                  { label: "Achievements", score: "achievements", icon: faTrophy }
+                  { label: "Technical Skills", key: "technical", total: 40, icon: faCode },
+                  { label: "Experience", key: "experience", total: 25, icon: faBriefcase },
+                  { label: "Education", key: "education", total: 10, icon: faGraduationCap },
+                  { label: "Soft Skills", key: "softSkills", total: 15, icon: faUsers },
+                  { label: "Achievements", key: "achievements", total: 10, icon: faTrophy }
                 ].map((item, index) => (
                   <div key={index} className="drawer-score-item">
                     <div className="drawer-score-header">
@@ -136,11 +152,11 @@ const CandidateDrawer = ({
                       <div className="drawer-score-bar">
                         <div
                           className="drawer-score-fill"
-                          style={{ width: `${candidate.analysis.categoryScores[item.score]}%` }}
+                          style={{ width: `${(weightedScores[item.key] / item.total) * 100}%` }}
                         ></div>
                       </div>
                       <div className="drawer-score-value">
-                        {candidate.analysis.categoryScores[item.score]}%
+                        {weightedScores[item.key]}/{item.total}
                       </div>
                     </div>
                   </div>

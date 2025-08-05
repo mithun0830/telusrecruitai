@@ -1,42 +1,33 @@
 /* Candidate Drawer Styles */
 
-/* Overlay */
+/* Overlay - No background blur, transparent */
 .drawer-overlay {
   position: fixed;
-  top: 0;
+  top: 120px; /* Start below header */
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background: transparent; /* No background overlay */
   z-index: 1000;
-  opacity: 0;
-  animation: fadeIn 0.3s ease-out forwards;
+  pointer-events: none; /* Allow clicks through to background */
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Drawer Content */
+/* Drawer Content - Wider and positioned under header */
 .drawer-content {
   position: fixed;
-  top: 0;
+  top: 120px; /* Position under header */
   bottom: 0;
-  width: 60%;
-  max-width: 800px;
-  min-width: 600px;
+  width: 60%; /* Increased width for better content display */
+  max-width: 800px; /* Increased max width */
+  min-width: 500px; /* Increased min width */
   background: white;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1001;
+  pointer-events: auto; /* Enable clicks on drawer */
+  border-top: 3px solid #10b981; /* Add top border for visual separation */
 }
 
 /* Slide Directions */

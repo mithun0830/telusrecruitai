@@ -36,6 +36,8 @@ import AIJobDescriptionPopup from '../../components/AIJobDescriptionPopup';
 import ManagerDetailsDialog from '../../components/ManagerDetailsDialog';
 import CandidateDrawer from '../../components/CandidateDrawer';
 
+// import ManagerDetailsDialog from '../../components/ManagerDetailsDialog';
+
 const getInitials = (name) => {
   if (!name) return '';
   return name
@@ -1220,6 +1222,12 @@ const ManagerCandidates = () => {
         isOpen={showDrawer}
         onClose={handleCloseDrawer}
         slideDirection={drawerDirection}
+      />
+
+      <ManagerDetailsDialog
+        show={showManagerDialog}
+        onHide={() => setShowManagerDialog(false)}
+        manager={selectedManager}
       />
 
     </>

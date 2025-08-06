@@ -85,6 +85,9 @@ const resetScheduleFields = () => {
   // Track if AI feedback has been generated at least once for this candidate
   const [hasGeneratedFeedback, setHasGeneratedFeedback] = useState(false);
   
+  // Form validation state
+  const [isFormValid, setIsFormValid] = useState(false);
+  
   // Polling related state
   const [isPolling, setIsPolling] = useState(false);
   const [candidateFolderExists, setCandidateFolderExists] = useState(false);
@@ -203,6 +206,20 @@ const resetScheduleFields = () => {
       fetchInterviewers(candidateHistory.jobDescription);
     }
   }, [isOpen, candidateHistory]);
+
+  // Form validation effect
+  useEffect(() => {
+    const validateForm = () => {
+      const hasRound = selectedRound !== '';
+      const hasInterviewers = selectedInterviewers.length > 0;
+      const hasDateTime = selectedDateTime !== null;
+      const hasSlot = selectedSlot !== null;
+      
+      return hasRound && hasInterviewers && hasDateTime && hasSlot;
+    };
+
+    setIsFormValid(validateForm());
+  }, [selectedRound, selectedInterviewers, selectedDateTime, selectedSlot]);
 
   const fetchInterviewers = async (jobDescription) => {
     setLoadingInterviewers(true);
@@ -1516,8 +1533,10 @@ const resetScheduleFields = () => {
         {(isLoading || loadingInterviewers) && <Loader />}
       <div className="modal-overlay">
         <div className="modal-content" style={{ fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif' }}>
+          <div className="modal-header-unified">
+            <h2>Interview Management Portal</h2>
+          </div>
           <div className="modal-left">
-            <h2>Interview Details</h2>
             {history && history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (
               <>
               <div className="schedule-form">
@@ -1781,12 +1800,8 @@ const resetScheduleFields = () => {
   <button 
     onClick={handleSchedule} 
     className="schedule-button"
-    disabled={!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot || !duration || isLoading}
-    style={{ 
-      marginTop: '10px',
-      opacity: (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot || !duration || isLoading) ? 0.6 : 1,
-      cursor: (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot || !duration || isLoading) ? 'not-allowed' : 'pointer'
-    }}
+    disabled={!isFormValid || isLoading}
+    style={{ marginTop: '10px' }}
   >
                     <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
                     Schedule Interview
@@ -2071,7 +2086,6 @@ const resetScheduleFields = () => {
             )}
           </div>
           <div className="modal-right">
-            <h2>Interview Process</h2>
             <div className="candidate-info-modal">
               <h3>{candidateName || 'Candidate Name Not Available'}</h3>
               <p>{jobTitle ? `${jobTitle}${jobDepartment ? ` - ${jobDepartment}` : ''}` : 'Job Details Not Available'}</p>

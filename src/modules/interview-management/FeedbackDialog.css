@@ -1,0 +1,99 @@
+.feedback-dialog {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.feedback-dialog-header {
+  background-color: #059669;
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feedback-dialog-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.feedback-dialog-header .close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.feedback-dialog-content {
+  padding: 24px;
+}
+
+.status-section {
+  margin-bottom: 20px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.status-badge.completed {
+  background-color: #059669;
+}
+
+.status-badge.pending {
+  background-color: #eab308;
+}
+
+.status-badge.rejected {
+  background-color: #dc2626;
+}
+
+.status-badge.selected {
+  background-color: #3b82f6;
+}
+
+.feedback-section {
+  margin-top: 20px;
+}
+
+.feedback-section h4 {
+  color: #374151;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.feedback-section p {
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.feedback-section .no-feedback {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.feedback-section .feedback-text {
+  background-color: #f3f4f6;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #059669;
+}
+
+/* Override bootstrap modal styles */
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

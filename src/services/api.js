@@ -50,6 +50,29 @@ const interviewApi = axios.create({
   },
 });
 
+// Add response interceptor for interviewApi
+interviewApi.interceptors.response.use(
+  (response) => {
+    console.log('Interview API Response:', response);
+    // Check if response has data property
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Operation successful'
+      };
+    }
+    return response;
+  },
+  (error) => {
+    console.error('Interview API Error:', error.response || error);
+    return Promise.reject({
+      success: false,
+      message: error.response?.data?.message || error.message || 'Operation failed'
+    });
+  }
+);
+
 const aiFeedbackApi = axios.create({
   baseURL: AI_FEEDBACK_BASE_URL,
   headers: {
@@ -178,12 +201,14 @@ const addResponseInterceptor = (axiosInstance) => {
 addTokenInterceptor(api);
 addTokenInterceptor(ai_api);
 addTokenInterceptor(notificationApi);
+addTokenInterceptor(interviewApi); // Add token interceptor for interviewApi
 // Note: aiFeedbackApi doesn't need token interceptor as it's localhost
 
 addResponseInterceptor(api);
 addResponseInterceptor(ai_api);
 addResponseInterceptor(notificationApi);
 addResponseInterceptor(aiFeedbackApi);
+addResponseInterceptor(interviewApi); // Add response interceptor for interviewApi
 
 // Notification service
 export const notificationService = {
@@ -370,7 +395,51 @@ export const interviewService = {
   },
 
   shortlistCandidates: async (data) => {
-    return await interviewApi.post('/candidates/shortlist', data);
+    try {
+      console.log('Shortlist API Request Payload:', data);
+      const response = await interviewApi.post('/candidates/shortlist', data);
+      console.log('Shortlist API Raw Response:', response);
+      
+      // Handle different response formats
+      if (response.data) {
+        return {
+          success: true,
+          data: response.data,
+          message: 'Candidates shortlisted successfully'
+        };
+      } else if (response.success) {
+        return response;
+      }
+      
+      throw new Error('Invalid response format from API');
+    } catch (error) {
+      console.error('Shortlist API Error:', error);
+      throw new Error(error.message || 'Failed to shortlist candidates. Please try again.');
+    }
+  },
+
+  getShortlistedCandidates: async (managerId) => {
+    try {
+      const response = await interviewApi.get(`/candidates/latest-interviews/manager/${managerId}`);
+      console.log('Get Shortlisted Candidates Response:', response);
+      
+      if (response.success && response.data) {
+        return {
+          success: true,
+          data: Array.isArray(response.data) ? response.data : [],
+          message: 'Successfully retrieved shortlisted candidates'
+        };
+      }
+      
+      throw new Error('Failed to get shortlisted candidates');
+    } catch (error) {
+      console.error('Error getting shortlisted candidates:', error);
+      return {
+        success: false,
+        data: [],
+        message: error.message || 'Failed to get shortlisted candidates. Please try again.'
+      };
+    }
   },
 
   getFreeSlots: async (requestBody) => {

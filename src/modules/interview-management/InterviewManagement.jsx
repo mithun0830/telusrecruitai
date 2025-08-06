@@ -1,11 +1,10 @@
   import React, { useState, useEffect } from 'react';
 import { interviewService, aiFeedbackService } from '../../services/api';
 import InterviewHistoryModal from './InterviewHistoryModal';
+import FeedbackDialog from './FeedbackDialog';
 import ChatBot from '../../components/ChatBot';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComments } from '@fortawesome/free-solid-svg-icons';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
 import './InterviewManagement.css';
 
 const CandidateChatBot = ({ candidate, onChatToggle }) => {
@@ -49,20 +48,6 @@ const getLightColor = () => {
 };
 
 const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) => {
-  const getLatestFeedback = () => {
-    if (candidate.interviewHistory && candidate.interviewHistory.length > 0) {
-      const latestInterview = candidate.interviewHistory[candidate.interviewHistory.length - 1];
-      return latestInterview.feedback || 'No feedback available';
-    }
-    return 'No feedback available';
-  };
-
-  const renderTooltip = (props) => (
-    <Tooltip id="button-tooltip" {...props}>
-      {getLatestFeedback()}
-    </Tooltip>
-  );
-
   return (
     <div className="candidate-card">
       <div className="card-header">
@@ -110,55 +95,28 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
             </span>
           <div style={{ display: 'flex', marginLeft: 'auto', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="score-value" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              
-              {candidate.status.toUpperCase() === 'REJECTED' ? (
-                <OverlayTrigger
-                  placement="bottom"
-                  delay={{ show: 250, hide: 400 }}
-                  overlay={renderTooltip}
-                >
-                  <span
-                    style={{
-                      backgroundColor: '#dc3545',
-                      color: '#fff',
-                      padding: '6px 12px',
-                      borderRadius: '16px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      display: 'inline-block'
-                    }}
-                  >
-                    {candidate.status.toUpperCase()}
-                  </span>
-                </OverlayTrigger>
-              ) : (
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) {
-                      handleStatusClick(candidate, round);
-                    } else {
-                      console.log('Not calling handleStatusClick for IN PROGRESS, REJECTED, or PENDING in New Applications status');
-                    }
-                  }}
-                  style={{
-                    cursor: (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED' && !(round.roundName === 'New Applications' && candidate.status.toUpperCase() === 'PENDING')) ? 'pointer' : 'default',
-                    backgroundColor: candidate.status.toUpperCase() === 'PENDING' ? '#FFA500' : // Warning color
-                                   candidate.status.toUpperCase() === 'COMPLETED' ? '#00a78e' : // Success color
-                                   candidate.status.toUpperCase() === 'SELECTED' ? '#007bff' : // Primary color
-                                   candidate.status.toUpperCase() === 'REJECTED' ? '#dc3545' : // Red color
-                                   '#6c757d', // Default gray
-                    color: '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '16px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    display: 'inline-block'
-                  }}
-                >
-                  {candidate.status.toUpperCase()}
-                </span>
-              )}
+              <span
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleStatusClick(candidate, round);
+                }}
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: candidate.status.toUpperCase() === 'PENDING' ? '#FFA500' : // Warning color
+                                 candidate.status.toUpperCase() === 'COMPLETED' ? '#00a78e' : // Success color
+                                 candidate.status.toUpperCase() === 'SELECTED' ? '#007bff' : // Primary color
+                                 candidate.status.toUpperCase() === 'REJECTED' ? '#dc3545' : // Red color
+                                 '#6c757d', // Default gray
+                  color: '#fff',
+                  padding: '6px 12px',
+                  borderRadius: '16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'inline-block'
+                }}
+              >
+                {candidate.status.toUpperCase()}
+              </span>
             </div>
           </div>
         </div>
@@ -195,6 +153,7 @@ const KanbanColumn = ({ round, stages, handleStatusClick, handleChatToggle }) =>
 const InterviewManagement = () => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [interviewRounds, setInterviewRounds] = useState([]);
   const [filteredRounds, setFilteredRounds] = useState([]);
@@ -341,18 +300,18 @@ const InterviewManagement = () => {
   }, [interviewRounds]);
 
   const handleStatusClick = (candidate, round) => {
-    const roundId = round.roundId;
+    const status = candidate.status.toUpperCase();
+    console.log('Status clicked:', status);
 
-    const isLastRound = round.roundId === interviewRounds[interviewRounds.length - 1].roundId;
-    const isSelected = candidate.status.toUpperCase() === 'SELECTED';
-    const hasFeedback = candidate.interviewHistory && candidate.interviewHistory.length > 0 && candidate.interviewHistory[candidate.interviewHistory.length - 1].feedback;
-
-    if (isLastRound && isSelected && hasFeedback) {
-      console.log('Modal not opened: Last round, not selected status, and feedback present');
-      return;
-    }
-
-    if (round.roundName.toUpperCase() == 'NEW APPLICATION' && candidate.status.toUpperCase() === 'PENDING') {
+    if (status === 'SELECTED' || status === 'REJECTED') {
+      // For Selected and Rejected candidates, show feedback dialog
+      setSelectedCandidate({
+        ...candidate,
+        roundId: round.roundId
+      });
+      setIsFeedbackDialogOpen(true);
+    } else if (round.roundName.toUpperCase() === 'NEW APPLICATION' && status === 'PENDING') {
+      // For new applications with pending status, show overlay
       setSelectedCandidate({
         history: candidate.interviewHistory || [],
         candidateName: candidate.name || 'No Name',
@@ -362,12 +321,13 @@ const InterviewManagement = () => {
         candidateId: candidate.candidateId,
         currentRoundId: candidate.currentRoundId,
         resumeId: candidate.resumeId || '',
-        status: candidate.status.toUpperCase(),
-        roundId: roundId,
+        status: status,
+        roundId: round.roundId,
         jobDescription: candidate.jobDescription || ''
       });
       setShowOverlay(true);
-    } else if (candidate.status.toUpperCase() !== 'IN PROGRESS' && candidate.status.toUpperCase() !== 'REJECTED') {
+    } else if (status !== 'IN PROGRESS') {
+      // For other statuses (except IN PROGRESS), show modal
       setSelectedCandidate({
         history: candidate.interviewHistory || [],
         candidateName: candidate.name || 'No Name',
@@ -377,8 +337,8 @@ const InterviewManagement = () => {
         candidateId: candidate.candidateId,
         currentRoundId: candidate.currentRoundId,
         resumeId: candidate.resumeId || '',
-        status: candidate.status.toUpperCase(),
-        roundId: roundId,
+        status: status,
+        roundId: round.roundId,
         jobDescription: candidate.jobDescription || ''
       });
       setIsModalOpen(true);
@@ -545,6 +505,11 @@ const InterviewManagement = () => {
           onClose={() => setIsChatOpen(false)}
         />
       )}
+      <FeedbackDialog
+        isOpen={isFeedbackDialogOpen}
+        onClose={() => setIsFeedbackDialogOpen(false)}
+        candidate={selectedCandidate}
+      />
     </div>
   );
 };

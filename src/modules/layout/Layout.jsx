@@ -11,7 +11,8 @@ import {
   faBars, faTachometerAlt, faFileAlt,
   faUserFriends, faCalendarAlt, faBell,
   faSignOutAlt, faCaretDown, faCog, faUsers,
-  faUsersCog, faClipboardList, faListAlt, faBriefcase
+  faUsersCog, faClipboardList, faListAlt, faBriefcase,
+  faUserCheck
 } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/variables.css';
 import '../../styles/Layout.css';
@@ -55,6 +56,7 @@ const menuItems = [
   // { path: '/application-status', icon: faListAlt, label: 'Application Status', permission: 'mng_app_status', role: 'Manager' },
   { path: '/job-openings', icon: faBriefcase, label: 'Candidates Search', permission: 'mng_jb', role: 'Manager' },
   { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'mng_notif', role: 'Manager' },
+  { path: '/shortlisted-candidates', icon: faUserCheck, label: 'Shortlisted Candidates', permission: 'mng_jb', role: 'Manager' },
 ];
 
 const Layout = ({ children }) => {

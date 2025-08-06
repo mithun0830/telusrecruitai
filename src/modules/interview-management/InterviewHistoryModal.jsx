@@ -1301,9 +1301,9 @@ const resetScheduleFields = () => {
   };
 
   const handleFindSlots = async () => {
-    if (selectedInterviewers.length === 0 || !selectedDateTime) {
+    if (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime) {
       setModalType('error');
-      setModalMessage('Please select at least one interviewer and a date/time');
+      setModalMessage('Please select an interview round, at least one interviewer, and a date/time');
       setShowModal(true);
       return;
     }
@@ -1717,11 +1717,15 @@ const resetScheduleFields = () => {
                     <option value="60">60 mins</option>
                   </select>
                 </div>
-                <button 
-                  className="find-slots-button" 
-                  onClick={handleFindSlots}
-                  disabled={selectedInterviewers.length === 0 || isFindingSlotsLoading}
-                >
+<button 
+  className="find-slots-button" 
+  onClick={handleFindSlots}
+  disabled={!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || isFindingSlotsLoading}
+  style={{
+    opacity: (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || isFindingSlotsLoading) ? 0.6 : 1,
+    cursor: (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || isFindingSlotsLoading) ? 'not-allowed' : 'pointer'
+  }}
+>
                   {isFindingSlotsLoading ? (
                     <div style={{ 
                       display: 'flex', 
@@ -1777,8 +1781,12 @@ const resetScheduleFields = () => {
   <button 
     onClick={handleSchedule} 
     className="schedule-button"
-    disabled={selectedInterviewers.length === 0 || !selectedSlot || isLoading}
-    style={{ marginTop: '10px' }}
+    disabled={!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot || !duration || isLoading}
+    style={{ 
+      marginTop: '10px',
+      opacity: (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot || !duration || isLoading) ? 0.6 : 1,
+      cursor: (!selectedRound || selectedInterviewers.length === 0 || !selectedDateTime || !selectedSlot || !duration || isLoading) ? 'not-allowed' : 'pointer'
+    }}
   >
                     <FontAwesomeIcon icon={faRobot} style={{ marginRight: '8px' }} />
                     Schedule Interview

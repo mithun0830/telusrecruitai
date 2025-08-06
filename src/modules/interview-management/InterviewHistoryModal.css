@@ -32,14 +32,12 @@
   border-radius: 12px;
   width: 90%;
   max-width: 1200px;
-  min-height: 700px;
-  height: 80vh;
-  max-height: 95vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: row;
-  gap: 30px;
+  gap: 8px;
   position: relative;
   font-family: "Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif;
 }
@@ -48,6 +46,7 @@
   flex: 0 0 60%;
   padding-right: 30px;
   border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
 }
 
 .modal-right {
@@ -55,6 +54,7 @@
   padding-left: 30px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .modal-header-unified {
@@ -1188,4 +1188,96 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .modal-left,
+  .modal-right {
+    flex: 1 1 auto;
+    width: 100%;
+    padding: 15px 0;
+    border-right: none;
+  }
+
+  .modal-right {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .modal-header-unified h2 {
+    font-size: 20px;
+  }
+
+  .candidate-info-modal h3 {
+    font-size: 16px;
+  }
+
+  .candidate-info-modal p {
+    font-size: 12px;
+  }
+
+  .timeline-content h3 {
+    font-size: 14px;
+  }
+
+  .timeline-subtitle,
+  .timeline-description {
+    font-size: 11px;
+  }
+
+  .datetime-duration-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .find-slots-button {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 15px;
+  }
+
+  .modal-header-unified {
+    padding: 15px;
+  }
+
+  .modal-header-unified h2 {
+    font-size: 18px;
+  }
+
+  .close-button {
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+  }
+
+  .schedule-form label {
+    font-size: 12px;
+  }
+
+  .schedule-form select,
+  .schedule-form .react-datepicker__input-container input {
+    font-size: 12px;
+    height: 34px;
+  }
+
+  .find-slots-button,
+  .schedule-button {
+    font-size: 12px;
+    padding: 8px;
+  }
 }

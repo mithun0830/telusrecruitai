@@ -1,0 +1,103 @@
+.shortlisted-candidates {
+  padding: 20px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h2 {
+  color: #333;
+  margin: 0;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.error-container {
+  padding: 20px;
+}
+
+.no-candidates {
+  text-align: center;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.candidates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.candidate-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.candidate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.candidate-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.status-badge.completed {
+  background-color: #00a78e;
+}
+
+.status-badge.pending {
+  background-color: #FFA500;
+}
+
+.status-badge.selected {
+  background-color: #00a78e;
+}
+
+.status-badge.rejected {
+  background-color: #dc3545;
+}
+
+.candidate-info p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.job-description {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.job-description p {
+  font-size: 14px;
+  margin: 0;
+}

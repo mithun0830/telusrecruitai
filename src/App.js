@@ -17,6 +17,7 @@ import UserManagement from './modules/user-management/UserManagement';
 import InterviewManagement from './modules/interview-management/InterviewManagement';
 import Layout from './modules/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ShortlistedCandidates from './modules/candidates/ShortlistedCandidates';
 import './styles/Layout.css';
 
 function App() {
@@ -66,6 +67,11 @@ function App() {
         <Route path="/interviews" element={
           <ProtectedRoute allowedRoles={['Manager', 'RMG']}>
             <Layout><InterviewManagement /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/shortlisted-candidates" element={
+          <ProtectedRoute allowedRoles={['Manager']}>
+            <Layout><ShortlistedCandidates /></Layout>
           </ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to="/landing" replace />} />

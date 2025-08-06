@@ -601,7 +601,10 @@ const ManagerCandidates = () => {
       ]);
       
       if (response) {
-        setShortlistMessage('Candidates have been successfully shortlisted. Please contact HR for further processing and scheduling!');
+        const candidateNames = formattedCandidates
+          .map(candidate => candidate.name)
+          .join(', ');
+        setShortlistMessage(`Successfully shortlisted candidates:\n${candidateNames}\n\nPlease contact HR for further processing and scheduling!`);
         setShortlistSuccess(true);
       } else {
         setShortlistMessage('Failed to shortlist candidates. Please try again.');
@@ -880,7 +883,7 @@ const ManagerCandidates = () => {
           <h4 className="success-title mb-3">
             {shortlistSuccess ? 'Success' : 'Operation Failed'}
           </h4>
-          <p className="success-message mb-4">{shortlistMessage}</p>
+          <p className="success-message mb-4" style={{ whiteSpace: 'pre-line' }}>{shortlistMessage}</p>
           <Button
             variant={shortlistSuccess ? 'success' : 'danger'}
             onClick={() => setShowShortlistModal(false)}

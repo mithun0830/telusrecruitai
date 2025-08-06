@@ -373,6 +373,11 @@ export const interviewService = {
     return await interviewApi.post('/candidates/shortlist', data);
   },
 
+  getShortlistedCandidates: async (managerId) => {
+    const response = await interviewApi.get(`/candidates/latest-interviews/manager/${managerId}`);
+    return response.data; // Return the data directly since it's already an array
+  },
+
   getFreeSlots: async (requestBody) => {
     return await googleApi.post('/free-slots', requestBody);
   },

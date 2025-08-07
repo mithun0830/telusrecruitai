@@ -1,14 +1,46 @@
 .shortlisted-candidates {
   padding: 20px;
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
 }
 
 .header {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .header h2 {
   color: #333;
   margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.search-container {
+  flex: 1;
+  max-width: 300px;
+  margin-left: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #000000;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow 0.3s ease;
+  background-color: white;
+}
+
+.search-input:focus {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-color: #838e8b;
+}
+
+.search-input::placeholder {
+  color: #a0aec0;
 }
 
 .loading-container {
@@ -27,77 +59,184 @@
   padding: 40px;
   background: #f8f9fa;
   border-radius: 8px;
+  font-size: 16px;
+  color: #6c757d;
 }
 
 .candidates-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
 }
 
 .candidate-card {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.candidate-card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .candidate-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #00A36C;
 }
 
-.candidate-header h3 {
+.candidate-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  margin-right: 20px;
+  color: #333;
+}
+
+.candidate-details h3 {
   margin: 0;
+  font-size: 20px;
+  color: #333;
+  font-weight: 600;
+}
+
+
+.candidate-timeline {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.candidate-timeline h4 {
+  margin-bottom: 15px;
   font-size: 18px;
   color: #333;
 }
 
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 14px;
-  font-weight: 500;
+.interview-timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 15px 0;
+  position: relative;
 }
 
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 16px;
+.timeline-line {
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e5e7eb;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.timeline-status {
+  margin-right: 20px;
+}
+
+.status-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: bold;
+  color: #00A36C;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-content h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.timeline-subtitle {
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.timeline-description {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Status icon states */
+.status-icon.completed,
+.status-icon.selected {
+  border-color: #00A36C;
+  background-color: #00A36C;
   color: white;
 }
 
-.status-badge.completed {
-  background-color: #00a78e;
-}
-
-.status-badge.pending {
-  background-color: #FFA500;
-}
-
-.status-badge.selected {
-  background-color: #00a78e;
-}
-
-.status-badge.rejected {
+.status-icon.rejected {
+  border-color: #dc3545;
   background-color: #dc3545;
+  color: white;
 }
 
-.candidate-info p {
-  margin: 8px 0;
-  font-size: 14px;
+.status-icon.in-progress {
+  border-color: #FFA500;
+  background-color: #FFA500;
+  color: white;
 }
 
-.job-description {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #eee;
+.status-icon.pending {
+  border-color: #e5e7eb;
+  background-color: #fff;
+  color: #666;
 }
 
-.job-description p {
-  font-size: 14px;
-  margin: 0;
+/* Subtitle states */
+.timeline-subtitle.completed,
+.timeline-subtitle.selected {
+  color: #00A36C;
+}
+
+.timeline-subtitle.rejected {
+  color: #dc3545;
+}
+
+.timeline-subtitle.in-progress {
+  color: #FFA500;
+}
+
+.timeline-subtitle.pending {
+  color: #666;
+}
+
+/* Hover effect */
+.timeline-item:hover .status-icon {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

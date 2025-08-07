@@ -1280,9 +1280,13 @@ const resetScheduleFields = () => {
 
   if (!isOpen || !candidateHistory) return null;
 
-  const { history, candidateName, jobTitle, jobDepartment, email, resumeId } = candidateHistory;
+  const { history = [], candidateName, jobTitle, jobDepartment, email, resumeId } = candidateHistory;
 
   console.log('Candidate Info:', { candidateName, jobTitle, jobDepartment, email, resumeId });
+
+  // Get the latest round status
+  const latestRound = history[history.length - 1] || {};
+  const latestStatus = latestRound.status || 'Unknown';
 
   const handleDateTimeSelect = (dateTime) => {
     setSelectedDateTime(dateTime);
@@ -1518,7 +1522,7 @@ const resetScheduleFields = () => {
         <div className="modal-content" style={{ fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif' }}>
           <div className="modal-left">
             <h2>Interview Details</h2>
-            {history && history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (
+            {history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (
               <>
               <div className="schedule-form">
               <label>
@@ -1794,7 +1798,7 @@ const resetScheduleFields = () => {
                 </div>
               </>
             ) : (
-              history[history.length - 1].status.toUpperCase() === 'COMPLETED' ? (
+              latestStatus.toUpperCase() === 'COMPLETED' ? (
                 <div className="candidate-info-modal" style={{ marginTop: '20px' }}>
                   <h3>Schedule Next Interview</h3>
                   <p style={{ color: '#666', fontSize: '14px', marginTop: '10px' }}>Feedback for the last interview round is required before scheduling the next interview.</p>

@@ -4,8 +4,8 @@ import { clearAllCookies } from '../utils/cookieUtils';
 const ONELOGIN_DOMAIN = 'https://telus-sandbox.onelogin.com';
 const ONELOGIN_LOGOUT_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
 const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
-const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
-// const API_BASE_URL = 'http://localhost:1998/api';
+// const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
+const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 // const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://mark-ai-865090871947.asia-south1.run.app/api';
@@ -374,12 +374,9 @@ export const interviewService = {
   },
 
   getShortlistedCandidates: async (managerId) => {
-    const response = await interviewApi.get(`/candidates/latest-interviews/manager/${managerId}`);
-    // Assuming the API now returns full interview history
-    return response.data.map(candidate => ({
-      ...candidate,
-      interviewHistory: candidate.interviewHistory || []
-    }));
+    const response = await interviewApi.get(`/candidates/interview-history?managerId=${managerId}`);
+    // The API response is already in the correct format
+    return response.data;
   },
 
   getFreeSlots: async (requestBody) => {

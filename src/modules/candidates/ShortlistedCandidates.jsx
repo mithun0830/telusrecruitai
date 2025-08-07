@@ -3,32 +3,71 @@ import { interviewService } from '../../services/api';
 import { useSelector } from 'react-redux';
 import InterviewHistoryModal from '../interview-management/InterviewHistoryModal';
 import InterviewTimeline from '../../components/InterviewTimeline';
+import InterviewProgressBar from '../../components/InterviewProgressBar';
 import './ShortlistedCandidates.css';
 
-const CandidateCard = ({ candidate, onViewDetails, interviewRounds }) => {
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase();
+const ROUNDS = [
+  { roundNumber: 1, name: 'New Application' },
+  { roundNumber: 2, name: 'HR Screening' },
+  { roundNumber: 3, name: 'Technical Round 1' },
+  { roundNumber: 4, name: 'Technical Round 2' }
+];
+
+const CandidateCard = ({ candidate, onViewDetails, interviewRounds, onSaveFeedback }) => {
+  const handleRoundClick = (roundInfo, e) => {
+    e.stopPropagation();
+    // The InterviewProgressBar component now handles the pop-up for completed rounds
+    if (roundInfo && roundInfo.status !== 'completed') {
+      onViewDetails(candidate, roundInfo);
+    }
+  };
+
+  const handleCardClick = () => {
+    onViewDetails(candidate);
+  };
+  const getStatusClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+      case 'selected':
+        return 'status-completed';
+      case 'in progress':
+        return 'status-in-progress';
+      case 'rejected':
+        return 'status-rejected';
+      default:
+        return 'status-pending';
+    }
+  };
+  
+  const getCurrentRound = () => {
+    if (!candidate.interviewHistory || candidate.interviewHistory.length === 0) {
+      return { roundNumber: 1, roundName: 'New Application', status: 'in progress' };
+    }
+    return candidate.interviewHistory[candidate.interviewHistory.length - 1];
+  };
+
+  const currentRound = getCurrentRound();
+
+  const getDisplayStatus = (status) => {
+    if (status?.toLowerCase() === 'selected') return 'Selected';
+    if (status?.toLowerCase() === 'completed') return 'Completed';
+    return status || 'Pending';
   };
 
   return (
-    <div className="candidate-card">
+    <div className="candidate-card" onClick={handleCardClick}>
       <div className="candidate-header">
-        <div className="candidate-info">
-          <div className="avatar">
-            {getInitials(candidate.candidateName || 'No Name')}
-          </div>
-          <div className="candidate-details">
-            <h3>{candidate.candidateName || 'No Name'}</h3>
-          </div>
+        <h3 className="candidate-name">{candidate.name || ''}</h3>
+        <div className={`status-badge ${getStatusClass(currentRound?.status)}`}>
+          {getDisplayStatus(currentRound?.status)}
         </div>
       </div>
-      <div className="candidate-timeline">
-        <h4>Interview Process</h4>
-        <InterviewTimeline history={candidate.history} />
+      <div className="floating-progress-bar">
+        <InterviewProgressBar
+          currentRound={candidate.currentRound}
+          interviewHistory={candidate.interviewHistory}
+          onRoundClick={handleRoundClick}
+        />
       </div>
     </div>
   );
@@ -39,6 +78,7 @@ const ShortlistedCandidates = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedRound, setSelectedRound] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [interviewRounds, setInterviewRounds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,37 +95,17 @@ const ShortlistedCandidates = () => {
       const response = await interviewService.getShortlistedCandidates(user?.id);
       console.log('Fetched candidates:', response);
       
-      // Group candidates by candidateId
-      const groupedCandidates = response.reduce((acc, curr) => {
-        if (!acc[curr.candidateId]) {
-          acc[curr.candidateId] = {
-            ...curr,
-            history: [],
-            jobTitle: curr.jobTitle || 'Not specified',
-            jobDepartment: curr.jobDepartment || 'Not specified',
-            email: curr.email || 'Not available',
-            resumeId: curr.resumeId || 'Not available'
-          };
-        }
-        acc[curr.candidateId].history.push({
-          roundId: curr.roundId,
-          roundName: curr.roundName,
-          status: curr.status,
-          feedback: curr.feedback
-        });
-        return acc;
-      }, {});
-
-      // Convert the grouped object back to an array
-      const transformedCandidates = Object.values(groupedCandidates);
-
-      // Sort the history array for each candidate based on roundId
-      transformedCandidates.forEach(candidate => {
-        candidate.history.sort((a, b) => a.roundId - b.roundId);
-      });
-
-      console.log('Transformed candidates:', transformedCandidates);
-      setCandidates(transformedCandidates);
+      // Ensure we're setting an array of candidates
+      if (Array.isArray(response)) {
+        setCandidates(response);
+      } else if (response && typeof response === 'object') {
+        // If it's an object, it might be wrapped in a data property
+        setCandidates(response.data || []);
+      } else {
+        setCandidates([]);
+      }
+      
+      console.log('Set candidates:', candidates);
     } catch (err) {
       console.error('Error fetching shortlisted candidates:', err);
       setError('Failed to fetch shortlisted candidates');
@@ -106,15 +126,33 @@ const ShortlistedCandidates = () => {
     }
   };
 
-  const handleViewDetails = (candidate) => {
+  const handleViewDetails = (candidate, roundInfo = null) => {
     setSelectedCandidate(candidate);
+    setSelectedRound(roundInfo);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = (success = false, meetingLink = null) => {
     setIsModalOpen(false);
+    setSelectedRound(null);
     if (success) {
       fetchShortlistedCandidates(); // Refresh the candidates list
+    }
+  };
+
+  const handleSaveFeedback = async (candidateId, roundId, feedback) => {
+    try {
+      const feedbackData = {
+        candidateId,
+        roundId,
+        feedback,
+        status: 'completed'
+      };
+      await interviewService.saveFeedback(feedbackData);
+      fetchShortlistedCandidates(); // Refresh the list after saving feedback
+    } catch (error) {
+      console.error('Error saving feedback:', error);
+      setError('Failed to save feedback');
     }
   };
 
@@ -153,7 +191,13 @@ const ShortlistedCandidates = () => {
         </div>
       </div>
       
-      {candidates.length === 0 ? (
+      {loading ? (
+        <div className="loading-container">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : candidates.length === 0 ? (
         <div className="no-candidates">
           <p>No shortlisted candidates found.</p>
         </div>
@@ -161,7 +205,7 @@ const ShortlistedCandidates = () => {
         <div className="candidates-grid">
           {candidates
             .filter(candidate => 
-              candidate.candidateName?.toLowerCase().includes(searchQuery.toLowerCase())
+              candidate.name?.toLowerCase().includes(searchQuery.toLowerCase())
             )
             .map((candidate) => (
             <CandidateCard 
@@ -169,20 +213,27 @@ const ShortlistedCandidates = () => {
               candidate={candidate} 
               onViewDetails={handleViewDetails}
               interviewRounds={interviewRounds}
+              onSaveFeedback={handleSaveFeedback}
             />
           ))}
         </div>
       )}
 
-      {selectedCandidate && (
+      {/* {selectedCandidate && (
         <InterviewHistoryModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          candidateHistory={selectedCandidate}
+          candidateHistory={{
+            ...selectedCandidate,
+            history: selectedRound
+              ? selectedCandidate.interviewHistory.filter(round => round.roundNumber === selectedRound.roundNumber)
+              : selectedCandidate.interviewHistory
+          }}
           interviewRounds={interviewRounds}
           onUpdateSuccess={fetchShortlistedCandidates}
+          selectedRoundNumber={selectedRound?.roundNumber}
         />
-      )}
+      )} */}
     </div>
   );
 };

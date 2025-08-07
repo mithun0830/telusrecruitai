@@ -1514,13 +1514,17 @@ const resetScheduleFields = () => {
     }
   };
 
-  return (
-    isOpen && candidateHistory && (
-      <>
-        {(isLoading || loadingInterviewers) && <Loader />}
+  return isOpen && candidateHistory ? (
+    <div>
+      {(isLoading || loadingInterviewers) && <Loader />}
       <div className="modal-overlay">
-        <div className="modal-content" style={{ fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif' }}>
-          <div className="modal-left">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h1>Interview Management Portal</h1>
+          <button onClick={() => handleClose()} className="close-button">×</button>
+        </div>
+        <div className="modal-body">
+          <div className="modal-left" style={{ flex: '0 0 60%', paddingRight: '30px', borderRight: '1px solid #e2e8f0' }}>
             <h2>Interview Details</h2>
             {history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (
               <>
@@ -2074,7 +2078,7 @@ const resetScheduleFields = () => {
               ) : null
             )}
           </div>
-          <div className="modal-right">
+          <div className="modal-right" style={{ flex: '0 0 40%', paddingLeft: '30px' }}>
             <h2>Interview Process</h2>
             <div className="candidate-info-modal">
               <h3>{candidateName || 'Candidate Name Not Available'}</h3>
@@ -2113,7 +2117,6 @@ const resetScheduleFields = () => {
               ))}
             </div>
           </div>
-          <button onClick={() => handleClose()} className="close-button">×</button>
         </div>
       </div>
         <Modal 
@@ -2146,10 +2149,9 @@ const resetScheduleFields = () => {
             </Button>
           </Modal.Body>
         </Modal>
-      </>
-    )
-  );
+      </div>
+    </div>
+  ) : null;
 };
-
 
 export default InterviewHistoryModal;

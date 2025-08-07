@@ -640,14 +640,14 @@ const ManagerCandidates = () => {
         <style>{spinKeyframes}</style>
       <div className="candidates-header">
         <h1>Candidates Search</h1>
-        <button
+        {/* <button
           className="ai-job-description-btn"
           onClick={handleEnableAI}
           aria-label="Generate AI Job Description"
         >
           <span style={{ fontSize: '20px' }}>✨</span>
           Generate AI Job Description
-        </button>
+        </button> */}
       </div>
       <div className="candidates-content">
         <div className="filters-section horizontal">
@@ -703,6 +703,14 @@ const ManagerCandidates = () => {
                     </>
                   )}
                 </button>
+                <button
+          className="ai-job-description-btn"
+          onClick={handleEnableAI}
+          aria-label="Generate AI Job Description"
+        >
+          <span style={{ fontSize: '20px' }}>✨</span>
+          Generate AI Job Description
+        </button>
               </div>
             </div>
           {errorMessage && <div className="error-message">{errorMessage}</div>}

@@ -28,7 +28,6 @@
 
 .modal-content {
   background-color: #ffffff;
-  padding: 30px;
   border-radius: 12px;
   width: 90%;
   max-width: 1200px;
@@ -38,21 +37,48 @@
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
-  flex-direction: row;
-  gap: 10px;
+  flex-direction: column;
   position: relative;
   font-family: "Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif;
 }
 
+.modal-header {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.modal-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  width: 100%;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px;
+  flex: 1;
+}
+
 .modal-left {
   flex: 0 0 60%;
-  padding-right: 30px;
+  padding: 0 30px 30px 20px;
   border-right: 1px solid #e2e8f0;
 }
 
 .modal-right {
   flex: 0 0 40%;
-  /* padding-left: 30px; */
+  padding: 0 20px 30px 30px;
   display: flex;
   flex-direction: column;
 }
@@ -512,20 +538,26 @@
 
 .close-button {
   position: absolute;
-  top: 20px;
+  top: 50%;
   right: 20px;
-  background: none;
+  transform: translateY(-50%);
+  background: white;
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #64748b;
-  padding: 4px;
+  color: #059669;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
-  padding-top: 20px;
+  padding: 0;
 }
 
 .close-button:hover {
-  color: #4a5568;
+  background-color: #f0fdf4;
 }
 
 /* React DatePicker Customization */
@@ -859,13 +891,38 @@
 }
 
 .react-datepicker__time-list::-webkit-scrollbar-thumb {
-  background-color: #cbd5e0 !important;
-  border-radius: 3px !important;
+  background-color: #cbd5e0;
+  border-radius: 3px;
 }
 
-.react-datepicker__time {
-  background: white;
-  border-radius: 0 0 8px 0;
+.react-datepicker__time-list-item--selected {
+  background-color: #4299e1 !important;
+  color: white !important;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c0c0c0 #f1f1f1;
 }
 
 .react-datepicker__time-box {

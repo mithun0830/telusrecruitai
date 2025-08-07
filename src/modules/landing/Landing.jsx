@@ -79,16 +79,16 @@ const Landing = () => {
         </div>
         <div className="hero-images">
           <div className="chat-bubble top-left">
-            <img src="/images/chat/profile-chat.png" alt="Profile chat" />
+            <img src="/images/chat/profile-chat.jpg" alt="Profile chat" />
           </div>
           <div className="chat-bubble top-right">
-            <img src="/images/chat/team-chat.png" alt="Team chat" />
+            <img src="/images/chat/team-chat.jpg" alt="Team chat" />
           </div>
           <div className="chat-bubble bottom-left">
-            <img src="/images/chat/metrics.png" alt="Metrics" />
+            <img src="/images/chat/metrics.jpg" alt="Metrics" />
           </div>
           <div className="chat-bubble bottom-right">
-            <img src="/images/chat/candidates.png" alt="Candidates" />
+            <img src="/images/chat/candidates.jpg" alt="Candidates" />
           </div>
         </div>
       </section>

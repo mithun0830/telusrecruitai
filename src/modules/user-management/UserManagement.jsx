@@ -17,7 +17,7 @@ const UserManagement = () => {
     '#34495e', // wet asphalt
     '#16a085', // green sea
     '#d35400', // pumpkin
-    '#8e44ad', // wisteria
+    '#8e44ad', // wisteria  #c2cac7
   ];
 
   const getAvatarColor = (userId) => {

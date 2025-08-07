@@ -89,12 +89,13 @@
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  backdrop-filter: blur(3px);
 }
 
 .popup-content {
@@ -103,12 +104,21 @@
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  position: relative;
   margin: auto;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .popup-header {
@@ -118,6 +128,37 @@
   margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #059669;
+  color: white;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #047857;
+  transform: scale(1.1);
+}
+
+.close-button:active {
+  transform: scale(0.95);
 }
 
 .technical-round {
@@ -144,25 +185,50 @@
   line-height: 1.5;
 }
 
+.popup-body div p {
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.popup-body div p::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  background-color: #4a5568;
+  border-radius: 50%;
+}
+
 .popup-body strong {
   color: #2d3748;
   margin-right: 8px;
 }
 
-.popup-content button {
+.popup-content .bottom-close {
   background-color: #059669;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   transition: all 0.2s ease;
   float: right;
+  margin-top: 10px;
 }
 
-.popup-content button:hover {
+.popup-content .bottom-close:hover {
   background-color: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-content .bottom-close:active {
+  transform: translateY(0);
 }
 
 /* Tooltip styles */

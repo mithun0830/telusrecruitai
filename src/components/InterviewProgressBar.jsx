@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import './InterviewProgressBar.css';
+
+const formatFeedback = (feedback) => {
+  if (!feedback) return 'No feedback available';
+  
+  const lines = feedback.split('\n');
+  const formattedLines = lines.map(line => {
+    const trimmedLine = line.trim();
+    if (/^[1-5][).]\s/.test(trimmedLine)) {
+      return `<p>${trimmedLine}</p>`;
+    }
+    return trimmedLine;
+  });
+  
+  return formattedLines.join('\n');
+};
 
 const ROUNDS = [
   { roundNumber: 1, name: 'New Application' },
@@ -103,7 +119,7 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
       </div>
       {showPopup && selectedRound && ReactDOM.createPortal(
         <div className="modal_pop_up" onClick={(e) => {
-          if (e.target.className === 'modal_pop_up') {
+          if (e.target.classList.contains('modal_pop_up')) {
             setShowPopup(false);
           }
         }}>
@@ -111,14 +127,16 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
             <div className="popup-header">
               <div className="technical-round">{selectedRound.roundName}</div>
               <div className="status">{selectedRound.status}</div>
+              <button className="close-button" onClick={() => setShowPopup(false)}>&times;</button>
             </div>
             <div className="popup-body">
-              <p><strong>Feedback:</strong> {selectedRound.feedback || 'No feedback available'}</p>
+              <p><strong>Feedback:</strong></p>
+              <div dangerouslySetInnerHTML={{ __html: formatFeedback(selectedRound.feedback) }} />
               {selectedRound.interviewDateTime && (
                 <p><strong>Interview Date:</strong> {new Date(selectedRound.interviewDateTime).toLocaleString()}</p>
               )}
             </div>
-            <button onClick={() => setShowPopup(false)}>Close</button>
+            <button className="bottom-close" onClick={() => setShowPopup(false)}>Close</button>
           </div>
         </div>,
         document.body

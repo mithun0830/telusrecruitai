@@ -1523,7 +1523,7 @@ const resetScheduleFields = () => {
           <h1>Interview Management Portal</h1>
           <button onClick={() => handleClose()} className="close-button">×</button>
         </div>
-        <div className="modal-body">
+        <div className="modal-body-item">
           <div className="modal-left" style={{ flex: '0 0 60%', paddingRight: '30px', borderRight: '1px solid #e2e8f0' }}>
             <h2>Interview Details</h2>
             {history.length > 0 && (history[history.length - 1].status.toUpperCase() !== 'COMPLETED' || history[history.length - 1].feedback) ? (

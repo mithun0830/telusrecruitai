@@ -62,9 +62,9 @@
   width: 100%;
 }
 
-.modal-body {
+.modal-body-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
   padding: 0 20px;
   flex: 1;

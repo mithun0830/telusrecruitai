@@ -19,11 +19,11 @@ const formatFeedback = (feedback) => {
 };
 
 const ROUNDS = [
-  { roundNumber: 1, name: 'New Application' },
-  { roundNumber: 2, name: 'Technical Round 1' },
-  { roundNumber: 3, name: 'Technical Round 2' },
-  { roundNumber: 4, name: 'Managerial Round' },
-  { roundNumber: 5, name: 'On-Boarding' }
+  { roundNumber: 1, name: 'NA' },
+  { roundNumber: 2, name: 'T1' },
+  { roundNumber: 3, name: 'T2' },
+  { roundNumber: 4, name: 'MR' },
+  { roundNumber: 5, name: 'OB' }
 ];
 
 const InterviewProgressBar = ({ interviewHistory = [], onRoundClick }) => {
@@ -122,9 +122,16 @@ const getStatusForRound = (roundNumber) => {
                   e.stopPropagation();
                   const roundInfo = getRoundInfo(round.roundNumber);
                   if (status === 'completed' || status === 'skipped') {
+                    const fullNames = {
+                      'NA': 'New Application',
+                      'T1': 'Technical Round 1',
+                      'T2': 'Technical Round 2',
+                      'MR': 'Managerial Round',
+                      'OB': 'On-Boarding'
+                    };
                     setSelectedRound({
                       ...roundInfo,
-                      roundName: round.name
+                      roundName: fullNames[round.name] || round.name
                     });
                     setShowPopup(true);
                   } else {

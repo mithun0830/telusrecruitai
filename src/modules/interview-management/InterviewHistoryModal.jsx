@@ -198,11 +198,7 @@ const resetScheduleFields = () => {
     setIsLoading(loadingInterviewers);
   }, [loadingInterviewers]);
 
-  useEffect(() => {
-    if (isOpen && candidateHistory && candidateHistory.jobDescription) {
-      fetchInterviewers(candidateHistory.jobDescription);
-    }
-  }, [isOpen, candidateHistory]);
+  // Remove the automatic API call when modal opens - only call after round selection
 
   const fetchInterviewers = async (jobDescription) => {
     setLoadingInterviewers(true);
@@ -218,6 +214,164 @@ const resetScheduleFields = () => {
       setInterviewers([]);
       setModalType('error');
       setModalMessage('Failed to fetch interviewers. Please try again.');
+      setShowModal(true);
+    } finally {
+      setLoadingInterviewers(false);
+    }
+  };
+
+  const fetchManagerInterviewers = async () => {
+    setLoadingInterviewers(true);
+    try {
+      // Using hardcoded manager ID as requested (will be made dynamic later)
+      const managerId = 122;
+      
+      console.log('🔄 Calling manager API for ID:', managerId);
+      const response = await candidateService.getManagerForCandidate(managerId);
+      
+      // Enhanced logging to debug the response structure
+      console.log('📋 Full Manager API Response:', response);
+      console.log('📋 Response type:', typeof response);
+      console.log('📋 Response.success:', response?.success);
+      console.log('📋 Response.data:', response?.data);
+      console.log('📋 Response.data type:', typeof response?.data);
+      
+      // Handle different possible response structures
+      let managerData = null;
+      
+      if (response && response.success) {
+        // Case 1: Standard success response with data
+        if (response.data) {
+          managerData = response.data;
+          console.log('✅ Using response.data:', managerData);
+        }
+      } else if (response && response.data) {
+        // Case 2: Direct data without success flag
+        managerData = response.data;
+        console.log('✅ Using response.data (no success flag):', managerData);
+      } else if (response && !response.success && !response.data) {
+        // Case 3: Response might be the data itself
+        managerData = response;
+        console.log('✅ Using response as data:', managerData);
+      }
+      
+      if (managerData) {
+        console.log('📋 Processing manager data:', managerData);
+        
+        // Ensure we have an array to work with
+        const managerArray = Array.isArray(managerData) ? managerData : [managerData];
+        console.log('📋 Manager array:', managerArray);
+        
+        // Transform manager data to match interviewer format
+        const transformedData = managerArray.map((manager, index) => {
+          console.log(`📋 Processing manager ${index}:`, manager);
+          
+          return {
+            email: manager.email || `manager${index}@company.com`,
+            // Handle both 'name' and 'fullName' fields from API response
+            name: manager.fullName || manager.name || manager.firstName || `Manager ${index + 1}`,
+            interviewerId: manager.id || manager.managerId || managerId,
+            experienceYears: manager.experienceYears || 'N/A',
+            technicalExpertise: manager.technicalExpertise || [],
+            matchScore: manager.matchScore || 'N/A',
+            specializations: manager.specializations || ['Management']
+          };
+        });
+        
+        console.log('✅ Transformed manager data:', transformedData);
+        setInterviewers(transformedData);
+      } else {
+        console.error('❌ No valid manager data found in response');
+        throw new Error('No manager data found in API response');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching manager:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+      
+      setInterviewers([]);
+      setModalType('error');
+      setModalMessage(`Failed to fetch manager data: ${error.message}. Please try again.`);
+      setShowModal(true);
+    } finally {
+      setLoadingInterviewers(false);
+    }
+  };
+
+  const fetchHRInterviewers = async () => {
+    setLoadingInterviewers(true);
+    try {
+      console.log('🔄 Calling HR API');
+      const response = await candidateService.getHRPersonnel();
+      
+      // Enhanced logging to debug the response structure
+      console.log('📋 Full HR API Response:', response);
+      console.log('📋 Response type:', typeof response);
+      console.log('📋 Response.success:', response?.success);
+      console.log('📋 Response.data:', response?.data);
+      console.log('📋 Response.data type:', typeof response?.data);
+      
+      // Handle different possible response structures
+      let hrData = null;
+      
+      if (response && response.success) {
+        // Case 1: Standard success response with data
+        if (response.data) {
+          hrData = response.data;
+          console.log('✅ Using response.data:', hrData);
+        }
+      } else if (response && response.data) {
+        // Case 2: Direct data without success flag
+        hrData = response.data;
+        console.log('✅ Using response.data (no success flag):', hrData);
+      } else if (response && !response.success && !response.data) {
+        // Case 3: Response might be the data itself
+        hrData = response;
+        console.log('✅ Using response as data:', hrData);
+      }
+      
+      if (hrData) {
+        console.log('📋 Processing HR data:', hrData);
+        
+        // Ensure we have an array to work with
+        const hrArray = Array.isArray(hrData) ? hrData : [hrData];
+        console.log('📋 HR array:', hrArray);
+        
+        // Transform HR data to match interviewer format
+        const transformedData = hrArray.map((hr, index) => {
+          console.log(`📋 Processing HR ${index}:`, hr);
+          
+          return {
+            email: hr.email || `hr${index}@company.com`,
+            name: hr.name || hr.fullName || hr.firstName || `HR ${index + 1}`,
+            interviewerId: hr.id || index + 1,
+            experienceYears: hr.experienceYears || 'N/A',
+            technicalExpertise: hr.technicalExpertise || [],
+            matchScore: hr.matchScore || 'N/A',
+            specializations: hr.specializations || ['HR', 'Onboarding']
+          };
+        });
+        
+        console.log('✅ Transformed HR data:', transformedData);
+        setInterviewers(transformedData);
+      } else {
+        console.error('❌ No valid HR data found in response');
+        throw new Error('No HR data found in API response');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching HR personnel:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+      
+      setInterviewers([]);
+      setModalType('error');
+      setModalMessage(`Failed to fetch HR personnel: ${error.message}. Please try again.`);
       setShowModal(true);
     } finally {
       setLoadingInterviewers(false);
@@ -1534,7 +1688,30 @@ const resetScheduleFields = () => {
                 <select
                   value={selectedRound}
                   onChange={(e) => {
-                    setSelectedRound(e.target.value);
+                    const roundId = e.target.value;
+                    setSelectedRound(roundId);
+                    
+                    // Clear previous interviewers and selected interviewers
+                    setInterviewers([]);
+                    setSelectedInterviewers([]);
+                    
+                    // Only call API if a round is selected
+                    if (roundId) {
+                      // Find the selected round to check if it's a manager round
+                      const selectedRoundData = interviewRounds.find(round => round.roundId.toString() === roundId);
+                      
+                      // Check if the selected round is "Managerial Round"
+                      if (selectedRoundData && selectedRoundData.roundName === "Managerial Round") {
+                        // Call manager API instead of regular interviewer API
+                        fetchManagerInterviewers();
+                      } else if (selectedRoundData && selectedRoundData.roundName === "Onboarding") {
+                        // Call HR API for onboarding round
+                        fetchHRInterviewers();
+                      } else if (candidateHistory?.jobDescription) {
+                        // Call regular interviewer API for other rounds
+                        fetchInterviewers(candidateHistory.jobDescription);
+                      }
+                    }
                   }}
                 >
                   <option value="">Select interview round</option>

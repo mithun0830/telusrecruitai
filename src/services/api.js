@@ -178,11 +178,13 @@ const addResponseInterceptor = (axiosInstance) => {
 addTokenInterceptor(api);
 addTokenInterceptor(ai_api);
 addTokenInterceptor(notificationApi);
+addTokenInterceptor(interviewApi);
 // Note: aiFeedbackApi doesn't need token interceptor as it's localhost
 
 addResponseInterceptor(api);
 addResponseInterceptor(ai_api);
 addResponseInterceptor(notificationApi);
+addResponseInterceptor(interviewApi);
 addResponseInterceptor(aiFeedbackApi);
 
 // Notification service
@@ -336,6 +338,44 @@ export const candidateService = {
     return await ai_api.post(`/interviewer-matching/job-description`, {
       jobDescription: jobDescription
     });
+  },
+
+  getManagerForCandidate: async (managerId) => {
+    console.log('🔄 API Service: Calling manager endpoint for ID:', managerId);
+    try {
+      const response = await interviewApi.get(`/candidates/${managerId}/manager`);
+      console.log('📋 API Service: Raw response received:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ API Service: Error in getManagerForCandidate:', error);
+      console.error('❌ API Service: Error response:', error.response);
+      throw error;
+    }
+  },
+
+  getHRPersonnel: async () => {
+    console.log('🔄 API Service: Calling HR endpoint');
+    try {
+      // Use the full HR API URL
+      const response = await axios.get('https://recruitai-authentication-865090871947.asia-south1.run.app/api/hr', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      console.log('📋 API Service: HR Raw response received:', response);
+      
+      // Handle the response in the same format as other services
+      return {
+        success: true,
+        data: response.data?.data || response.data,
+        message: response.data?.message
+      };
+    } catch (error) {
+      console.error('❌ API Service: Error in getHRPersonnel:', error);
+      console.error('❌ API Service: Error response:', error.response);
+      throw error;
+    }
   },
 
   sendChatMessage: async (resumeId, message) => {

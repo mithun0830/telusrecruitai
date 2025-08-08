@@ -52,14 +52,21 @@
   color: #059669; /* Green tick */
 }
 
-/* Pending round - Default styling */
+/* Pending round - Purple border + White background */
 .step-circle.pending {
   border-color: #9333EA; /* Purple */
   color: #9333EA;
   background-color: white;
 }
 
-/* Rejected round */
+/* In-Progress round - Orange border + Orange background */
+.step-circle.in-progress {
+  border-color: #FFA500; /* Orange */
+  color: #FFA500;
+  background-color: #FFF3E0; /* Light Orange */
+}
+
+/* Rejected round - Red border + White background */
 .step-circle.rejected {
   border-color: #EF4444; /* Red */
   color: #EF4444;

@@ -37,28 +37,67 @@ const getStatusForRound = (roundNumber) => {
   const round = interviewHistory.find(r => r.roundNumber === roundNumber);
   const status = round?.status?.toLowerCase();
 
-  // Handle rejected rounds first
-  if (status === 'rejected') return 'rejected';
+  // Normalize status groups
+  const statusGroups = {
+    completed: ['completed', 'selected'],
+    rejected: ['rejected'],
+    inProgress: ['in progress', 'ongoing'],
+    pending: ['pending']
+  };
 
-  // Get all completed/selected rounds in order
-  const completedRounds = interviewHistory
-    .filter(r => ['selected', 'completed'].includes(r.status?.toLowerCase()))
-    .map(r => r.roundNumber)
-    .sort((a, b) => a - b);
+  // Helper to get all rounds for a status group
+  const getRoundsByStatus = (group) => {
+    return interviewHistory
+      .filter(r => statusGroups[group]?.includes(r.status?.toLowerCase()))
+      .map(r => r.roundNumber)
+      .sort((a, b) => a - b);
+  };
 
-  // If this round is completed
-  if (completedRounds.includes(roundNumber)) {
-    return 'completed';
+  const completedRounds = getRoundsByStatus('completed');
+  const rejectedRounds = getRoundsByStatus('rejected');
+  const inProgressRounds = getRoundsByStatus('inProgress');
+  const pendingRounds = getRoundsByStatus('pending');
+
+  // Special handling for round one when candidate has moved to later rounds
+  if (roundNumber === 1) {
+    const hasLaterRounds = interviewHistory.some(r => r.roundNumber > 1);
+    if (hasLaterRounds) {
+      // If round one is completed/selected, return 'completed' for green border + light green bg
+      if (statusGroups.completed.includes(status)) {
+        return 'completed';
+      }
+      // If round one is in-progress/pending, return 'skipped' for green border + white bg
+      if (statusGroups.inProgress.includes(status) || statusGroups.pending.includes(status)) {
+        return 'skipped';
+      }
+    }
   }
 
-  // Check if this round was skipped
-  // A round is skipped if there's a completed round after it
-  // but this round itself is not completed
-  const hasLaterCompletedRound = completedRounds.some(r => r > roundNumber);
-  if (hasLaterCompletedRound && !completedRounds.includes(roundNumber)) {
+  // Priority check — rejected first
+  if (rejectedRounds.includes(roundNumber)) return 'rejected';
+
+  // Then completed
+  if (completedRounds.includes(roundNumber)) return 'completed';
+
+  // Then in progress
+  if (inProgressRounds.includes(roundNumber)) return 'in-progress';
+
+  // Then pending
+  if (pendingRounds.includes(roundNumber)) return 'pending';
+
+  // Skipped logic — if a later completed/rejected/inProgress round exists
+  const allProgressRounds = [
+    ...completedRounds,
+    ...rejectedRounds,
+    ...inProgressRounds
+  ];
+  const hasLaterProgressRound = allProgressRounds.some(r => r > roundNumber);
+
+  if (hasLaterProgressRound) {
     return 'skipped';
   }
 
+  // Default fallback
   return 'pending';
 };
 
@@ -115,6 +154,12 @@ const getStatusForRound = (roundNumber) => {
                     ✕
                   </span>
                 )}
+                {status === 'in-progress' && (
+                  <span className="in-progress-icon">⋯</span>
+                )}
+                {status === 'pending' && (
+                  <span className="pending-icon">•</span>
+                )}
               </div>
               <div className="step-label">{round.name}</div>
               {index < ROUNDS.length - 1 && (
@@ -154,7 +199,7 @@ const getStatusForRound = (roundNumber) => {
             <div className="popup-header">
               <div className="technical-round">{selectedRound.roundName}</div>
               <div className="status">{selectedRound.status}</div>
-              <button className="modal-header-close" onClick={() => setShowPopup(false)}>&times;</button>
+              {/* <button className="modal-header-close" onClick={() => setShowPopup(false)}>&times;</button> */}
             </div>
             <div className="popup-body">
               <p><strong>Feedback:</strong></p>

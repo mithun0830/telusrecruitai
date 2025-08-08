@@ -34,7 +34,8 @@
   border: 2px solid #e2e8f0;
 }
 
-.step-circle.completed {
+.step-circle.completed,
+.step-circle.selected {
   background-color: #059669;
   color: white;
   border-color: #059669;
@@ -47,6 +48,15 @@
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
 }
 
+.step-circle.skipped-selected {
+  background-color: transparent;
+  border: 2px solid #059669;
+}
+
+.step-circle.skipped-selected .checkmark {
+  color: #059669;
+}
+
 .step-circle.pending {
   background-color: #f3e8ff; /* Light purple background */
   border-color: #9333ea; /* Dark purple border */
@@ -56,6 +66,15 @@
   background-color: #fff7ed; /* Light orange background */
   border-color: #ff9100; /* Dark orange border */
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+}
+
+.step-circle.skipped-completed {
+  background-color: transparent;
+  border: 2px solid #e2e8f0;
+}
+
+.step-circle.skipped-completed .checkmark {
+  color: #059669;
 }
 
 .step-circle.skipped {

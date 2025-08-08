@@ -39,32 +39,46 @@ const CandidateCard = ({ candidate, onViewDetails, interviewRounds, onSaveFeedba
     }
   };
   
-  const getCurrentRound = () => {
+  const getLatestRound = () => {
     if (!candidate.interviewHistory || candidate.interviewHistory.length === 0) {
       return { roundNumber: 1, roundName: 'New Application', status: 'in progress' };
     }
-    return candidate.interviewHistory[candidate.interviewHistory.length - 1];
+
+    // Sort rounds by number in descending order
+    const sortedRounds = [...candidate.interviewHistory].sort((a, b) => b.roundNumber - a.roundNumber);
+    
+    // Find the latest round with a status
+    const latestRound = sortedRounds[0];
+    
+    // If the latest round is completed or selected, mark it as completed
+    if (latestRound.status?.toLowerCase() === 'completed' || 
+        latestRound.status?.toLowerCase() === 'selected') {
+      return { ...latestRound, status: 'completed' };
+    }
+    
+    return latestRound;
   };
 
-  const currentRound = getCurrentRound();
+  const latestRound = getLatestRound();
 
   const getDisplayStatus = (status) => {
-    if (status?.toLowerCase() === 'selected') return 'Selected';
-    if (status?.toLowerCase() === 'completed') return 'Completed';
-    return status || 'Pending';
+    const statusLower = status?.toLowerCase();
+    if (statusLower === 'selected' || statusLower === 'completed') return 'Completed';
+    if (statusLower === 'in progress') return 'In Progress';
+    if (statusLower === 'rejected') return 'Rejected';
+    return 'Pending';
   };
 
   return (
     <div className="candidate-card" onClick={handleCardClick}>
       <div className="candidate-header">
         <h3 className="candidate-name">{candidate.name || ''}</h3>
-        <div className={`status-badge ${getStatusClass(currentRound?.status)}`}>
-          {getDisplayStatus(currentRound?.status)}
+        <div className={`status-badge ${getStatusClass(latestRound?.status)}`}>
+          {getDisplayStatus(latestRound?.status)}
         </div>
       </div>
       <div className="floating-progress-bar">
         <InterviewProgressBar
-          currentRound={candidate.currentRound}
           interviewHistory={candidate.interviewHistory}
           onRoundClick={handleRoundClick}
         />

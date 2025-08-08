@@ -116,7 +116,7 @@ const Landing = () => {
           </div>
         </div>
         <div className="feature-image">
-          <img src="/images/features/team-meeting.jpg" alt="Team meeting" />
+          <img src="/images/features/Manager.png" alt="Team meeting" />
         </div>
       </section>
 

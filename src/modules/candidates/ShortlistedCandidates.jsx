@@ -28,8 +28,9 @@ const CandidateCard = ({ candidate, onViewDetails, interviewRounds, onSaveFeedba
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
       case 'completed':
-      case 'selected':
         return 'status-completed';
+      case 'selected':
+        return 'status-selected';
       case 'in progress':
         return 'status-in-progress';
       case 'rejected':
@@ -47,23 +48,16 @@ const CandidateCard = ({ candidate, onViewDetails, interviewRounds, onSaveFeedba
     // Sort rounds by number in descending order
     const sortedRounds = [...candidate.interviewHistory].sort((a, b) => b.roundNumber - a.roundNumber);
     
-    // Find the latest round with a status
-    const latestRound = sortedRounds[0];
-    
-    // If the latest round is completed or selected, mark it as completed
-    if (latestRound.status?.toLowerCase() === 'completed' || 
-        latestRound.status?.toLowerCase() === 'selected') {
-      return { ...latestRound, status: 'completed' };
-    }
-    
-    return latestRound;
+    // Return the latest round without modifying its status
+    return sortedRounds[0];
   };
 
   const latestRound = getLatestRound();
 
   const getDisplayStatus = (status) => {
     const statusLower = status?.toLowerCase();
-    if (statusLower === 'selected' || statusLower === 'completed') return 'Completed';
+    if (statusLower === 'selected') return 'Selected';
+    if (statusLower === 'completed') return 'Completed';
     if (statusLower === 'in progress') return 'In Progress';
     if (statusLower === 'rejected') return 'Rejected';
     return 'Pending';

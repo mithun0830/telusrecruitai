@@ -20,9 +20,10 @@ const formatFeedback = (feedback) => {
 
 const ROUNDS = [
   { roundNumber: 1, name: 'New Application' },
-  { roundNumber: 2, name: 'HR Screening' },
-  { roundNumber: 3, name: 'Technical Round 1' },
-  { roundNumber: 4, name: 'Technical Round 2' }
+  { roundNumber: 2, name: 'Technical Round 1' },
+  { roundNumber: 3, name: 'Technical Round 2' },
+  { roundNumber: 4, name: 'Managerial Round' },
+  { roundNumber: 5, name: 'On-Boarding' }
 ];
 
 const InterviewProgressBar = ({ interviewHistory = [], onRoundClick }) => {
@@ -68,7 +69,11 @@ const getStatusForRound = (roundNumber) => {
   
   const status = round.status?.toLowerCase();
   
-  if (status === 'selected' || status === 'completed') {
+  if (status === 'selected') {
+    return 'selected';
+  }
+  
+  if (status === 'completed') {
     return 'completed';
   }
   
@@ -127,7 +132,7 @@ const getCurrentRound = () => {
                 onMouseLeave={() => setHoveredRound(null)}
               >
                 {(status === 'completed' || status === 'selected' || status === 'skipped-completed' || status === 'skipped-selected' || round.roundNumber < getCurrentRound()) && (
-                  <span className={`checkmark ${status.startsWith('skipped') ? 'skipped' : ''}`}>
+                  <span className={`checkmark ${status.startsWith('skipped') ? 'skipped' : ''} ${status === 'selected' ? 'selected' : ''}`}>
                     <svg viewBox="0 0 24 24" width="16" height="16">
                       <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
                     </svg>

@@ -145,6 +145,11 @@
 .status-selected { background-color: #eff6ff; color: #3b82f6; }
 .status-default { background-color: #f3f4f6; color: #6b7280; }
 
+.status-badge.status-selected {
+  background-color: #3B82F6;
+  color: white;
+}
+
 
 .interview-progress {
   display: flex;

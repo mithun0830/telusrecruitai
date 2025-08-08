@@ -31,11 +31,40 @@
   position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 2px solid #e2e8f0;
 }
 
 .step-circle.completed {
   background-color: #059669;
   color: white;
+  border-color: #059669;
+}
+
+.step-circle.completed-not-selected {
+  background-color: #fff7ed;
+  color: white;
+  border-color: #ff9100;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+}
+
+.step-circle.pending {
+  background-color: #f3e8ff; /* Light purple background */
+  border-color: #9333ea; /* Dark purple border */
+}
+
+.step-circle.next-after-selected {
+  background-color: #fff7ed; /* Light orange background */
+  border-color: #ff9100; /* Dark orange border */
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+}
+
+.step-circle.skipped {
+  background-color: transparent;
+  border: 2px solid #e2e8f0;
+}
+
+.checkmark.skipped {
+  color: #059669;
 }
 
 .step-circle.in-progress {
@@ -50,6 +79,13 @@
 
 .step-circle.current {
   border: 2px solid #059669;
+}
+
+/* Override orange color for completed and current rounds */
+.step-circle.completed.current,
+.step-circle.completed-not-selected.current {
+  background-color: #fff7ed;
+  border-color: #059669;
 }
 
 .connecting-line {
@@ -131,6 +167,25 @@
   position: relative;
 }
 
+.modal-header-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: white;
+  color: #059669;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
 .close-button {
   position: absolute;
   top: -10px;
@@ -138,8 +193,8 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #059669;
-  color: white;
+  background-color: white;
+  color: black;
   border: none;
   font-size: 24px;
   line-height: 1;
@@ -149,16 +204,6 @@
   justify-content: center;
   padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-}
-
-.close-button:hover {
-  background-color: #047857;
-  transform: scale(1.1);
-}
-
-.close-button:active {
-  transform: scale(0.95);
 }
 
 .technical-round {
@@ -173,6 +218,11 @@
   padding: 4px 12px;
   background-color: #f0fdf4;
   border-radius: 4px;
+}
+
+.status.rejected-status {
+  color: #ef4444;
+  background-color: #fef2f2;
 }
 
 .popup-body {
@@ -283,4 +333,14 @@
   .popup-body {
     font-size: 14px;
   }
+}
+
+
+.cross {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.cross:hover {
+  transform: scale(1.1);
 }

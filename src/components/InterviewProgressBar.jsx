@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import './InterviewProgressBar.css';
+import { Modal } from 'react-bootstrap';
 
 const formatFeedback = (feedback) => {
-  if (!feedback) return 'No feedback available';
+  if (!feedback) return 'Feedback not generated yet';
   
   const lines = feedback.split('\n');
   const formattedLines = lines.map(line => {
@@ -28,27 +29,54 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
   const [hoveredRound, setHoveredRound] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedRound, setSelectedRound] = useState(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [rejectedRoundFeedback, setRejectedRoundFeedback] = useState(null);
   
-  const getStatusForRound = (roundNumber) => {
-    const round = interviewHistory.find(r => r.roundNumber === roundNumber);
-    if (!round) return 'pending';
-    
-    if (roundNumber < currentRound) {
-      return 'completed';
+const getStatusForRound = (roundNumber) => {
+  const round = interviewHistory.find(r => r.roundNumber === roundNumber);
+  const previousRound = interviewHistory.find(r => r.roundNumber === roundNumber - 1);
+  
+  // Check if any later round exists and is completed/in-progress
+  const hasLaterRound = interviewHistory.some(r => 
+    r.roundNumber > roundNumber && 
+    (r.status?.toLowerCase() === 'completed' || 
+     r.status?.toLowerCase() === 'selected' ||
+     r.status?.toLowerCase() === 'in progress')
+  );
+
+  // If a later round exists, mark this round as skipped
+  if (hasLaterRound && !round) {
+    return 'skipped';
+  }
+
+  if (!round) {
+    // If previous round is selected, mark this round as next-after-selected
+    if (previousRound && previousRound.status?.toLowerCase() === 'selected') {
+      return 'next-after-selected';
     }
-    
-    switch (round.status?.toLowerCase()) {
-      case 'completed':
-      case 'selected':
-        return 'completed';
-      case 'in progress':
-        return 'in-progress';
-      case 'rejected':
-        return 'rejected';
-      default:
-        return 'pending';
-    }
-  };
+    return 'pending';
+  }
+  
+  const status = round.status?.toLowerCase();
+  
+  if (status === 'selected') {
+    return 'completed';
+  }
+  
+  if (status === 'completed') {
+    return 'completed-not-selected';
+  }
+  
+  if (status === 'in progress') {
+    return 'in-progress';
+  }
+  
+  if (status === 'rejected') {
+    return 'rejected';
+  }
+  
+  return 'pending';
+};
 
   const getRoundInfo = (roundNumber) => {
     return interviewHistory.find(r => r.roundNumber === roundNumber) || {};
@@ -70,7 +98,7 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
                 onClick={(e) => {
                   e.stopPropagation();
                   const roundInfo = getRoundInfo(round.roundNumber);
-                  if (status === 'completed' || round.roundNumber < currentRound) {
+                  if (status === 'completed' || status === 'skipped' || round.roundNumber < currentRound) {
                     setSelectedRound({
                       ...roundInfo,
                       roundName: round.name
@@ -83,20 +111,33 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
                 onMouseEnter={() => setHoveredRound(round.roundNumber)}
                 onMouseLeave={() => setHoveredRound(null)}
               >
-                {(status === 'completed' || round.roundNumber < currentRound) && (
-                  <span className="checkmark">
+                {(status === 'completed' || status === 'skipped' || round.roundNumber < currentRound) && (
+                  <span className={`checkmark ${status === 'skipped' ? 'skipped' : ''}`}>
                     <svg viewBox="0 0 24 24" width="16" height="16">
                       <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
                     </svg>
                   </span>
                 )}
-                {status === 'rejected' && <span className="cross">✕</span>}
+                {status === 'rejected' && (
+                  <span 
+                    className="cross" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const roundInfo = getRoundInfo(round.roundNumber);
+                      setRejectedRoundFeedback(roundInfo);
+                      setShowFeedbackModal(true);
+                    }}
+                  >
+                    ✕
+                  </span>
+                )}
                 {status === 'in-progress' && <span className="in-progress-dot"></span>}
-                {status === 'pending' && round.roundNumber >= currentRound && <span className="pending-number">{round.roundNumber}</span>}
               </div>
               <div className="step-label">{round.name}</div>
               {index < ROUNDS.length - 1 && (
-                <div className={`connecting-line ${isActive ? status : ''}`}></div>
+                <div className={`connecting-line ${
+                  isActive || getStatusForRound(round.roundNumber + 1) === 'completed' ? 'completed' : ''
+                }`}></div>
               )}
               {hoveredRound === round.roundNumber && roundInfo.feedback && (
                 <div className="tooltip">
@@ -127,7 +168,7 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
             <div className="popup-header">
               <div className="technical-round">{selectedRound.roundName}</div>
               <div className="status">{selectedRound.status}</div>
-              <button className="close-button" onClick={() => setShowPopup(false)}>&times;</button>
+              <button className="modal-header-close" onClick={() => setShowPopup(false)}>&times;</button>
             </div>
             <div className="popup-body">
               <p><strong>Feedback:</strong></p>
@@ -137,6 +178,30 @@ const InterviewProgressBar = ({ currentRound, interviewHistory = [], onRoundClic
               )}
             </div>
             <button className="bottom-close" onClick={() => setShowPopup(false)}>Close</button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showFeedbackModal && rejectedRoundFeedback && ReactDOM.createPortal(
+        <div className="modal_pop_up" onClick={(e) => {
+          if (e.target.classList.contains('modal_pop_up')) {
+            setShowFeedbackModal(false);
+          }
+        }}>
+          <div className="popup-content">
+            <div className="popup-header">
+              <div className="technical-round">{rejectedRoundFeedback.roundName}</div>
+              <div className="status rejected-status">Rejected</div>
+              {/* <button className="modal-header-close" onClick={() => setShowFeedbackModal(false)}>&times;</button> */}
+            </div>
+            <div className="popup-body">
+              <p><strong>Interview Date:</strong> {new Date(rejectedRoundFeedback.interviewDateTime).toLocaleString()}</p>
+              <p><strong>Interviewers:</strong> {rejectedRoundFeedback.interviewers?.join(', ')}</p>
+              <p><strong>Feedback:</strong></p>
+              <div dangerouslySetInnerHTML={{ __html: formatFeedback(rejectedRoundFeedback.feedback) }} />
+            </div>
+            <button className="bottom-close" onClick={() => setShowFeedbackModal(false)}>Close</button>
           </div>
         </div>,
         document.body

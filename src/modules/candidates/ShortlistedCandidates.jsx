@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { interviewService } from '../../services/api';
+import { interviewService, aiFeedbackService } from '../../services/api';
 import { useSelector } from 'react-redux';
 import InterviewHistoryModal from '../interview-management/InterviewHistoryModal';
 import InterviewTimeline from '../../components/InterviewTimeline';
 import InterviewProgressBar from '../../components/InterviewProgressBar';
 import './ShortlistedCandidates.css';
+import { Modal, Button } from 'react-bootstrap';
 
 const ROUNDS = [
   { roundNumber: 1, name: 'New Application' },
@@ -16,7 +17,6 @@ const ROUNDS = [
 const CandidateCard = ({ candidate, onViewDetails, interviewRounds, onSaveFeedback }) => {
   const handleRoundClick = (roundInfo, e) => {
     e.stopPropagation();
-    // The InterviewProgressBar component now handles the pop-up for completed rounds
     if (roundInfo && roundInfo.status !== 'completed') {
       onViewDetails(candidate, roundInfo);
     }
@@ -156,6 +156,7 @@ const ShortlistedCandidates = () => {
     }
   };
 
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -179,7 +180,7 @@ const ShortlistedCandidates = () => {
   return (
     <div className="shortlisted-candidates">
       <div className="header">
-        <h2>Shortlisted Candidates</h2>
+        <h2>My Candidates</h2>
         <div className="search-container">
           <input
             type="text"
@@ -219,21 +220,6 @@ const ShortlistedCandidates = () => {
         </div>
       )}
 
-      {/* {selectedCandidate && (
-        <InterviewHistoryModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          candidateHistory={{
-            ...selectedCandidate,
-            history: selectedRound
-              ? selectedCandidate.interviewHistory.filter(round => round.roundNumber === selectedRound.roundNumber)
-              : selectedCandidate.interviewHistory
-          }}
-          interviewRounds={interviewRounds}
-          onUpdateSuccess={fetchShortlistedCandidates}
-          selectedRoundNumber={selectedRound?.roundNumber}
-        />
-      )} */}
     </div>
   );
 };

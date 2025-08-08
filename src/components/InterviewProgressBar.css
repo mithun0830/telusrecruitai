@@ -34,77 +34,66 @@
   border: 2px solid #e2e8f0;
 }
 
-.step-circle.completed,
-.step-circle.selected {
-  background-color: #dcfce7;
-  color: white;
-  border-color: #059669;
-}
-
-.step-circle.completed-not-selected {
-  background-color: #fff7ed;
-  color: white;
-  border-color: #ff9100;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
-}
-
-.step-circle.skipped-selected {
-  background-color: transparent;
-  border: 2px solid #059669;
-}
-
-.step-circle.skipped-selected .checkmark {
+/* Completed round - Green border + Light Green background */
+.step-circle.completed {
+  border-color: #059669; /* Green */
   color: #059669;
+  background-color: #f0fdf4; /* Light Green */
 }
 
-.step-circle.pending {
-  background-color: #f3e8ff; /* Light purple background */
-  border-color: #9333ea; /* Dark purple border */
-}
-
-.step-circle.next-after-selected {
-  background-color: #fff7ed; /* Light orange background */
-  border-color: #ff9100; /* Dark orange border */
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
-}
-
-.step-circle.skipped-completed {
-  background-color: transparent;
-  border: 2px solid #e2e8f0;
-}
-
-.step-circle.skipped-completed .checkmark {
-  color: #059669;
-}
-
+/* Skipped round - Green border + White background + Green tick */
 .step-circle.skipped {
-  background-color: transparent;
-  border: 2px solid #e2e8f0;
-}
-
-.checkmark.skipped {
+  border-color: #059669; /* Green */
   color: #059669;
+  background-color: white;
 }
 
-.step-circle.in-progress {
-  background-color: #3b82f6;
-  color: white;
+.step-circle.skipped .checkmark {
+  color: #059669; /* Green tick */
 }
 
+/* Pending round - Default styling */
+.step-circle.pending {
+  border-color: #9333EA; /* Purple */
+  color: #9333EA;
+  background-color: white;
+}
+
+/* Rejected round */
 .step-circle.rejected {
-  background-color: #ef4444;
-  color: white;
+  border-color: #EF4444; /* Red */
+  color: #EF4444;
+  background-color: white;
 }
 
-.step-circle.current {
-  border: 2px solid #059669;
+/* Connecting lines for completed/skipped rounds */
+.step-circle.completed + .connecting-line,
+.step-circle.skipped + .connecting-line,
+.connecting-line.completed {
+  background-color: #059669; /* Green line */
 }
 
-/* Override orange color for completed and current rounds */
-.step-circle.completed.current,
-.step-circle.completed-not-selected.current {
-  background-color: #fff7ed;
-  border-color: #059669;
+/* Checkmark styles */
+.step-circle .checkmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669; /* Green tick */
+}
+
+.step-circle .checkmark svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Cross style */
+.step-circle.rejected .cross {
+  color: #EF4444; /* Red */
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .connecting-line {
@@ -118,15 +107,12 @@
 }
 
 .connecting-line.completed {
-  background-color: #059669;
+  background-color: #059669; /* Green */
 }
 
-.connecting-line.in-progress {
-  background-color: #3b82f6;
-}
-
-.connecting-line.rejected {
-  background-color: #ef4444;
+/* When a round is rejected, next connecting line should be purple */
+.step-circle.rejected + .connecting-line {
+  background-color: #9333EA;
 }
 
 .step-label {

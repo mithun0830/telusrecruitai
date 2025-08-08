@@ -32,71 +32,36 @@ const InterviewProgressBar = ({ interviewHistory = [], onRoundClick }) => {
   const [selectedRound, setSelectedRound] = useState(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [rejectedRoundFeedback, setRejectedRoundFeedback] = useState(null);
-  
+
 const getStatusForRound = (roundNumber) => {
   const round = interviewHistory.find(r => r.roundNumber === roundNumber);
-  
-  // Check if there's a rejection in a later round
-  const hasRejectionInLaterRound = interviewHistory.some(r => 
-    r.roundNumber > roundNumber && 
-    r.status?.toLowerCase() === 'rejected'
-  );
+  const status = round?.status?.toLowerCase();
 
-  // Check if any later round is completed or selected
-  const hasCompletedLaterRound = interviewHistory.some(r => 
-    r.roundNumber > roundNumber && 
-    (r.status?.toLowerCase() === 'completed' || r.status?.toLowerCase() === 'selected')
-  );
+  // Handle rejected rounds first
+  if (status === 'rejected') return 'rejected';
 
-  // If there's a rejection in a later round, mark previous rounds as selected
-  if (hasRejectionInLaterRound) {
-    return round ? 'selected' : 'skipped-selected';
-  }
+  // Get all completed/selected rounds in order
+  const completedRounds = interviewHistory
+    .filter(r => ['selected', 'completed'].includes(r.status?.toLowerCase()))
+    .map(r => r.roundNumber)
+    .sort((a, b) => a - b);
 
-  // If a later round is completed/selected, mark this round as skipped-completed
-  if (hasCompletedLaterRound && !round) {
-    return 'skipped-completed';
-  }
-
-  // If a later round is completed/selected, mark this round as completed
-  if (hasCompletedLaterRound) {
+  // If this round is completed
+  if (completedRounds.includes(roundNumber)) {
     return 'completed';
   }
 
-  if (!round) {
-    return 'pending';
+  // Check if this round was skipped
+  // A round is skipped if there's a completed round after it
+  // but this round itself is not completed
+  const hasLaterCompletedRound = completedRounds.some(r => r > roundNumber);
+  if (hasLaterCompletedRound && !completedRounds.includes(roundNumber)) {
+    return 'skipped';
   }
-  
-  const status = round.status?.toLowerCase();
-  
-  if (status === 'selected') {
-    return 'selected';
-  }
-  
-  if (status === 'completed') {
-    return 'completed';
-  }
-  
-  if (status === 'in progress') {
-    return 'in-progress';
-  }
-  
-  if (status === 'rejected') {
-    return 'rejected';
-  }
-  
+
   return 'pending';
 };
 
-const getCurrentRound = () => {
-  if (!interviewHistory || interviewHistory.length === 0) {
-    return 1;
-  }
-  const lastCompletedRound = interviewHistory
-    .filter(round => round.status?.toLowerCase() === 'completed' || round.status?.toLowerCase() === 'selected')
-    .sort((a, b) => b.roundNumber - a.roundNumber)[0];
-  return lastCompletedRound ? lastCompletedRound.roundNumber + 1 : 1;
-};
 
   const getRoundInfo = (roundNumber) => {
     return interviewHistory.find(r => r.roundNumber === roundNumber) || {};
@@ -109,16 +74,15 @@ const getCurrentRound = () => {
           const status = getStatusForRound(round.roundNumber);
           const roundInfo = getRoundInfo(round.roundNumber);
           const isActive = status !== 'pending';
-          const isCurrentRound = round.roundNumber === getCurrentRound();
 
           return (
             <div key={round.roundNumber} className="progress-step">
               <div 
-                className={`step-circle ${status} ${isCurrentRound ? 'current' : ''}`}
+                className={`step-circle ${status}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   const roundInfo = getRoundInfo(round.roundNumber);
-                  if (status === 'completed' || status === 'skipped' || round.roundNumber < getCurrentRound()) {
+                  if (status === 'completed' || status === 'skipped') {
                     setSelectedRound({
                       ...roundInfo,
                       roundName: round.name
@@ -131,8 +95,8 @@ const getCurrentRound = () => {
                 onMouseEnter={() => setHoveredRound(round.roundNumber)}
                 onMouseLeave={() => setHoveredRound(null)}
               >
-                {(status === 'completed' || status === 'selected' || status === 'skipped-completed' || status === 'skipped-selected' || round.roundNumber < getCurrentRound()) && (
-                  <span className={`checkmark ${status.startsWith('skipped') ? 'skipped' : ''} ${status === 'selected' ? 'selected' : ''}`}>
+                {(status === 'completed' || status === 'skipped') && (
+                  <span className="checkmark">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                       <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
                     </svg>
@@ -151,12 +115,14 @@ const getCurrentRound = () => {
                     ✕
                   </span>
                 )}
-                {status === 'in-progress' && <span className="in-progress-dot"></span>}
               </div>
               <div className="step-label">{round.name}</div>
               {index < ROUNDS.length - 1 && (
                 <div className={`connecting-line ${
-                  isActive || getStatusForRound(round.roundNumber + 1) === 'completed' ? 'completed' : ''
+                  ['completed', 'skipped'].includes(getStatusForRound(round.roundNumber)) &&
+                  ['completed', 'skipped'].includes(getStatusForRound(round.roundNumber + 1))
+                    ? 'completed'
+                    : ''
                 }`}></div>
               )}
               {hoveredRound === round.roundNumber && roundInfo.feedback && (

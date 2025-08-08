@@ -623,7 +623,7 @@ const resetScheduleFields = () => {
         candidateId: candidateHistory.candidateId,
         roundId: history[history.length - 1].roundNumber,
         status: aiFeedback.feedback.result === 'pass' ? 'Selected' : 'Rejected',
-        feedback: aiFeedback.feedback.next_steps
+        feedback: String(aiFeedback.feedback.next_steps)
       };
 
       console.log('💾 Feedback data being sent:', feedbackData);

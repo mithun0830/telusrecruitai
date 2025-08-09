@@ -27,21 +27,57 @@ const ChatBot = ({ candidateId, candidateName, resumeId, onClose }) => {
   const handleSendMessage = async () => {
     if (inputMessage.trim() !== '' && !isLoading) {
       setIsLoading(true);
-      setMessages(prevMessages => [...prevMessages, { text: inputMessage, sender: 'user' }]);
+      const userMessage = { text: inputMessage, sender: 'user' };
+      setMessages(prevMessages => [...prevMessages, userMessage]);
+      console.log('Added user message:', userMessage);
       setInputMessage('');
 
       // Add thinking message
-      setMessages(prevMessages => [...prevMessages, { text: '...', sender: 'bot', isThinking: true }]);
+      const thinkingMessage = { text: '...', sender: 'bot', isThinking: true };
+      setMessages(prevMessages => [...prevMessages, thinkingMessage]);
+      console.log('Added thinking message:', thinkingMessage);
 
       try {
+        console.log('Sending message:', inputMessage);
         const response = await candidateService.sendChatMessage(resumeId, inputMessage);
-        const formattedMessage = formatResponse(response.data.message);
+        console.log('Received full response:', response);
+        
+        let messageToFormat = '';
+        
+        // Handle different possible response structures
+        if (response?.data?.message) {
+          // Standard response structure
+          messageToFormat = response.data.message;
+        } else if (response?.message) {
+          // Direct message in response
+          messageToFormat = response.message;
+        } else if (typeof response?.data === 'string') {
+          // Direct string response
+          messageToFormat = response.data;
+        } else if (response?.data) {
+          // If data exists but not in expected format, stringify it
+          messageToFormat = JSON.stringify(response.data, null, 2);
+        } else {
+          console.error('Unexpected response structure:', response);
+          throw new Error('Could not extract message from response');
+        }
+        
+        console.log('Extracted message:', messageToFormat);
+        const formattedMessage = formatResponse(messageToFormat);
+        console.log('Formatted message:', formattedMessage);
+        
         // Remove thinking message and add actual response
-        setMessages(prevMessages => prevMessages.filter(msg => !msg.isThinking).concat({ text: formattedMessage, sender: 'bot' }));
+        setMessages(prevMessages => {
+          const newMessages = prevMessages.filter(msg => !msg.isThinking).concat({ text: formattedMessage, sender: 'bot' });
+          console.log('Updated messages:', newMessages);
+          return newMessages;
+        });
       } catch (error) {
         console.error('Error sending message:', error);
         // Remove thinking message and add error message
-        setMessages(prevMessages => prevMessages.filter(msg => !msg.isThinking).concat({ text: "Sorry, I couldn't process your request. Please try again.", sender: 'bot' }));
+        const errorMessage = { text: `Sorry, I couldn't process your request. Error: ${error.message}`, sender: 'bot' };
+        setMessages(prevMessages => prevMessages.filter(msg => !msg.isThinking).concat(errorMessage));
+        console.log('Added error message:', errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -53,6 +89,22 @@ const ChatBot = ({ candidateId, candidateName, resumeId, onClose }) => {
   }, [messages]);
 
   const formatResponse = (message) => {
+    if (!message) {
+      return "I'm sorry, but I couldn't generate a response. Please try again.";
+    }
+
+    // If message is an object, stringify it
+    if (typeof message === 'object') {
+      try {
+        message = JSON.stringify(message, null, 2);
+      } catch (error) {
+        console.error('Error stringifying message:', error);
+      }
+    }
+
+    // Ensure message is a string
+    message = String(message);
+
     // Split the message into sections based on double newlines
     const sections = message.split('\n\n');
 
@@ -61,6 +113,12 @@ const ChatBot = ({ candidateId, candidateName, resumeId, onClose }) => {
       if (section.startsWith('•')) {
         // Convert bullet points to markdown list
         return section.split('\n').map(item => `- ${item.substring(1).trim()}`).join('\n');
+      }
+      // Handle bullet points with dashes
+      if (section.includes('\n-')) {
+        return section.split('\n').map(item => 
+          item.startsWith('-') ? item : `- ${item.trim()}`
+        ).join('\n');
       }
       return section;
     });
@@ -79,43 +137,46 @@ const ChatBot = ({ candidateId, candidateName, resumeId, onClose }) => {
       </div>
       <div className="chat-bot-container">
         <div className="chat-bot-messages">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`message ${message.sender}`}
-              data-thinking={message.isThinking || false}
-            >
-              {message.sender === 'bot' && message.isThinking ? (
-                <div className="thinking-dots">
-                  <span className="dot dot-red"></span>
-                  <span className="dot dot-blue"></span>
-                  <span className="dot dot-green"></span>
-                </div>
-              ) : message.sender === 'bot' ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
-                  components={{
-                    h1: ({ node, ...props }) => <h1 style={{ fontSize: '14px', margin: '0 0 4px 0' }} {...props} />,
-                    h2: ({ node, ...props }) => <h2 style={{ fontSize: '14px', margin: '0 0 4px 0' }} {...props} />,
-                    h3: ({ node, ...props }) => <h3 style={{ fontSize: '14px', margin: '0 0 4px 0' }} {...props} />,
-                    h4: ({ node, ...props }) => <h4 style={{ fontSize: '13px', margin: '0 0 4px 0' }} {...props} />,
-                    h5: ({ node, ...props }) => <h5 style={{ fontSize: '13px', margin: '0 0 4px 0' }} {...props} />,
-                    p: ({ node, ...props }) => <p style={{ fontSize: '13px', margin: '0 0 4px 0' }} {...props} />,
-                    ul: ({ node, ...props }) => <ul style={{ fontSize: '13px', margin: '0 0 4px 0', paddingLeft: '14px' }} {...props} />,
-                    ol: ({ node, ...props }) => <ol style={{ fontSize: '13px', margin: '0 0 4px 0', paddingLeft: '14px' }} {...props} />,
-                    li: ({ node, ...props }) => <li style={{ fontSize: '13px', marginBottom: '2px' }} {...props} />,
-                    code: ({ node, ...props }) => <code style={{ backgroundColor: '#f4f4f4', padding: '1px 2px', borderRadius: '2px', fontFamily: 'monospace', fontSize: '11px' }} {...props} />,
-                    a: ({ node, ...props }) => <a style={{ color: '#047857', textDecoration: 'underline' }} {...props} />
-                  }}
-                >
-                  {message.text}
-                </ReactMarkdown>
-              ) : (
-                message.text
-              )}
-            </div>
-          ))}
+          {messages.map((message, index) => {
+            console.log('Rendering message:', message);
+            return (
+              <div
+                key={index}
+                className={`message ${message.sender}`}
+                data-thinking={message.isThinking || false}
+              >
+                {message.sender === 'bot' && message.isThinking ? (
+                  <div className="thinking-dots">
+                    <span className="dot dot-red"></span>
+                    <span className="dot dot-blue"></span>
+                    <span className="dot dot-green"></span>
+                  </div>
+                ) : message.sender === 'bot' ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      h1: ({ node, ...props }) => <h1 style={{ fontSize: '14px', margin: '0 0 4px 0' }} {...props} />,
+                      h2: ({ node, ...props }) => <h2 style={{ fontSize: '14px', margin: '0 0 4px 0' }} {...props} />,
+                      h3: ({ node, ...props }) => <h3 style={{ fontSize: '14px', margin: '0 0 4px 0' }} {...props} />,
+                      h4: ({ node, ...props }) => <h4 style={{ fontSize: '13px', margin: '0 0 4px 0' }} {...props} />,
+                      h5: ({ node, ...props }) => <h5 style={{ fontSize: '13px', margin: '0 0 4px 0' }} {...props} />,
+                      p: ({ node, ...props }) => <p style={{ fontSize: '13px', margin: '0 0 4px 0' }} {...props} />,
+                      ul: ({ node, ...props }) => <ul style={{ fontSize: '13px', margin: '0 0 4px 0', paddingLeft: '14px' }} {...props} />,
+                      ol: ({ node, ...props }) => <ol style={{ fontSize: '13px', margin: '0 0 4px 0', paddingLeft: '14px' }} {...props} />,
+                      li: ({ node, ...props }) => <li style={{ fontSize: '13px', marginBottom: '2px' }} {...props} />,
+                      code: ({ node, ...props }) => <code style={{ backgroundColor: '#f4f4f4', padding: '1px 2px', borderRadius: '2px', fontFamily: 'monospace', fontSize: '11px' }} {...props} />,
+                      a: ({ node, ...props }) => <a style={{ color: '#047857', textDecoration: 'underline' }} {...props} />
+                    }}
+                  >
+                    {message.text}
+                  </ReactMarkdown>
+                ) : (
+                  <span>{message.text}</span>
+                )}
+              </div>
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
         <div className="chat-bot-input">

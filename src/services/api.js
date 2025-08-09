@@ -4,8 +4,8 @@ import { clearAllCookies } from '../utils/cookieUtils';
 const ONELOGIN_DOMAIN = 'https://telus-sandbox.onelogin.com';
 const ONELOGIN_LOGOUT_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
 const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
-// const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
-const API_BASE_URL = 'http://localhost:1998/api';
+const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
+// const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 // const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://mark-ai-865090871947.asia-south1.run.app/api';
@@ -125,6 +125,14 @@ const handleAxiosError = (error) => {
 
 // Response success handler
 const handleAxiosSuccess = (response) => {
+  // Special handling for chat messages
+  if (response.config?.url?.includes('/chat/message')) {
+    return {
+      success: true,
+      data: response.data
+    };
+  }
+
   // For responses with only a message (like status updates)
   if (response.status === 200 && response.data?.message && !response.data?.data) {
     return {

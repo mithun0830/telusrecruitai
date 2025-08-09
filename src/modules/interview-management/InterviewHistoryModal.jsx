@@ -168,6 +168,74 @@ const resetScheduleFields = () => {
     };
   }, [isOpen, candidateHistory?.email, candidateFeedbackCache, hasStoppedPolling]);
 
+  // New useEffect to check candidate folder immediately when the modal opens
+  useEffect(() => {
+    if (isOpen && candidateHistory?.email) {
+      console.log('🔄 Modal opened, checking candidate folder for:', candidateHistory.email);
+      
+      // Reset states when modal opens
+      setCandidateFolderExists(false);
+      setIsPolling(true);
+      
+      // Function to check folder
+      const checkFolder = async () => {
+        try {
+          const response = await aiFeedbackService.checkCandidateFolder(candidateHistory.email);
+          console.log('📋 Checking folder response:', response);
+          
+          // Check if folder exists based on the API response structure
+          const folderExists = response.success && (
+            response.folderExists === true ||
+            (response.filesFound && response.filesFound.length > 0) ||
+            (response.message && response.message.includes('Folder found:'))
+          );
+          
+          if (folderExists) {
+            console.log('✅ Folder exists, stopping polling');
+            setCandidateFolderExists(true);
+            setIsPolling(false);
+            setHasStoppedPolling(prev => new Set([...prev, candidateHistory.email]));
+          } else {
+            console.log('❌ Folder not found, continuing polling');
+          }
+        } catch (error) {
+          console.error('❌ Error checking folder:', error);
+        }
+      };
+      
+      // Immediate check
+      checkFolder();
+      
+      // Start polling
+      const intervalId = setInterval(checkFolder, 5000);
+      
+      // Cleanup
+      return () => {
+        console.log('🛑 Cleaning up polling for:', candidateHistory.email);
+        clearInterval(intervalId);
+        setIsPolling(false);
+      };
+    }
+  }, [isOpen, candidateHistory?.email]);
+
+  // Log state changes
+  useEffect(() => {
+    console.log('📊 candidateFolderExists state changed:', candidateFolderExists);
+  }, [candidateFolderExists]);
+
+  useEffect(() => {
+    console.log('📊 isPolling state changed:', isPolling);
+  }, [isPolling]);
+
+  // Log state changes
+  useEffect(() => {
+    console.log('📊 candidateFolderExists state changed:', candidateFolderExists);
+  }, [candidateFolderExists]);
+
+  useEffect(() => {
+    console.log('📊 isPolling state changed:', isPolling);
+  }, [isPolling]);
+
   // Sync refs with state changes
   useEffect(() => {
     hasStoppedPollingRef.current = hasStoppedPolling;
@@ -423,36 +491,26 @@ const resetScheduleFields = () => {
   };
 
   const checkCandidateFolder = async (candidateId) => {
-    // Check refs first for immediate state
-    if (hasStoppedPollingRef.current.has(candidateId) || candidateFolderExistsRef.current) {
-      console.log('🛑 Polling already stopped for candidate (ref check):', candidateId);
-      return;
-    }
-
-    // Also check state as backup
-    if (hasStoppedPolling.has(candidateId)) {
-      console.log('🛑 Polling already stopped for candidate (state check):', candidateId);
-      return;
-    }
-
     try {
       console.log('🔍 Checking candidate folder for:', candidateId);
       const response = await aiFeedbackService.checkCandidateFolder(candidateId);
       console.log('📋 Full API Response:', response);
       
-      // Check multiple possible response structures
+      // Updated check for folder existence
       const folderExists = response.success && (
-        response.data?.exists === true || 
-        response.data?.folderExists === true ||
-        response.data === true ||
-        response.exists === true ||
-        response.folderExists === true
+        response.folderExists === true ||
+        (response.filesFound && response.filesFound.length > 0) ||
+        (response.message && response.message.includes('Folder found:'))
       );
       
       console.log('📋 Folder exists check result:', folderExists);
+      console.log('📋 Response structure:', JSON.stringify(response, null, 2));
+      console.log('📋 Current candidateFolderExists state:', candidateFolderExists);
+      console.log('📋 Current isPolling state:', isPolling);
       
       if (folderExists) {
-        console.log('✅ Candidate folder found! Stopping polling immediately.');
+        console.log('✅ Candidate folder found!');
+        console.log('✅ Stopping polling immediately.');
         
         // Update refs IMMEDIATELY to prevent race conditions
         candidateFolderExistsRef.current = true;
@@ -469,21 +527,25 @@ const resetScheduleFields = () => {
           console.log('📝 Updated hasStoppedPolling set:', newSet);
           return newSet;
         });
+        setIsPolling(false);
         
         console.log('✅ Polling completely stopped for candidate:', candidateId);
-        
-        // Return early to prevent any further processing
-        return;
+        console.log('📋 Updated candidateFolderExists state:', true);
+        console.log('📋 Updated isPolling state:', false);
       } else {
         console.log('❌ Candidate folder not found yet, continuing polling...');
-        console.log('📋 Response data:', response.data);
+        console.log('📋 Response data:', response);
         candidateFolderExistsRef.current = false;
         setCandidateFolderExists(false);
+        console.log('📋 Updated candidateFolderExists state:', false);
       }
     } catch (error) {
       console.error('❌ Error checking candidate folder:', error);
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
       candidateFolderExistsRef.current = false;
       setCandidateFolderExists(false);
+      console.log('📋 Updated candidateFolderExists state (error case):', false);
     }
   };
 
@@ -518,7 +580,12 @@ const resetScheduleFields = () => {
   const handleGenerateAIFeedback = async () => {
     const candidateEmail = candidateHistory?.email;
     
+    console.log('🔍 Attempting to generate AI feedback');
+    console.log('📊 Current state - candidateFolderExists:', candidateFolderExists);
+    console.log('📊 Current state - isPolling:', isPolling);
+    
     if (!candidateEmail) {
+      console.error('❌ Candidate email not found');
       setModalType('error');
       setModalMessage('Candidate email not found. Cannot generate feedback.');
       setShowModal(true);
@@ -526,6 +593,7 @@ const resetScheduleFields = () => {
     }
 
     if (!candidateFolderExists) {
+      console.error('❌ Candidate folder not found');
       setModalType('error');
       setModalMessage('Candidate folder not found. Please wait for the interview files to be uploaded.');
       setShowModal(true);
@@ -540,6 +608,7 @@ const resetScheduleFields = () => {
       console.log('🤖 AI Feedback Response:', response);
 
       if (response.success && response.data) {
+        console.log('✅ AI Feedback generated successfully');
         // Cache the feedback for this candidate using email
         setCandidateFeedbackCache(prev => ({
           ...prev,
@@ -552,6 +621,7 @@ const resetScheduleFields = () => {
         // Mark that feedback has been generated for this candidate
         setHasGeneratedFeedback(true);
       } else {
+        console.error('❌ Failed to generate AI feedback:', response.message);
         throw new Error(response.message || 'Failed to generate AI feedback');
       }
     } catch (error) {
@@ -631,11 +701,19 @@ const resetScheduleFields = () => {
       const response = await interviewService.saveFeedback(feedbackData);
       console.log('💾 Save Feedback Response:', response);
 
-      if (response.status === 200) {
+      // Check if response has success flag or status 200
+      if (response.success || (response.status === 200) || (response.data && response.data.status === 200)) {
+        console.log('✅ Feedback saved successfully');
         setModalType('success');
         setModalMessage('AI Feedback Saved Successfully');
+        
+        // Trigger any necessary updates
+        if (onUpdateSuccess) {
+          onUpdateSuccess();
+        }
       } else {
-        throw new Error(response.data?.message || 'Failed to save feedback');
+        console.error('❌ Unexpected response structure:', response);
+        throw new Error('Failed to save feedback - unexpected response structure');
       }
     } catch (error) {
       console.error('❌ Error saving feedback:', error);
@@ -2005,7 +2083,7 @@ const resetScheduleFields = () => {
                       </div>
                     )}
                     
-                    {candidateFolderExists && !isPolling && (
+                    {candidateFolderExists && (
                       <div style={{ 
                         marginBottom: '8px', 
                         padding: '6px 12px', 

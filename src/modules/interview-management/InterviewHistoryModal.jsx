@@ -118,51 +118,37 @@ const resetScheduleFields = () => {
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedInterviewers([]);
-      
       // Use email as the primary identifier for caching and polling
       const candidateEmail = candidateHistory?.email;
       
+      // Check if this is a new candidate
+      if (prevCandidateEmailRef.current && prevCandidateEmailRef.current !== candidateEmail) {
+        console.log("🔄 Candidate email changed from", prevCandidateEmailRef.current, "to", candidateEmail);
+      }
+      const isNewCandidate = !prevCandidateEmailRef.current || prevCandidateEmailRef.current !== candidateEmail;
+
+      // Only reset interviewer selection and other states when opening for a new candidate
+      if (isNewCandidate) {
+        console.log("🆕 New candidate detected, resetting states");
+        setSelectedInterviewers([]);
+        setExpandedSections({
+          aiFeedback: false,
+          questions: false,
+          relevance: false
+        });
+        prevCandidateEmailRef.current = candidateEmail;
+      } else {
+        console.log("🔄 Same candidate, preserving interviewer selection");
+      }
+
       // Load cached feedback for this candidate if it exists
-      // if (candidateEmail && candidateFeedbackCache[candidateEmail]) {
-      //   setAiFeedback(candidateFeedbackCache[candidateEmail]);
-      //   setexpandedSections(false); // Start collapsed
-      //   setHasGeneratedFeedback(true); // Mark as generated if cached feedback exists
-      // } else {
-      //   // Clear AI feedback when modal opens for a different candidate with no cache
-      //   setAiFeedback(null);
-      //   setexpandedSections(false);
-      //   setHasGeneratedFeedback(false);
-      // }
-
-      // const candidateEmail = candidateHistory?.email;
-       if (prevCandidateEmailRef.current && prevCandidateEmailRef.current !== candidateEmail) {
-      console.log("Candidate email changed from", prevCandidateEmailRef.current, "to", candidateEmail);
-    }
-    const isNewCandidate = !prevCandidateEmailRef.current || prevCandidateEmailRef.current !== candidateEmail;
-
-    // Only reset expandedSections when opening for a new candidate
-    if (isNewCandidate) {
-      setExpandedSections({
-        aiFeedback: false,
-        questions: false,
-        relevance: false
-      });
-      prevCandidateEmailRef.current = candidateEmail;
-    }
-
-
-
       if (candidateEmail && candidateFeedbackCache[candidateEmail]) {
         setAiFeedback(candidateFeedbackCache[candidateEmail]);
-        // setExpandedSections(prev => ({ ...prev, aiFeedback: false }));
         setHasGeneratedFeedback(true);
       } else {
         setAiFeedback(null);
-        // setExpandedSections(prev => ({ ...prev, aiFeedback: false }));
         setHasGeneratedFeedback(false);
       }
-
 
       // Load cached questions for this candidate if it exists
       if (candidateEmail && questionsCache[candidateEmail]) {
@@ -214,57 +200,8 @@ const resetScheduleFields = () => {
     return () => {
       stopPolling();
     };
-  }, [isOpen, candidateHistory?.email, candidateFeedbackCache, hasStoppedPolling]);
-
-  // New useEffect to check candidate folder immediately when the modal opens
-  useEffect(() => {
-    if (isOpen && candidateHistory?.email) {
-      console.log('🔄 Modal opened, checking candidate folder for:', candidateHistory.email);
-      
-      // Reset states when modal opens
-      setCandidateFolderExists(false);
-      setIsPolling(true);
-      
-      // Function to check folder
-      const checkFolder = async () => {
-        try {
-          const response = await aiFeedbackService.checkCandidateFolder(candidateHistory.email);
-          console.log('📋 Checking folder response:', response);
-          
-          // Check if folder exists based on the API response structure
-          const folderExists = response.success && (
-            response.folderExists === true ||
-            (response.filesFound && response.filesFound.length > 0) ||
-            (response.message && response.message.includes('Folder found:'))
-          );
-          
-          if (folderExists) {
-            console.log('✅ Folder exists, stopping polling');
-            setCandidateFolderExists(true);
-            setIsPolling(false);
-            setHasStoppedPolling(prev => new Set([...prev, candidateHistory.email]));
-          } else {
-            console.log('❌ Folder not found, continuing polling');
-          }
-        } catch (error) {
-          console.error('❌ Error checking folder:', error);
-        }
-      };
-      
-      // Immediate check
-      checkFolder();
-      
-      // Start polling
-      const intervalId = setInterval(checkFolder, 5000);
-      
-      // Cleanup
-      return () => {
-        console.log('🛑 Cleaning up polling for:', candidateHistory.email);
-        clearInterval(intervalId);
-        setIsPolling(false);
-      };
-    }
   }, [isOpen, candidateHistory?.email]);
+
 
   // Log state changes
   useEffect(() => {

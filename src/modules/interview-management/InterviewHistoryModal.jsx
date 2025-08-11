@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './InterviewHistoryModal.css';
+
 import { candidateService, interviewService, aiFeedbackService, notificationService } from '../../services/api';
 import Loader from '../../components/Loader';
 import { Modal, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -61,11 +62,28 @@ const resetScheduleFields = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [sendQuestionnaire, setSendQuestionnaire] = useState(false);
   const multiselectRef = useRef(null);
+
+  const prevCandidateEmailRef = useRef("");
   
   // AI Feedback related state
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(null);
-  const [showAiFeedback, setShowAiFeedback] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    aiFeedback: false,
+    questions: false,
+    relevance: false
+  });
+
+  useEffect(() => {
+    console.log('Expanded sections state:', expandedSections);
+  }, [expandedSections]);
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   
   // Store feedback per candidate ID to persist across modal opens/closes
   const [candidateFeedbackCache, setCandidateFeedbackCache] = useState({});
@@ -84,6 +102,7 @@ const resetScheduleFields = () => {
   
   // Track if AI feedback has been generated at least once for this candidate
   const [hasGeneratedFeedback, setHasGeneratedFeedback] = useState(false);
+
   
   // Polling related state
   const [isPolling, setIsPolling] = useState(false);
@@ -105,16 +124,45 @@ const resetScheduleFields = () => {
       const candidateEmail = candidateHistory?.email;
       
       // Load cached feedback for this candidate if it exists
+      // if (candidateEmail && candidateFeedbackCache[candidateEmail]) {
+      //   setAiFeedback(candidateFeedbackCache[candidateEmail]);
+      //   setexpandedSections(false); // Start collapsed
+      //   setHasGeneratedFeedback(true); // Mark as generated if cached feedback exists
+      // } else {
+      //   // Clear AI feedback when modal opens for a different candidate with no cache
+      //   setAiFeedback(null);
+      //   setexpandedSections(false);
+      //   setHasGeneratedFeedback(false);
+      // }
+
+      // const candidateEmail = candidateHistory?.email;
+       if (prevCandidateEmailRef.current && prevCandidateEmailRef.current !== candidateEmail) {
+      console.log("Candidate email changed from", prevCandidateEmailRef.current, "to", candidateEmail);
+    }
+    const isNewCandidate = !prevCandidateEmailRef.current || prevCandidateEmailRef.current !== candidateEmail;
+
+    // Only reset expandedSections when opening for a new candidate
+    if (isNewCandidate) {
+      setExpandedSections({
+        aiFeedback: false,
+        questions: false,
+        relevance: false
+      });
+      prevCandidateEmailRef.current = candidateEmail;
+    }
+
+
+
       if (candidateEmail && candidateFeedbackCache[candidateEmail]) {
         setAiFeedback(candidateFeedbackCache[candidateEmail]);
-        setShowAiFeedback(false); // Start collapsed
-        setHasGeneratedFeedback(true); // Mark as generated if cached feedback exists
+        // setExpandedSections(prev => ({ ...prev, aiFeedback: false }));
+        setHasGeneratedFeedback(true);
       } else {
-        // Clear AI feedback when modal opens for a different candidate with no cache
         setAiFeedback(null);
-        setShowAiFeedback(false);
+        // setExpandedSections(prev => ({ ...prev, aiFeedback: false }));
         setHasGeneratedFeedback(false);
       }
+
 
       // Load cached questions for this candidate if it exists
       if (candidateEmail && questionsCache[candidateEmail]) {
@@ -577,62 +625,50 @@ const resetScheduleFields = () => {
   };
 
   // AI Feedback generation function
-  const handleGenerateAIFeedback = async () => {
-    const candidateEmail = candidateHistory?.email;
-    
-    console.log('🔍 Attempting to generate AI feedback');
-    console.log('📊 Current state - candidateFolderExists:', candidateFolderExists);
-    console.log('📊 Current state - isPolling:', isPolling);
-    
-    if (!candidateEmail) {
-      console.error('❌ Candidate email not found');
-      setModalType('error');
-      setModalMessage('Candidate email not found. Cannot generate feedback.');
-      setShowModal(true);
-      return;
+const handleGenerateAIFeedback = async () => {
+  const candidateEmail = candidateHistory?.email;
+  
+  if (!candidateEmail) {
+    setModalType('error');
+    setModalMessage('Candidate email not found. Cannot generate feedback.');
+    setShowModal(true);
+    return;
+  }
+
+  if (!candidateFolderExists) {
+    setModalType('error');
+    setModalMessage('Candidate folder not found. Please wait for the interview files to be uploaded.');
+    setShowModal(true);
+    return;
+  }
+
+  setIsGeneratingFeedback(true);
+
+  try {
+    const response = await aiFeedbackService.generateFeedbackForCandidate(candidateEmail);
+
+    if (response.success && response.data) {
+      setCandidateFeedbackCache(prev => ({
+        ...prev,
+        [candidateEmail]: response.data
+      }));
+      
+      setAiFeedback(response.data);
+      setExpandedSections(prev => ({ ...prev, aiFeedback: false })); // Keep it closed initially
+      setHasGeneratedFeedback(true);
+    } else {
+      throw new Error(response.message || 'Failed to generate AI feedback');
     }
+  } catch (error) {
+    console.error('❌ Error generating AI feedback:', error);
+    setModalType('error');
+    setModalMessage(error.message || 'Failed to generate AI feedback. Please try again.');
+    setShowModal(true);
+  } finally {
+    setIsGeneratingFeedback(false);
+  }
+};
 
-    if (!candidateFolderExists) {
-      console.error('❌ Candidate folder not found');
-      setModalType('error');
-      setModalMessage('Candidate folder not found. Please wait for the interview files to be uploaded.');
-      setShowModal(true);
-      return;
-    }
-
-    setIsGeneratingFeedback(true);
-    console.log('🤖 Generating AI feedback for candidate email:', candidateEmail);
-
-    try {
-      const response = await aiFeedbackService.generateFeedbackForCandidate(candidateEmail);
-      console.log('🤖 AI Feedback Response:', response);
-
-      if (response.success && response.data) {
-        console.log('✅ AI Feedback generated successfully');
-        // Cache the feedback for this candidate using email
-        setCandidateFeedbackCache(prev => ({
-          ...prev,
-          [candidateEmail]: response.data
-        }));
-        
-        setAiFeedback(response.data);
-        setShowAiFeedback(true);
-        
-        // Mark that feedback has been generated for this candidate
-        setHasGeneratedFeedback(true);
-      } else {
-        console.error('❌ Failed to generate AI feedback:', response.message);
-        throw new Error(response.message || 'Failed to generate AI feedback');
-      }
-    } catch (error) {
-      console.error('❌ Error generating AI feedback:', error);
-      setModalType('error');
-      setModalMessage(error.message || 'Failed to generate AI feedback. Please try again.');
-      setShowModal(true);
-    } finally {
-      setIsGeneratingFeedback(false);
-    }
-  };
 
   // Questions Asked function
   const handleGetQuestionsAsked = async () => {
@@ -2135,9 +2171,11 @@ const resetScheduleFields = () => {
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          borderBottom: showAiFeedback ? '1px solid #ddd' : 'none'
+                          borderBottom: expandedSections.aiFeedback ? '1px solid #ddd' : 'none'
                         }}
-                        onClick={() => setShowAiFeedback(!showAiFeedback)}
+                        onClick={() => toggleSection('aiFeedback')}
+
+
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <FontAwesomeIcon icon={faRobot} style={{ color: '#059669' }} />
@@ -2164,16 +2202,17 @@ const resetScheduleFields = () => {
                             </div>
                           )}
                           <span style={{ fontSize: '14px' }}>
-                            {showAiFeedback ? '▼' : '▶'}
+                            {expandedSections.aiFeedback ? '▼' : '▶'}
                           </span>
                         </div>
                       </div>
                       
-                      {showAiFeedback && (
+                      {expandedSections.aiFeedback && (
                         <div style={{ padding: '20px', backgroundColor: '#fff', maxHeight: '400px', overflowY: 'auto' }}>
                           {renderAIFeedback(aiFeedback)}
                         </div>
                       )}
+
                     </div>
                   )}
 

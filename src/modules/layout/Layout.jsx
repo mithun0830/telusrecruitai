@@ -56,7 +56,7 @@ const menuItems = [
   // { path: '/application-status', icon: faListAlt, label: 'Application Status', permission: 'mng_app_status', role: 'Manager' },
   { path: '/job-openings', icon: faBriefcase, label: 'Candidates Search', permission: 'mng_jb', role: 'Manager' },
   { path: '/notifications', icon: faBell, label: 'Notifications', permission: 'mng_notif', role: 'Manager' },
-  { path: '/shortlisted-candidates', icon: faUserCheck, label: 'Shortlisted Candidates', permission: 'mng_jb', role: 'Manager' },
+  { path: '/shortlisted-candidates', icon: faUserCheck, label: 'My Candidates', permission: 'mng_jb', role: 'Manager' },
 ];
 
 const Layout = ({ children }) => {

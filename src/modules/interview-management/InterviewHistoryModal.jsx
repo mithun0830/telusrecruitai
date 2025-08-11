@@ -2357,23 +2357,26 @@ const resetScheduleFields = () => {
                     </div>
                   </div>
               <div className={`timeline-content ${
-                interview.status.toLowerCase() === 'pending' ? 'pending' : ''
-              } ${
-                index > 0 && 
-                history[index - 1]?.status.toLowerCase() === 'selected' ? 
-                'next-after-selected' : ''
-              }`}>
-                <h3>{interview.roundName}</h3>
-                <div className="status-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <p className="timeline-subtitle" style={{ margin: 0 }}>{interview.status}</p>
-                </div>
-                {interview.feedback && (
-                  <p className="timeline-description">
-                    <strong>Interviewer's feedback: </strong>
-                    {interview.feedback}
-                  </p>
-                )}
-              </div>
+  interview.status.toLowerCase() === 'pending' ? 'pending' : ''
+} ${
+  index > 0 && 
+  history[index - 1]?.status.toLowerCase() === 'selected' ? 
+  'next-after-selected' : ''
+}`}>
+  <h3>{interview.roundName}</h3>
+  <div className="feedback-container">
+    {interview.feedback ? (
+      <p className="timeline-description">
+        <strong>Feedback: </strong>
+        {interview.feedback}
+      </p>
+    ) : (
+      <p className="timeline-description feedback-placeholder">
+        Feedback not generated yet
+      </p>
+    )}
+  </div>
+</div>
                 </div>
               ))}
             </div>

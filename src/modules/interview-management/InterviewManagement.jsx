@@ -102,7 +102,7 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
             JD: {candidate.jobDescription?.title}
           </span>
           <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-            Manager: {candidate.manager ? candidate.manager.fullName : 'RMG Admin'} 
+            Manager: {candidate.manager ? candidate.manager.name : 'RMG Admin'} 
           </span>
           <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
               {round.roundName === 'New Applications' ? 'Resume Score' : 'Overall Score'}
@@ -462,18 +462,19 @@ const InterviewManagement = () => {
       <div className="header">
         <div className="left-controls">
           <div className="search">
-            <i className="fas fa-search"></i>
+            {/* <i className="fas fa-search"></i> */}
             <input 
               type="text" 
               placeholder="Search candidate by name, email, job title, department, or manager"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className='search-container'
             />
           </div>
-          <div className="control">
+          {/* <div className="control">
             <i className="fas fa-filter"></i>
             More filters
-          </div>
+          </div> */}
         </div>
       </div>
 

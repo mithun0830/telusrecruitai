@@ -82,7 +82,7 @@ const Landing = () => {
             <img src="/images/chat/profile-chat.jpg" alt="Profile chat" />
           </div>
           <div className="chat-bubble top-right">
-            <img src="/images/chat/team-chat.jpg" alt="Team chat" />
+            <img src="/images/chat/team_chat.png" alt="Team chat" />
           </div>
           <div className="chat-bubble bottom-left">
             <img src="/images/chat/metrics.jpg" alt="Metrics" />

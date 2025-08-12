@@ -103,7 +103,16 @@ const resetScheduleFields = () => {
   // Track if AI feedback has been generated at least once for this candidate
   const [hasGeneratedFeedback, setHasGeneratedFeedback] = useState(false);
 
-  
+  // Reset states when modal opens or closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasGeneratedFeedback(false);
+      setAiFeedback(null);
+      setQuestionsData(null);
+      setRelevanceData(null);
+    }
+  }, [isOpen]);
+
   // Polling related state
   const [isPolling, setIsPolling] = useState(false);
   const [candidateFolderExists, setCandidateFolderExists] = useState(false);
@@ -116,92 +125,64 @@ const resetScheduleFields = () => {
   const hasStoppedPollingRef = useRef(new Set());
   const candidateFolderExistsRef = useRef(false);
 
+  // New useEffect to check candidate folder immediately when the modal opens
   useEffect(() => {
-    if (isOpen) {
-      // Use email as the primary identifier for caching and polling
-      const candidateEmail = candidateHistory?.email;
+    if (isOpen && candidateHistory?.email) {
+      console.log('🔄 Modal opened, checking candidate folder for:', candidateHistory.email);
       
-      // Check if this is a new candidate
-      if (prevCandidateEmailRef.current && prevCandidateEmailRef.current !== candidateEmail) {
-        console.log("🔄 Candidate email changed from", prevCandidateEmailRef.current, "to", candidateEmail);
-      }
-      const isNewCandidate = !prevCandidateEmailRef.current || prevCandidateEmailRef.current !== candidateEmail;
-
-      // Only reset interviewer selection and other states when opening for a new candidate
-      if (isNewCandidate) {
-        console.log("🆕 New candidate detected, resetting states");
-        setSelectedInterviewers([]);
-        setExpandedSections({
-          aiFeedback: false,
-          questions: false,
-          relevance: false
-        });
-        prevCandidateEmailRef.current = candidateEmail;
-      } else {
-        console.log("🔄 Same candidate, preserving interviewer selection");
-      }
-
-      // Load cached feedback for this candidate if it exists
-      if (candidateEmail && candidateFeedbackCache[candidateEmail]) {
-        setAiFeedback(candidateFeedbackCache[candidateEmail]);
-        setHasGeneratedFeedback(true);
-      } else {
-        setAiFeedback(null);
-        setHasGeneratedFeedback(false);
-      }
-
-      // Load cached questions for this candidate if it exists
-      if (candidateEmail && questionsCache[candidateEmail]) {
-        setQuestionsData(questionsCache[candidateEmail]);
-        setShowQuestions(false); // Start collapsed
-      } else {
-        setQuestionsData(null);
-        setShowQuestions(false);
-      }
-
-      // Load cached relevance data for this candidate if it exists
-      if (candidateEmail && relevanceCache[candidateEmail]) {
-        setRelevanceData(relevanceCache[candidateEmail]);
-        setShowRelevance(false); // Start collapsed
-      } else {
-        setRelevanceData(null);
-        setShowRelevance(false);
-      }
-
-      // Check if we've already found the folder for this candidate
-      if (candidateEmail && hasStoppedPolling.has(candidateEmail)) {
-        // We've already found the folder for this candidate, enable the button
-        console.log('✅ Folder already found for candidate email:', candidateEmail);
-        
-        // Update refs to match state
-        candidateFolderExistsRef.current = true;
-        hasStoppedPollingRef.current = new Set([...hasStoppedPollingRef.current, candidateEmail]);
-        isPollingRef.current = false;
-        
-        setCandidateFolderExists(true);
+      // Reset states when modal opens
+      setCandidateFolderExists(false);
+      setIsPolling(true);
+      
+      // Function to check folder
+      const checkFolder = async () => {
+        try {
+          const response = await aiFeedbackService.checkCandidateFolder(candidateHistory.email);
+          console.log('📋 Checking folder response:', response);
+          
+          // Check if folder exists based on the API response structure
+          const folderExists = response.success && (
+            response.folderExists === true ||
+            (response.filesFound && response.filesFound.length > 0) ||
+            (response.message && response.message.includes('Folder found:'))
+          );
+          
+          if (folderExists) {
+            console.log('✅ Folder exists, stopping polling');
+            setCandidateFolderExists(true);
+            setIsPolling(false);
+            setHasStoppedPolling(prev => new Set([...prev, candidateHistory.email]));
+          } else {
+            console.log('❌ Folder not found, continuing polling');
+          }
+        } catch (error) {
+          console.error('❌ Error checking folder:', error);
+        }
+      };
+      
+      // Immediate check
+      checkFolder();
+      
+      // Start polling
+      const intervalId = setInterval(checkFolder, 5000);
+      
+      // Cleanup
+      return () => {
+        console.log('🛑 Cleaning up polling for:', candidateHistory.email);
+        clearInterval(intervalId);
         setIsPolling(false);
-      } else if (candidateEmail) {
-        // Start polling for candidate folder if not already found
-        console.log('🔄 Starting fresh polling for candidate email:', candidateEmail);
-        
-        // Reset refs for new polling
-        candidateFolderExistsRef.current = false;
-        isPollingRef.current = false;
-        
-        setCandidateFolderExists(false);
-        startPollingForCandidateFolder(candidateEmail);
-      }
-    } else {
-      // Clean up polling when modal closes
-      stopPolling();
+      };
     }
-
-    // Cleanup on unmount
-    return () => {
-      stopPolling();
-    };
   }, [isOpen, candidateHistory?.email]);
 
+  // Log state changes
+  useEffect(() => {
+    console.log('📊 candidateFolderExists state changed:', candidateFolderExists);
+  }, [candidateFolderExists]);
+
+  useEffect(() => {
+    console.log('📊 isPolling state changed:', isPolling);
+  }, [isPolling]);
 
   // Log state changes
   useEffect(() => {
@@ -277,7 +258,7 @@ const resetScheduleFields = () => {
     setLoadingInterviewers(true);
     try {
       // Using hardcoded manager ID as requested (will be made dynamic later)
-      const managerId = 122;
+      const managerId = candidateHistory?.candidateId || 12;
       
       console.log('🔄 Calling manager API for ID:', managerId);
       const response = await candidateService.getManagerForCandidate(managerId);
@@ -483,13 +464,13 @@ const resetScheduleFields = () => {
       
       // Updated check for folder existence
       const folderExists = response.success && (
-        response.folderExists === true ||
+         response.folderExists === true ||
         (response.filesFound && response.filesFound.length > 0) ||
         (response.message && response.message.includes('Folder found:'))
       );
       
       console.log('📋 Folder exists check result:', folderExists);
-      console.log('📋 Response structure:', JSON.stringify(response, null, 2));
+            console.log('📋 Response structure:', JSON.stringify(response, null, 2));
       console.log('📋 Current candidateFolderExists state:', candidateFolderExists);
       console.log('📋 Current isPolling state:', isPolling);
       
@@ -598,8 +579,26 @@ const handleGenerateAIFeedback = async () => {
     }
   } catch (error) {
     console.error('❌ Error generating AI feedback:', error);
+    console.error('❌ Error details:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
     setModalType('error');
-    setModalMessage(error.message || 'Failed to generate AI feedback. Please try again.');
+    let errorMessage = 'Failed to generate AI feedback. Please try again.';
+    
+    if (error.message?.includes('Network error')) {
+      errorMessage = 'Unable to connect to the AI Feedback service. Please check your connection and try again.';
+    } else if (error.response?.status === 401) {
+      errorMessage = 'Authentication failed. Please log out and log back in.';
+    } else if (error.response?.status === 404) {
+      errorMessage = 'Interview files not found. Please ensure the interview recording is available.';
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    }
+    
+    setModalMessage(errorMessage);
     setShowModal(true);
   } finally {
     setIsGeneratingFeedback(false);
@@ -2038,7 +2037,7 @@ const handleGenerateAIFeedback = async () => {
                   {/* Polling Status and Generate AI Feedback Button */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '100%', marginBottom: '10px' }}>
                     {/* Polling Status Indicator */}
-                    {isPolling && (
+                    {!hasGeneratedFeedback && isPolling && (
                       <div style={{ 
                         marginBottom: '8px', 
                         padding: '6px 12px', 
@@ -2056,7 +2055,7 @@ const handleGenerateAIFeedback = async () => {
                       </div>
                     )}
                     
-                    {candidateFolderExists && (
+                    {!hasGeneratedFeedback && candidateFolderExists && (
                       <div style={{ 
                         marginBottom: '8px', 
                         padding: '6px 12px', 
@@ -2073,7 +2072,7 @@ const handleGenerateAIFeedback = async () => {
                       </div>
                     )}
 
-                    <button 
+                    {!hasGeneratedFeedback && <button 
                       onClick={handleGenerateAIFeedback}
                       disabled={isGeneratingFeedback || !candidateFolderExists}
                       className="btn btn-success"
@@ -2094,11 +2093,11 @@ const handleGenerateAIFeedback = async () => {
                       {isGeneratingFeedback ? 'Generating...' : 
                        !candidateFolderExists ? 'Waiting for Files...' : 
                        'Generate AI Feedback'}
-                    </button>
+                    </button>}
                   </div>
                   
                   {/* AI Feedback Results - Collapsible Dropdown */}
-                  {aiFeedback && (
+                  {hasGeneratedFeedback && aiFeedback && !isGeneratingFeedback && (
                     <div style={{ width: '100%', marginTop: '15px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', width: '100%' }}>
                       <div 
                         style={{ 
@@ -2111,8 +2110,6 @@ const handleGenerateAIFeedback = async () => {
                           borderBottom: expandedSections.aiFeedback ? '1px solid #ddd' : 'none'
                         }}
                         onClick={() => toggleSection('aiFeedback')}
-
-
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <FontAwesomeIcon icon={faRobot} style={{ color: '#059669' }} />
@@ -2149,11 +2146,10 @@ const handleGenerateAIFeedback = async () => {
                           {renderAIFeedback(aiFeedback)}
                         </div>
                       )}
-
                     </div>
                   )}
 
-                  {/* Questions Asked and JD Relevance Buttons - Only show if feedback has been generated */}
+                  {/* Questions Asked and Save Feedback Buttons - Only show if feedback has been generated */}
                   {hasGeneratedFeedback && (
                     <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
                       <button 

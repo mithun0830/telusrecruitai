@@ -5,7 +5,7 @@ const ONELOGIN_DOMAIN = 'https://telus-sandbox.onelogin.com';
 const ONELOGIN_LOGOUT_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
 const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
  const API_BASE_URL = 'https://recruitai-authentication-865090871947.asia-south1.run.app/api';
-//const API_BASE_URL = 'http://localhost:1998/api';
+// const API_BASE_URL = 'http://localhost:1998/api';
 const NOTIFICATION_BASE_URL = 'https://notification-service-865090871947.asia-south1.run.app/api';
 // const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
 const AI_SEARCH_BASE_URL = 'https://mark-ai-865090871947.asia-south1.run.app/api';
@@ -196,7 +196,7 @@ addTokenInterceptor(api);
 addTokenInterceptor(ai_api);
 addTokenInterceptor(notificationApi);
 addTokenInterceptor(interviewApi);
-// Note: aiFeedbackApi doesn't need token interceptor as it's localhost
+addTokenInterceptor(aiFeedbackApi); // Add token interceptor for cloud API endpoint
 
 addResponseInterceptor(api);
 addResponseInterceptor(ai_api);
@@ -462,10 +462,34 @@ export const aiFeedbackService = {
 
   // Generate feedback for candidate from Google Drive files
   generateFeedbackForCandidate: async (candidateEmail, metadata = {}) => {
-    return await aiFeedbackApi.post('/generate-feedback-for-candidate', {
-      candidateEmail,
-      metadata
-    });
+    try {
+      console.log('🔄 Generating feedback for candidate:', candidateEmail);
+      const token = getAccessToken();
+      console.log('🔑 Token present:', !!token);
+      
+      const response = await aiFeedbackApi.post('/generate-feedback-for-candidate', {
+        candidateEmail,
+        metadata
+      });
+      
+      console.log('✅ Feedback generation response:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ Error generating feedback:', error);
+      console.error('❌ Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          baseURL: error.config?.baseURL,
+          headers: error.config?.headers
+        }
+      });
+      throw error;
+    }
   },
 
   // Get questions asked by interviewer for candidate

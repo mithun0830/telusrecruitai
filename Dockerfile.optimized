@@ -1,0 +1,64 @@
+# Optimized multi-stage build with advanced caching
+# Build stage for dependencies
+FROM node:18-alpine as dependencies
+
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package*.json ./
+
+# Install dependencies with cache mount for faster builds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --silent --no-audit --no-fund
+
+# Build stage
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+# Copy dependencies from previous stage (cached layer)
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY package*.json ./
+
+# Copy source code
+COPY . .
+
+# Build application with cache mount
+RUN --mount=type=cache,target=/app/.next/cache \
+    --mount=type=cache,target=/app/node_modules/.cache \
+    npm run build
+
+# Production stage
+FROM node:18-alpine as production
+
+WORKDIR /app
+
+# Copy built assets from builder stage
+COPY --from=builder /app/build ./build
+
+# Copy server files and package.json
+COPY server.js package.json ./
+
+# Copy node_modules from builder and prune dev dependencies (faster than reinstalling)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Remove dev dependencies to reduce image size
+RUN npm prune --production && \
+    npm cache clean --force
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Change ownership of app directory
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+# Health check for better container management
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+CMD ["node", "server.js"]

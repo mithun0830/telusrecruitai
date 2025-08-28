@@ -277,7 +277,7 @@ const resetScheduleFields = () => {
     setLoadingInterviewers(true);
     try {
       // Using hardcoded manager ID as requested (will be made dynamic later)
-      const managerId = 122;
+      const managerId = candidateHistory?.candidateId || 12;
       
       console.log('🔄 Calling manager API for ID:', managerId);
       const response = await candidateService.getManagerForCandidate(managerId);

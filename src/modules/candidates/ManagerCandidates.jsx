@@ -556,6 +556,12 @@ const ManagerCandidates = () => {
   };
 
   const getFormattedCandidateData = () => {
+    // Get the job description from fullJobDescriptionData or currentSearchValue
+   // const jobDescription = fullJobDescriptionData?.summary || currentSearchValue || "Java Developer";
+    
+    // Clean the job description string
+   // const cleanJd = jobDescription.replace(/,undefined$/, '').trim();
+    
     return searchResults
       .filter(candidate => candidate.locked && candidate.managerId === currentUserId)
       .map(candidate => ({
@@ -564,8 +570,9 @@ const ManagerCandidates = () => {
         name: candidate.resume.name,
         email: candidate.resume.email,
         phone: candidate.resume.phoneNumber,
-        positionApplied: currentSearchValue || candidate.resume.positionApplied || "Not specified",
-        jobDetails: currentSearchValue || candidate.resume.jobDetails || "Not specified",
+        positionApplied: candidate.resume.positionApplied || "Java Developer",
+        jobDetails: candidate.resume.jobDetails || "Java Developer",
+        //jobDescription: cleanJd, // This will be a clean string
         score: candidate.score
       }));
   };
@@ -585,20 +592,35 @@ const ManagerCandidates = () => {
       return;
     }
 
+    // Get the job description string and clean it
+    const jobDescription = fullJobDescriptionData?.summary || currentSearchValue || "Java Developer";
+    const cleanJd = jobDescription.replace(/,undefined$/, '').trim();
+    
     const payload = {
       managerId: currentUserId,
       candidates: formattedCandidates,
-      jobDescription: fullJobDescriptionData || {
+       jobDescription: fullJobDescriptionData || {
         summary: secondarySearch
       }
     };
 
+    // Log the payload to verify the jobDescription
+    console.log('Shortlist payload:', JSON.stringify(payload, null, 2));
+
     try {
+      // Log the job description before making the API call
+      console.log('Job Description being sent:', payload.jobDescription);
+      console.log('Cleaned Job Description:', cleanJd);
+      console.log('Formatted Candidates:', formattedCandidates);
+      
       // Add minimum 5-second delay to ensure slideshow displays properly
       const [response] = await Promise.all([
         interviewService.shortlistCandidates(payload),
         new Promise(resolve => setTimeout(resolve, 5000)) // 5-second minimum delay
       ]);
+
+      // Log the response from the API
+      console.log('API Response:', response);
       
       if (response) {
         const candidateNames = formattedCandidates

@@ -9,7 +9,7 @@ const ONELOGIN_END_SESSION_URL = `${ONELOGIN_DOMAIN}/oidc/2/logout`;
 const NOTIFICATION_BASE_URL = 'https://notification-service-380738819308.asia-south1.run.app/api';
 // const NOTIFICATION_BASE_URL = 'http://localhost:8080/api';
 // const AI_SEARCH_BASE_URL = 'https://aimatch-lock-865090871947.asia-south1.run.app/api';
-const AI_SEARCH_BASE_URL = 'https://mark-ai-fixed-380738819308.asia-south1.run.app/api';
+const AI_SEARCH_BASE_URL = 'https://latest-mark-ai-fixed-380738819308.asia-south1.run.app/api';
 const Google_Calendar_API_BASE_URL = 'https://google-calendar-app-380738819308.asia-south1.run.app/api';
 const INTERVIEW_ROUNDS_API_BASE_URL = 'https://interview-hub-380738819308.asia-south1.run.app/api';
 // const AI_FEEDBACK_BASE_URL = 'https://feedback-api-865090871947.us-central1.run.app/api';
@@ -354,7 +354,13 @@ export const candidateService = {
   },
 
   getMatchingInterviewers: async (jobDescription) => {
-    return await ai_api.post(`/interviewer-matching/job-description`, {
+    // Clean the job description string
+    // const jdString = typeof jobDescription === 'object' ? jobDescription.summary : jobDescription;
+    // const cleanJd = jdString.replace(/,undefined$/, '').trim();
+    // return await ai_api.post(`/interviewer-matching/job-description`, {
+    //   jobDescription: cleanJd
+    // });
+     return await ai_api.post(`/interviewer-matching/job-description`, {
       jobDescription: jobDescription
     });
   },
@@ -404,7 +410,9 @@ export const candidateService = {
     });
   },
   generateQuestions: async (jobDescription) => {
-    return await ai_api.post('/job-descriptions/generate-questions', {
+    // Ensure we're sending a string, not an object
+   // const jdString = typeof jobDescription === 'object' ? jobDescription.summary : jobDescription;
+     return await ai_api.post('/job-descriptions/generate-questions', {
       jobDescription: jobDescription
     });
   }

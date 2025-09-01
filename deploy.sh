@@ -4,7 +4,7 @@
 set -e
 
 # Configuration
-PROJECT_ID="telusrecruitai"  # GCP project ID
+PROJECT_ID="telusrecruitai-468907"  # GCP project ID
 REGION="asia-south1"          # Replace with your desired region
 SERVICE_NAME="telusrecruitai" # Replace with your desired service name
 IMAGE_NAME="telusrecruitai"   # Replace with your desired image name

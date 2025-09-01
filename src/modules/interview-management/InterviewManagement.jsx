@@ -97,9 +97,10 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
         <CandidateChatBot candidate={candidate} onChatToggle={onChatToggle} />
       </div>
       <div className="card-content" style={{ padding: '0px' }}>
-        <div className="score-section">
+             <div className="score-section">
            <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-            JD: {candidate.jobDescription?.title}
+            {/* JD: {candidate.jobDescription?.title} */}
+            JD: {candidate.jobDescription?.title || "Java Developer"}
           </span>
           <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
             Manager: {candidate.manager ? candidate.manager.name : 'RMG Admin'} 
@@ -110,7 +111,7 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
             </span>
           <div style={{ display: 'flex', marginLeft: 'auto', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="score-value" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              
+         
               {candidate.status.toUpperCase() === 'REJECTED' ? (
                 <OverlayTrigger
                   placement="bottom"

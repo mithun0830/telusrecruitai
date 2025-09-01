@@ -88,7 +88,7 @@ const Layout = ({ children }) => {
         console.error(`Error fetching notifications (attempt ${i + 1}):`, error);
         if (i === retries - 1) {
           // If this is the last retry, show an error to the user
-          alert('Failed to fetch notifications. Please try again later.');
+        //  alert('Failed to fetch notifications. Please try again later.');
         } else {
           // Wait before the next retry
           await new Promise(resolve => setTimeout(resolve, delay));

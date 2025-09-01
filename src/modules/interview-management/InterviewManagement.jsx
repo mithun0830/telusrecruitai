@@ -99,7 +99,8 @@ const CandidateCard = ({ candidate, round, handleStatusClick, onChatToggle }) =>
       <div className="card-content" style={{ padding: '0px' }}>
         <div className="score-section">
            <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-            JD: {candidate.jobDescription?.title}
+            {/* JD: {candidate.jobDescription?.title} */}
+            JD: {candidate.jobDescription?.title || "Java Developer"}
           </span>
           <span className="manager-info" style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
             Manager: {candidate.manager ? candidate.manager.name : 'RMG Admin'} 

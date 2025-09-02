@@ -456,10 +456,10 @@ const resetScheduleFields = () => {
     }
   };
 
-  const checkCandidateFolder = async (candidateId) => {
+const checkCandidateFolder = async (candidate) => {
     try {
-      console.log('🔍 Checking candidate folder for:', candidateId);
-      const response = await aiFeedbackService.checkCandidateFolder(candidateId);
+      console.log('🔍 Checking candidate folder for:', candidate.email);
+      const response = await aiFeedbackService.checkCandidateFolder(candidate.email);
       console.log('📋 Full API Response:', response);
       
       // Updated check for folder existence
@@ -470,7 +470,7 @@ const resetScheduleFields = () => {
       );
       
       console.log('📋 Folder exists check result:', folderExists);
-            console.log('📋 Response structure:', JSON.stringify(response, null, 2));
+      console.log('📋 Response structure:', JSON.stringify(response, null, 2));
       console.log('📋 Current candidateFolderExists state:', candidateFolderExists);
       console.log('📋 Current isPolling state:', isPolling);
       
@@ -480,7 +480,7 @@ const resetScheduleFields = () => {
         
         // Update refs IMMEDIATELY to prevent race conditions
         candidateFolderExistsRef.current = true;
-        hasStoppedPollingRef.current = new Set([...hasStoppedPollingRef.current, candidateId]);
+        hasStoppedPollingRef.current = new Set([...hasStoppedPollingRef.current, candidate.email]);
         isPollingRef.current = false;
         
         // Stop polling immediately using ref
@@ -489,13 +489,13 @@ const resetScheduleFields = () => {
         // Update state after refs
         setCandidateFolderExists(true);
         setHasStoppedPolling(prev => {
-          const newSet = new Set([...prev, candidateId]);
+          const newSet = new Set([...prev, candidate.email]);
           console.log('📝 Updated hasStoppedPolling set:', newSet);
           return newSet;
         });
         setIsPolling(false);
         
-        console.log('✅ Polling completely stopped for candidate:', candidateId);
+        console.log('✅ Polling completely stopped for candidate:', candidate.email);
         console.log('📋 Updated candidateFolderExists state:', true);
         console.log('📋 Updated isPolling state:', false);
       } else {
@@ -506,7 +506,7 @@ const resetScheduleFields = () => {
         console.log('📋 Updated candidateFolderExists state:', false);
       }
     } catch (error) {
-      console.error('❌ Error checking candidate folder:', error);
+      console.error('❌ Error checking folder for candidate:', error);
       console.error('Error details:', error.message);
       console.error('Error stack:', error.stack);
       candidateFolderExistsRef.current = false;

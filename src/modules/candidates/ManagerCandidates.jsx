@@ -564,8 +564,10 @@ const ManagerCandidates = () => {
         name: candidate.resume.name,
         email: candidate.resume.email,
         phone: candidate.resume.phoneNumber,
-        positionApplied: currentSearchValue || candidate.resume.positionApplied || "Not specified",
-        jobDetails: currentSearchValue || candidate.resume.jobDetails || "Not specified",
+        // positionApplied: currentSearchValue || candidate.resume.positionApplied || "Not specified",
+        positionApplied:  "Java Developer",
+        // jobDetails: currentSearchValue || candidate.resume.jobDetails || "Not specified",
+        jobDetails: "Java Developer",
         score: candidate.score
       }));
   };

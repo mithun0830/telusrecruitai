@@ -226,22 +226,22 @@ const InterviewManagement = () => {
   };
 
   // Function to check candidate folder status
-  const checkCandidateFolderStatus = async (candidateId) => {
+const checkCandidateFolderStatus = async (candidate) => {
     try {
-      console.log(`🔍 Checking folder status for candidate: ${candidateId}`);
-      const response = await aiFeedbackService.checkCandidateFolder(candidateId);
-      console.log(`📁 Folder check response for ${candidateId}:`, response);
+      console.log(`🔍 Checking folder status for candidate: ${candidate.email}`);
+      const response = await aiFeedbackService.checkCandidateFolder(candidate.email);
+      console.log(`📁 Folder check response for ${candidate.email}:`, response);
       console.log(`📊 Response data:`, response.data);
       console.log(`✅ Response success:`, response.success);
       console.log(`📂 Folder exists:`, response.data?.exists);
       
       const folderExists = response.success && response.data?.exists;
-      console.log(`🎯 Final folder status for ${candidateId}:`, folderExists);
+      console.log(`🎯 Final folder status for ${candidate.email}:`, folderExists);
       
       setCandidateFolderStatus(prev => {
         const newStatus = {
           ...prev,
-          [candidateId]: folderExists
+          [candidate.email]: folderExists
         };
         console.log(`🔄 Updated candidateFolderStatus:`, newStatus);
         return newStatus;
@@ -249,10 +249,10 @@ const InterviewManagement = () => {
       
       return folderExists;
     } catch (error) {
-      console.error(`❌ Error checking folder for candidate ${candidateId}:`, error);
+      console.error(`❌ Error checking folder for candidate ${candidate.email}:`, error);
       setCandidateFolderStatus(prev => ({
         ...prev,
-        [candidateId]: false
+        [candidate.email]: false
       }));
       return false;
     }
@@ -278,8 +278,8 @@ const InterviewManagement = () => {
     console.log('📋 Candidates to check:', candidatesToCheck.map(c => `${c.name} (${c.status})`));
 
     for (const candidate of candidatesToCheck) {
-      if (candidate.candidateId) {
-        await checkCandidateFolderStatus(candidate.candidateId);
+      if (candidate.email) {
+        await checkCandidateFolderStatus(candidate);
         // Add a small delay between requests to avoid overwhelming the server
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -288,9 +288,9 @@ const InterviewManagement = () => {
 
   // Function to handle manual folder check refresh
   const handleFolderCheck = async () => {
-    if (selectedCandidate?.candidateId) {
-      console.log('Manual folder check triggered for:', selectedCandidate.candidateId);
-      await checkCandidateFolderStatus(selectedCandidate.candidateId);
+    if (selectedCandidate?.email) {
+      console.log('Manual folder check triggered for:', selectedCandidate.email);
+      await checkCandidateFolderStatus(selectedCandidate);
     }
   };
 

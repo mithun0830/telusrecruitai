@@ -11,6 +11,7 @@ const api = axios.create({
   },
 });
 
+
 const notificationApi = axios.create({
   baseURL: NOTIFICATION_BASE_URL,
   headers: {
